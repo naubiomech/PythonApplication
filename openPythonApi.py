@@ -105,7 +105,7 @@ async def main():
                 await trial.beginTrial(deviceManager)   # start trial
 
         menuSelection = displayMenu()
-        asyncio.sleep(sleep_between_messages)
+        await asyncio.sleep(sleep_between_messages)
 
     print("Shutting down...")
     asyncio.sleep(2)

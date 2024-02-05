@@ -2,27 +2,28 @@ import asyncio
 
 def trialMenu():
        print("""
----------------------
-|1. Update Torque   |
-|2. End Trial       |
----------------------""")
+------------------------
+|1. Update Torque      |
+|2. Toggle Torque Type |
+|3. End Trial          |
+------------------------""")
        return input()
 
 def updateTorqueMenu():
+    print("Enter Joint Number: ")
+    joint = int(input())
     print("Enter Controller Number: ")
     controller = int(input())
     print("Enter Parameter: ")
     parameter = int(input())
-    print("Enter Index: ")
-    index = int(input())
     print("Enter Value: ")
     value = int(input())
 
-    return [controller, parameter, index, value]
+    return [joint, controller, parameter, value]
 
 def lbsToKilograms(pounds):
     convertionConstant = 0.45359237             # Constant for converting lbs->kg
-    return pounds * convertionConstant
+    return float(pounds) * convertionConstant
 
 class ExoTrial:
     def __init__(self, isKilograms, weight, isAssist):
@@ -43,17 +44,36 @@ class ExoTrial:
         print("Starting trial...")
         await asyncio.sleep(1)
 
-        menuSelection = 1
-        while menuSelection == 1:               # keep getting torque values until end trial
-            await deviceManager.calibrateTorque()
-            if self.isAssist:
-                await deviceManager.switchToAssist()
-            else:
-                await deviceManager.switchToResist()
+        #########################################
+        if self.isAssist:                       # 
+            await deviceManager.switchToAssist()#
+        else:                                   # 
+            await deviceManager.switchToResist()# Initial Exo Setup
+                                                #
+        await deviceManager.calibrateTorque()   #
+        await deviceManager.setTorque([0,0,0,0])#
+        #########################################
 
-            await deviceManager.updateTorqueValues(updateTorqueMenu())
-            print("Updating  torque values...")
-            await asyncio.sleep(1)
+        menuSelection = 1                       # Ensure to enter loop at least once
+        while menuSelection != 3:               # keep getting torque values until end trial
+            if menuSelection == 2:              # If toggle torque was selected
+                print("Changing from ")
+                if self.isAssist:
+                    self.isAssist = False
+                    print("Assistance to Ressistance\n")
+                    await deviceManager.switchToResist()
+                    await asyncio.sleep(1)
+                else:
+                    self.isAssist = True
+                    print("Ressistance to Assistance\n")
+                    await deviceManager.switchToAssist()
+                    await asyncio.sleep(1)
+            
+            elif menuSelection == 1:            # If update torque was selected
+                
+                await deviceManager.updateTorqueValues(updateTorqueMenu())
+                print("Updating  torque values...")
+                await asyncio.sleep(1)
 
             menuSelection = int(trialMenu())
 

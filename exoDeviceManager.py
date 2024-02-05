@@ -56,7 +56,7 @@ class ExoDeviceManager() :
     #-----------------------------------------------------------------------------
 
     async def updateTorqueValues(self, torque):
-        command = bytearray(b'F')  # send to command to initiate torque update
+        command = bytearray(b'f')  # send to command to initiate torque update
 
         await self.client.write_gatt_char(self.UART_TX_UUID, command)
         await asyncio.sleep(0.1)
@@ -66,6 +66,17 @@ class ExoDeviceManager() :
             await self.client.write_gatt_char(self.UART_TX_UUID, command)
             await asyncio.sleep(0.1)
     #-----------------------------------------------------------------------------
+            
+    async def setTorque(self, initialTorque):
+        command = bytearray(b'F')  # send to command to initiate torque update
+
+        await self.client.write_gatt_char(self.UART_TX_UUID, command)
+        await asyncio.sleep(0.1)
+
+        for torqueVal in initialTorque:
+            command = struct.pack('<d',torqueVal) # Set data to be what Exo expects
+            await self.client.write_gatt_char(self.UART_TX_UUID, command)
+            await asyncio.sleep(0.1)
     
     async def scanAndConnect(self):
         print("Scanning...")
