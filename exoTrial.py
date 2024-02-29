@@ -10,16 +10,36 @@ def trialMenu():
        return input()
 
 def updateTorqueMenu():
-    print("Enter Joint Number: ")
-    joint = int(input())
+    # print("Run in Bilateral Mode? (y/n): ")
+    # bilateralOption = input()
+    print("Select Joint")
+    print("""------------------
+|1. Right Hip    |
+|2. Left Hip     |
+|3. Right Knee   |
+|4. Left Knee    |
+|5. Right Ankle  |
+|6. Left Ankle   |
+------------------""")
+    joint = float(input())
     print("Enter Controller Number: ")
-    controller = int(input())
+    controller = float(input())
     print("Enter Parameter: ")
-    parameter = int(input())
+    parameter = float(input())
     print("Enter Value: ")
-    value = int(input())
+    value = float(input())
 
-    return [joint, controller, parameter, value]
+    #check for bilateral
+    # if bilateralOption == 'y' or bilateralOption == "Y" or bilateralOption == "":
+    #     isBilateral = True
+    # else: 
+    #     isBilateral = False
+
+    # get joint number
+    
+
+    # return isBilateral, joint, controller, parameter, value
+    return joint, controller, parameter, value
 
 def lbsToKilograms(pounds):
     convertionConstant = 0.45359237             # Constant for converting lbs->kg
@@ -51,7 +71,7 @@ class ExoTrial:
             await deviceManager.switchToResist()# Initial Exo Setup
                                                 #
         await deviceManager.calibrateTorque()   #
-        await deviceManager.setTorque([0,0,0,0])#
+        await deviceManager.calibrateFSRs()     #
         #########################################
 
         menuSelection = 1                       # Ensure to enter loop at least once
@@ -71,11 +91,13 @@ class ExoTrial:
             
             elif menuSelection == 1:            # If update torque was selected
                 
-                await deviceManager.updateTorqueValues(updateTorqueMenu())
+                jointKey, controller, parameter, value = updateTorqueMenu()
                 print("Updating  torque values...")
+                await deviceManager.updateTorqueValues(jointKey, controller, parameter, value)
                 await asyncio.sleep(1)
 
             menuSelection = int(trialMenu())
 
+        await deviceManager.motorOff()
         await deviceManager.stopTrial()
     #-----------------------------------------------------------------------------
