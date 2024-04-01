@@ -57,7 +57,9 @@ class ExoTrial:
     
     async def calibrate(self, deviceManager):   # sends start motor command to Exo
         print(self.isKilograms, self.weight, self.isAssist)
-        await deviceManager.startExoMotors()
+
+        await deviceManager.calibrateTorque()
+        await deviceManager.calibrateFSRs()   
     #-----------------------------------------------------------------------------
 
     async def beginTrial(self, deviceManager):  # Start trial and send initial torque commands
@@ -65,13 +67,12 @@ class ExoTrial:
         await asyncio.sleep(1)
 
         #########################################
-        if self.isAssist:                       # 
-            await deviceManager.switchToAssist()#
-        else:                                   # 
-            await deviceManager.switchToResist()# Initial Exo Setup
+        # if self.isAssist:                       # 
+        #     await deviceManager.switchToAssist()#
+        # else:                                   # 
+        #     await deviceManager.switchToResist()# Initial Exo Setup
                                                 #
-        await deviceManager.calibrateTorque()   #
-        await deviceManager.calibrateFSRs()     #
+        await deviceManager.startExoMotors()    #
         #########################################
 
         menuSelection = 1                       # Ensure to enter loop at least once

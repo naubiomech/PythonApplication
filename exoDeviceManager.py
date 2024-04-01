@@ -48,14 +48,19 @@ class ExoDeviceManager() :
     def handleDisconnect(self, _: BleakClient):
         print("Device was disconnected")
         # cancelling all tasks effectively ends the program
-        for task in asyncio.all_tasks():
-            task.cancel()
+        # for task in asyncio.all_tasks():
+        #     task.cancel()
     #-----------------------------------------------------------------------------
             
     async def startExoMotors(self):
         command = bytearray(b'E')
+
+        try:
+            await self.client.write_gatt_char(self.UART_TX_UUID, command)
+        except Exception as e:
+            print(f"An error occurred: {e}")
         
-        await self.client.write_gatt_char(self.UART_TX_UUID, command)
+        # await self.client.write_gatt_char(self.UART_TX_UUID, command)
     #-----------------------------------------------------------------------------
     
     async def calibrateTorque(self):              # Command to calibrate the torque
