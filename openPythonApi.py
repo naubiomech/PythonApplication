@@ -25,21 +25,23 @@ def cls():
 
 # Menu to calibrate the exo before begining trial
 def calibrationMenu():
-    isAssist = True
     isKilograms = True
-    print("""Calibration Menu
-================\n
-Select weight unit
--------------------------
-|1. Lbs                 |
-|2. Kg                  |
--------------------------""")
-    weightUnit = int(input())
-    if weightUnit != 2:
-        isKilograms = False
+    weight = 1
+    isAssist = True
+#     isKilograms = True
+#     print("""Calibration Menu
+# ================\n
+# Select weight unit
+# -------------------------
+# |1. Lbs                 |
+# |2. Kg                  |
+# -------------------------""")
+#     weightUnit = int(input())
+#     if weightUnit != 2:
+#         isKilograms = False
 
-    print("Enter weight: ")
-    weight = input()
+#     print("Enter weight: ")
+#     weight = input()
 
     print("""Enter torque type
 -------------------------

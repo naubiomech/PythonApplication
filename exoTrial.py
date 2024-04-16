@@ -67,11 +67,11 @@ class ExoTrial:
         await asyncio.sleep(1)
 
         #########################################
-        # if self.isAssist:                       # 
-        #     await deviceManager.switchToAssist()#
-        # else:                                   # 
-        #     await deviceManager.switchToResist()# Initial Exo Setup
-                                                #
+        if self.isAssist:                       # 
+            await deviceManager.switchToAssist()#
+        else:                                   # 
+            await deviceManager.switchToResist()# Initial Exo Setup
+                                                
         await deviceManager.startExoMotors()    #
         #########################################
 

@@ -13,7 +13,7 @@ class ExoDeviceManager() :
         self.client = None
         self.services = None
         # UUID characteristic 
-        self.UART_TX_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e" #Nordic NUS characteristic for TX
+        self.UART_TX_UUID = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E" #Nordic NUS characteristic for TX
         self.UART_RX_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e" #Nordic NUS characteristic for RX
         self.UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" #Nordic Service UUID
         # Joint dictionary
@@ -25,6 +25,8 @@ class ExoDeviceManager() :
             5 : 36.0,
             6 : 68.0
         }
+
+        self.isConnected = False
 
     def set_device(self, deviceVal):
         self.device = deviceVal
@@ -46,42 +48,48 @@ class ExoDeviceManager() :
     #-----------------------------------------------------------------------------
     
     def handleDisconnect(self, _: BleakClient):
+        self.isConnected = False
+        print("is exo connected: " + str(self.isConnected))
         print("Device was disconnected")
         # cancelling all tasks effectively ends the program
-        # for task in asyncio.all_tasks():
-        #     task.cancel()
+        for task in asyncio.all_tasks():
+            task.cancel()
     #-----------------------------------------------------------------------------
             
     async def startExoMotors(self):
+        print("using bleak start\n")
+        print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'E')
 
         try:
-            await self.client.write_gatt_char(self.UART_TX_UUID, command)
+            await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
         except Exception as e:
             print(f"An error occurred: {e}")
-        
-        # await self.client.write_gatt_char(self.UART_TX_UUID, command)
     #-----------------------------------------------------------------------------
     
     async def calibrateTorque(self):              # Command to calibrate the torque
+        print("using bleak torque\n")
+        print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'H')
 
-        await self.client.write_gatt_char(self.UART_TX_UUID, command)
+        await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
 
         await asyncio.sleep(0.1)
     #-----------------------------------------------------------------------------
     
     async def calibrateFSRs(self):                # Command to calibrate FSR sensors
+        print("using bleak FSR\n")
+        print("is exo connected: " + str(self.isConnected))
 
         command =  bytearray(b'L')
 
-        await self.client.write_gatt_char(self.UART_TX_UUID, command)
+        await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
     #-----------------------------------------------------------------------------
         
     async def motorOff(self):
         command =  bytearray(b'w')
 
-        await self.client.write_gatt_char(self.UART_TX_UUID, command)
+        await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
     #-----------------------------------------------------------------------------
 
     async def updateTorqueValues(self, jointKey, controller, parameter, value):
@@ -102,7 +110,7 @@ class ExoDeviceManager() :
 
             command = bytearray(b'f')           # send to command to initiate torque update
 
-            await self.client.write_gatt_char(self.UART_TX_UUID, command)
+            await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
             await asyncio.sleep(0.1)
 
             # Pack values into list
@@ -113,25 +121,27 @@ class ExoDeviceManager() :
                 print(item)
                 command = struct.pack('<d', item) # Set data to be what Exo expects]
                 print(command)
-                await self.client.write_gatt_char(self.UART_TX_UUID, command)
+                await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
                 await asyncio.sleep(0.1)
 
             loopCount += 1
     #-----------------------------------------------------------------------------
             
-    async def setTorque(self, initialTorque):
-        command = bytearray(b'F')  # send to command to initiate torque update
+    # async def setTorque(self, initialTorque):
+    #     command = bytearray(b'F')  # send to command to initiate torque update
 
-        await self.client.write_gatt_char(self.UART_TX_UUID, command)
-        await asyncio.sleep(0.1)
+    #     await self.client.write_gatt_char(self.UART_TX_UUID, command)
+    #     await asyncio.sleep(0.1)
 
-        for torqueVal in initialTorque:
-            command = struct.pack('<d',torqueVal) # Set data to be what Exo expects
-            await self.client.write_gatt_char(self.UART_TX_UUID, command)
-            await asyncio.sleep(0.2)
+    #     for torqueVal in initialTorque:
+    #         command = struct.pack('<d',torqueVal) # Set data to be what Exo expects
+    #         await self.client.write_gatt_char(self.UART_TX_UUID, command)
+    #         await asyncio.sleep(0.2)
     #-----------------------------------------------------------------------------
     
     async def scanAndConnect(self):
+        print("using bleak scan\n")
+        # print("is exo connected: " + str(self.isConnected))
         print("Scanning...")
         self.set_device(await BleakScanner.find_device_by_filter(self.filterExo))
         print(self.device)
@@ -140,23 +150,30 @@ class ExoDeviceManager() :
             sys.exit(1)
         self.set_client(BleakClient(self.device, disconnected_callback=self.handleDisconnect))
         await self.client.connect()
+
+        self.isConnected = True
+        print("is exo connected: " + str(self.isConnected))
+
         print(self.client)
-        self.set_services(self.client.services)
+        self.set_services(await self.client.get_services())
     #-----------------------------------------------------------------------------
     
     async def stopTrial(self):
         command  = bytearray(b'G')
 
-        await self.client.write_gatt_char(self.UART_TX_UUID, command)
+        await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
     
     async def switchToAssist(self):
+        print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'c')
         
-        await self.client.write_gatt_char(self.UART_TX_UUID, command)
+        await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
+        print("using bleak assist\n")
     #-----------------------------------------------------------------------------
         
     async def switchToResist(self):
+        print("using bleak resist\n")
         command = bytearray(b'S')
         
-        await self.client.write_gatt_char(self.UART_TX_UUID, command)
+        await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
     #-----------------------------------------------------------------------------
