@@ -79,7 +79,7 @@ class ExoDeviceManager() :
 
         await self.client.write_gatt_char(char, command, False)
 
-        await asyncio.sleep(0.1)
+        # await asyncio.sleep(0.1)
     #-----------------------------------------------------------------------------
     
     async def calibrateFSRs(self):                # Command to calibrate FSR sensors
@@ -118,16 +118,17 @@ class ExoDeviceManager() :
             command = bytearray(b'f')           # send to command to initiate torque update
             char = self.get_char_handle(self.UART_TX_UUID)
 
-            # await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
+            await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
             # await asyncio.sleep(0.1)
 
             # Pack values into list
             torqueList = [self.jointDictionary[jointKey], controller, parameter, value]
 
             # for each item in the list write to the exo
-            for item in torqueList:
-                print(item)
-                command += struct.pack('f', item) # Set data to be what Exo expects]
+            command = struct.pack('ffff', self.jointDictionary[jointKey], controller, parameter, value)
+            # for item in torqueList:
+            #     print(item)
+            #     command += struct.pack('f', item) # Set data to be what Exo expects]
             print(command)
             await self.client.write_gatt_char(char, command, False)
             await asyncio.sleep(0.1)

@@ -59,7 +59,6 @@ class ExoTrial:
         print(self.isKilograms, self.weight, self.isAssist)
 
         await deviceManager.calibrateTorque()
-        await deviceManager.calibrateFSRs()   
     #-----------------------------------------------------------------------------
 
     async def beginTrial(self, deviceManager):  # Start trial and send initial torque commands
@@ -73,6 +72,8 @@ class ExoTrial:
             await deviceManager.switchToResist()# Initial Exo Setup
                                                 
         await deviceManager.startExoMotors()    #
+
+        await deviceManager.calibrateFSRs()   
         #########################################
 
         menuSelection = 1                       # Ensure to enter loop at least once
