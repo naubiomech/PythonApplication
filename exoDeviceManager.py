@@ -63,6 +63,7 @@ class ExoDeviceManager() :
         print("using bleak start\n")
         print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'E')
+        print(list(command))
         char = self.get_char_handle(self.UART_TX_UUID)
 
         try:
@@ -78,8 +79,6 @@ class ExoDeviceManager() :
         char = self.get_char_handle(self.UART_TX_UUID)
 
         await self.client.write_gatt_char(char, command, False)
-
-        # await asyncio.sleep(0.1)
     #-----------------------------------------------------------------------------
     
     async def calibrateFSRs(self):                # Command to calibrate FSR sensors
@@ -125,13 +124,17 @@ class ExoDeviceManager() :
             torqueList = [self.jointDictionary[jointKey], controller, parameter, value]
 
             # for each item in the list write to the exo
-            command = struct.pack('ffff', self.jointDictionary[jointKey], controller, parameter, value)
+            # command = struct.pack('ffff', self.jointDictionary[jointKey], controller, parameter, value) 
+            command = struct.pack('ffff', 65.0 , 10.0, 2.0, 3.0) #TODO new test line
+            await self.client.write_gatt_char(char, command, False)
             # for item in torqueList:
             #     print(item)
-            #     command += struct.pack('f', item) # Set data to be what Exo expects]
-            print(command)
-            await self.client.write_gatt_char(char, command, False)
-            await asyncio.sleep(0.1)
+            #     command = struct.pack('f', item) # Set data to be what Exo expects]
+            #     await self.client.write_gatt_char(char, command, False)
+            #     await asyncio.sleep(0.1)
+
+            # newData = struct.unpack('ffff', command) #TODO new test line
+            # print(newData)
 
             loopCount += 1
     #-----------------------------------------------------------------------------
@@ -166,13 +169,30 @@ class ExoDeviceManager() :
         print(self.client)
         self.set_services(await self.client.get_services())
     #-----------------------------------------------------------------------------
+
+    async def sendFsrValues(self, fsrValList):
+        command = bytearray(b'R')
+        char = self.get_char_handle(self.UART_TX_UUID)
+
+        await self.client.write_gatt_char(char, command, False)
+
+        command = struct.pack('ff', 12.0, 12.0) #TODO
+        await self.client.write_gatt_char(char, command, False)
+
+        # for fsrVal in fsrValList:
+        #     print(fsrVal)
+        #     command = struct.pack('f', fsrVal) # Set data to be what Exo expects]
+        #     await self.client.write_gatt_char(char, command, False)
+        #     await asyncio.sleep(0.1)
+    #-----------------------------------------------------------------------------
     
     async def stopTrial(self):
         command  = bytearray(b'G')
         char = self.get_char_handle(self.UART_TX_UUID)
 
         await self.client.write_gatt_char(char, command, False)
-    
+    #-----------------------------------------------------------------------------
+
     async def switchToAssist(self):
         print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'c')

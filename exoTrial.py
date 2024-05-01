@@ -72,8 +72,12 @@ class ExoTrial:
             await deviceManager.switchToResist()# Initial Exo Setup
                                                 
         await deviceManager.startExoMotors()    #
+        print("start motors\n")
 
         await deviceManager.calibrateFSRs()   
+        print("calibrate fsr\n")
+        
+        await deviceManager.sendFsrValues([12.0, 12.0])
         #########################################
 
         menuSelection = 1                       # Ensure to enter loop at least once
