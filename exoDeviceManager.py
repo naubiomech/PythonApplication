@@ -105,7 +105,7 @@ class ExoDeviceManager() :
         # if isBilateral:                         # if bilateral mode is on do two loops
         #     totalLoops = 2
 
-        while loopCount != totalLoops:
+        # while loopCount != totalLoops:
 
             # # check if on second loop and if right joint
             # if loopCount == 1 and jointKey == 1 or jointKey == 3 or jointKey == 5:
@@ -114,26 +114,22 @@ class ExoDeviceManager() :
             # elif loopCount == 1 and jointKey == 2 or jointKey == 4 or jointKey == 6:
             #     jointKey -= 1                   # shift to right joint
 
-            command = bytearray(b'f')           # send to command to initiate torque update
-            char = self.get_char_handle(self.UART_TX_UUID)
-
-            await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
-            # await asyncio.sleep(0.1)
-
-            # Pack values into list
-            torqueList = [self.jointDictionary[jointKey], controller, parameter, value]
-
-            # for each item in the list write to the exo
-            # command = struct.pack('ffff', self.jointDictionary[jointKey], controller, parameter, value) 
-            command = struct.pack('ffff', 65.0 , 10.0, 2.0, 3.0) #TODO new test line
+        command = bytearray(b'f')           # send to command to initiate torque update
+        char = self.get_char_handle(self.UART_TX_UUID)
+        await self.client.write_gatt_char(self.UART_TX_UUID, command, False)
+        await asyncio.sleep(0.1)
+        # Pack values into list
+        torqueList = [self.jointDictionary[jointKey], controller, parameter, value]
+         # for each item in the list write to the exo
+        # command = struct.pack('ffff', self.jointDictionary[jointKey], controller, parameter, value) 
+        # command = struct.pack('ffff', 65.0 , 10.0, 2.0, 3.0) #TODO new test line
+        # await self.client.write_gatt_char(char, command, False)
+        for item in torqueList:
+            print(item)
+            command = struct.pack('f', item) # Set data to be what Exo expects]
             await self.client.write_gatt_char(char, command, False)
-            # for item in torqueList:
-            #     print(item)
-            #     command = struct.pack('f', item) # Set data to be what Exo expects]
-            #     await self.client.write_gatt_char(char, command, False)
-            #     await asyncio.sleep(0.1)
-
-            # newData = struct.unpack('ffff', command) #TODO new test line
+            await asyncio.sleep(0.1)
+         # newData = struct.unpack('ffff', command) #TODO new test line
             # print(newData)
 
             loopCount += 1
@@ -174,9 +170,9 @@ class ExoDeviceManager() :
         command = bytearray(b'R')
         char = self.get_char_handle(self.UART_TX_UUID)
 
-        await self.client.write_gatt_char(char, command, False)
+        # await self.client.write_gatt_char(char, command, False)
 
-        command = struct.pack('ff', 12.0, 12.0) #TODO
+        command += struct.pack('ff', 12.0, 12.0) #TODO
         await self.client.write_gatt_char(char, command, False)
 
         # for fsrVal in fsrValList:
