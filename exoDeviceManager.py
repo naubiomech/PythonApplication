@@ -61,6 +61,7 @@ class ExoDeviceManager() :
     #-----------------------------------------------------------------------------
             
     async def startExoMotors(self):
+        asyncio.sleep(1)
         print("using bleak start\n")
         print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'E')
@@ -164,7 +165,7 @@ class ExoDeviceManager() :
             char = self.get_char_handle(self.UART_TX_UUID)
             await self.client.write_gatt_char(char,fsr_bytes,False)
 
-        # command = struct.pack('<dd', 0.12, 0.12) #TODO
+        # command = struct.pack('<dd', 0.12, 0.12)
         # print(struct.unpack('<dd'))
         # await self.client.write_gatt_char(char, command, False)
 

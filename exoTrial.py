@@ -65,11 +65,11 @@ class ExoTrial:
         print("Starting trial...")
         await asyncio.sleep(1)
 
-        #########################################
-        if self.isAssist:                       # 
-            await deviceManager.switchToAssist()#
-        else:                                   # 
-            await deviceManager.switchToResist()# Initial Exo Setup
+        # #########################################
+        # if self.isAssist:                       # 
+        #     await deviceManager.switchToAssist()#
+        # else:                                   # 
+        #     await deviceManager.switchToResist()# Initial Exo Setup
                                                 
         await deviceManager.startExoMotors()    #
         print("start motors\n")
@@ -77,7 +77,7 @@ class ExoTrial:
         await deviceManager.calibrateFSRs()   
         print("calibrate fsr\n")
         
-        await deviceManager.sendFsrValues([12.0, 12.0])
+        await deviceManager.sendFsrValues([0.30, 0.30])
         # #########################################
 
         # menuSelection = 1                       # Ensure to enter loop at least once
