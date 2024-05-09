@@ -1,6 +1,7 @@
 import asyncio
 import struct
 import sys
+import realTimeProcessor
 import numpy as np
 from bleak import BleakClient, BleakScanner
 from bleak.backends.characteristic import BleakGATTCharacteristic
@@ -10,6 +11,7 @@ from bleak.backends.scanner import AdvertisementData
 class ExoDeviceManager() :
 
     def __init__(self):
+        self._realTimeProcessor = realTimeProcessor.RealTimeProcessor()
         self.device = None
         self.client = None
         self.services = None
@@ -38,6 +40,9 @@ class ExoDeviceManager() :
     def set_services(self, servicesVal):
         self.services = servicesVal
 
+    async def DataIn(self, sender: BleakGATTCharacteristic, data: bytearray):
+        self._realTimeProcessor.processEvent(data)
+
     def get_char_handle(self, char_UUID):
         return self.services.get_service(self.UART_SERVICE_UUID).get_characteristic(char_UUID)
 
@@ -61,7 +66,7 @@ class ExoDeviceManager() :
     #-----------------------------------------------------------------------------
             
     async def startExoMotors(self):
-        asyncio.sleep(1)
+        await asyncio.sleep(1)
         print("using bleak start\n")
         print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'E')
@@ -150,6 +155,7 @@ class ExoDeviceManager() :
 
         print(self.client)
         self.set_services(await self.client.get_services())
+        await self.client.start_notify(self.UART_RX_UUID, self.DataIn)
     #-----------------------------------------------------------------------------
 
     async def sendFsrValues(self, fsrValList):
