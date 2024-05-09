@@ -103,8 +103,9 @@ async def main():
                 cls()
                 isKilograms, weight, isAssistance = calibrationMenu()
                 trial = exoTrial.ExoTrial(isKilograms, weight, isAssistance)
-                await trial.calibrate(deviceManager)    # Calibrate exo
+                await trial.calibrate(deviceManager)   # Calibrate exo
                 await trial.beginTrial(deviceManager)   # start trial
+                await trial.systemUpdate(deviceManager)
 
         menuSelection = displayMenu()
         await asyncio.sleep(sleep_between_messages)
