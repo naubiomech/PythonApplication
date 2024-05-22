@@ -4,7 +4,7 @@
 # exoskeleon firmware interprets.
 # Author: Payton Cox
 # Date Created: Jan 2024
-# Last updated: Jan 2024
+# Last updated: May 2024
 
 import asyncio
 import os
@@ -25,30 +25,32 @@ def cls():
 
 # Menu to calibrate the exo before begining trial
 def calibrationMenu():
-    isAssist = True
     isKilograms = True
-    print("""Calibration Menu
-================\n
-Select weight unit
--------------------------
-|1. Lbs                 |
-|2. Kg                  |
--------------------------""")
-    weightUnit = int(input())
-    if weightUnit != 2:
-        isKilograms = False
+    weight = 1
+    isAssist = True
+#     isKilograms = True
+#     print("""Calibration Menu
+# ================\n
+# Select weight unit
+# -------------------------
+# |1. Lbs                 |
+# |2. Kg                  |
+# -------------------------""")
+#     weightUnit = int(input())
+#     if weightUnit != 2:
+#         isKilograms = False
 
-    print("Enter weight: ")
-    weight = input()
+#     print("Enter weight: ")
+# #     weight = input()
 
-    print("""Enter torque type
--------------------------
-|1. Assistance          |
-|2. Resistance          |
--------------------------""")
-    torqueType = int(input())
-    if torqueType != 1:
-        isAssist = False
+#     print("""Enter torque type
+# -------------------------
+# |1. Assistance          |
+# |2. Resistance          |
+# -------------------------""")
+#     torqueType = int(input())
+#     if torqueType != 1:
+#         isAssist = False
     cls()
     return isKilograms, weight, isAssist
 #-----------------------------------------------------------------------------
@@ -56,7 +58,7 @@ Select weight unit
 # Menu for actions to take upon connection
 def connectedMenu():
     print("""-------------------------
-|1. Calibrate           |
+|1. Start Trial          |
 -------------------------""")
     return int(input())
 
@@ -101,11 +103,12 @@ async def main():
                 cls()
                 isKilograms, weight, isAssistance = calibrationMenu()
                 trial = exoTrial.ExoTrial(isKilograms, weight, isAssistance)
-                await trial.calibrate(deviceManager)    # Calibrate exo
+                await trial.calibrate(deviceManager)   # Calibrate exo
                 await trial.beginTrial(deviceManager)   # start trial
+                await trial.systemUpdate(deviceManager)
 
         menuSelection = displayMenu()
-        asyncio.sleep(sleep_between_messages)
+        await asyncio.sleep(sleep_between_messages)
 
     print("Shutting down...")
     asyncio.sleep(2)
