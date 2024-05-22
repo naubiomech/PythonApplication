@@ -1,17 +1,17 @@
 import asyncio
+import DataToCsv
 
 def trialMenu():
        print("""
 ------------------------
 |1. Update Torque      |
-|2. Toggle Torque Type |
-|3. End Trial          |
+|2. End Trial          |
 ------------------------""")
        return input()
 
 def updateTorqueMenu():
-    # print("Run in Bilateral Mode? (y/n): ")
-    # bilateralOption = input()
+    print("Run in Bilateral Mode? (y/n): ")
+    bilateralOption = input()
     print("Select Joint")
     print("""------------------
 |1. Right Hip    |
@@ -29,17 +29,13 @@ def updateTorqueMenu():
     print("Enter Value: ")
     value = float(input())
 
-    #check for bilateral
-    # if bilateralOption == 'y' or bilateralOption == "Y" or bilateralOption == "":
-    #     isBilateral = True
-    # else: 
-    #     isBilateral = False
+    # check for bilateral
+    if bilateralOption == 'y' or bilateralOption == "Y" or bilateralOption == "":
+        isBilateral = True
+    else: 
+        isBilateral = False    
 
-    # get joint number
-    
-
-    # return isBilateral, joint, controller, parameter, value
-    return joint, controller, parameter, value
+    return [isBilateral, joint, controller, parameter, value]
 
 def lbsToKilograms(pounds):
     convertionConstant = 0.45359237             # Constant for converting lbs->kg
@@ -47,6 +43,7 @@ def lbsToKilograms(pounds):
 
 class ExoTrial:
     def __init__(self, isKilograms, weight, isAssist):
+        self.csvWriter = DataToCsv.CsvWritter()
         self.isKilograms = isKilograms
         if not isKilograms:                     # Convert from lbs->kg if weight is in lbs
             self.weight = lbsToKilograms(weight)
@@ -64,13 +61,6 @@ class ExoTrial:
     async def beginTrial(self, deviceManager):  # Start trial and send initial torque commands
         print("Starting trial...")
         await asyncio.sleep(1)
-
-        # #########################################
-        # if self.isAssist:                       # 
-        #     await deviceManager.switchToAssist()#
-        # else:                                   # 
-        #     await deviceManager.switchToResist()# Initial Exo Setup
-                                                
         await deviceManager.startExoMotors()    #
         print("start motors\n")
 
@@ -78,106 +68,23 @@ class ExoTrial:
         print("calibrate fsr\n")
         
         await deviceManager.sendFsrValues([0.30, 0.30])
-        # #########################################
-
-        # menuSelection = 1                       # Ensure to enter loop at least once
-        # while menuSelection != 3:               # keep getting torque values until end trial
-        #     if menuSelection == 2:              # If toggle torque was selected
-        #         print("Changing from ")
-        #         if self.isAssist:
-        #             self.isAssist = False
-        #             print("Assistance to Ressistance\n")
-        #             await deviceManager.switchToResist()
-        #             await asyncio.sleep(1)
-        #         else:
-        #             self.isAssist = True
-        #             print("Ressistance to Assistance\n")
-        #             await deviceManager.switchToAssist()
-        #             await asyncio.sleep(1)
-            
-        #     elif menuSelection == 1:            # If update torque was selected
-
-        #         # data = bytearray(b'f')           # send to command to initiate torque update
-        #         # char = deviceManager.get_char_handle(deviceManager.UART_TX_UUID)
-        #         # await deviceManager.client.write_gatt_char(char, data, False)  
-                
-        #         # jointKey, controller, parameter, value = updateTorqueMenu()
-        #         parameter_list = [65.0,10.0,2.0,3.0]
-
-        #         joint_id = 65.0
-        #         controller = 10.0
-        #         parameter = 2.0
-        #         value = 3.0
-
-        #         #await asyncio.sleep(10)
-
-        #         await deviceManager.updateTorqueValues(parameter_list)
-
-        #         #print("Updating  torque values...")
-        #         #await deviceManager.updateTorqueValues(values) # Left
-        #         # data = bytearray(b'f')           # send to command to initiate torque update
-        #         # char = deviceManager.get_char_handle(deviceManager.UART_TX_UUID)
-        #         # await deviceManager.client.write_gatt_char(char, data, False) 
-
-        #         # for index, val in enumerate(parameter_list):
-        #         #     await deviceManager.updateTorqueValues(True, index, val) # Left
-        #         #     #await deviceManager.updateTorqueValues(jointKey, controller, parameter, value)
-        #         #     await asyncio.sleep(1)
-
-        #     menuSelection = int(trialMenu())
-
-        # await deviceManager.motorOff()
-        # await deviceManager.stopTrial()
     #-----------------------------------------------------------------------------
 
     async def systemUpdate(self, deviceManager):  # Handles Next Steps After Baseline 
 
         menuSelection = int(trialMenu())                       # Ensure to enter loop at least once
-        while menuSelection != 3:               # keep getting torque values until end trial
-            if menuSelection == 2:              # If toggle torque was selected
-                print("Changing from ")
-                if self.isAssist:
-                    self.isAssist = False
-                    print("Assistance to Ressistance\n")
-                    await deviceManager.switchToResist()
-                    await asyncio.sleep(1)
-                else:
-                    self.isAssist = True
-                    print("Ressistance to Assistance\n")
-                    await deviceManager.switchToAssist()
-                    await asyncio.sleep(1)
-            
-            elif menuSelection == 1:            # If update torque was selected
+        while menuSelection != 2:                              # keep getting torque values until end trial
+            parameter_list = updateTorqueMenu()
 
-                # data = bytearray(b'f')           # send to command to initiate torque update
-                # char = deviceManager.get_char_handle(deviceManager.UART_TX_UUID)
-                # await deviceManager.client.write_gatt_char(char, data, False)  
-                
-                # jointKey, controller, parameter, value = updateTorqueMenu()
-                parameter_list = [65.0,10.0,2.0,3.0]
-
-                joint_id = 65.0
-                controller = 10.0
-                parameter = 2.0
-                value = 3.0
-
-                #await asyncio.sleep(10)
-
-                await deviceManager.updateTorqueValues(parameter_list)
-
-                #print("Updating  torque values...")
-                #await deviceManager.updateTorqueValues(values) # Left
-                # data = bytearray(b'f')           # send to command to initiate torque update
-                # char = deviceManager.get_char_handle(deviceManager.UART_TX_UUID)
-                # await deviceManager.client.write_gatt_char(char, data, False) 
-
-                # for index, val in enumerate(parameter_list):
-                #     await deviceManager.updateTorqueValues(True, index, val) # Left
-                #     #await deviceManager.updateTorqueValues(jointKey, controller, parameter, value)
-                #     await asyncio.sleep(1)
+            await deviceManager.updateTorqueValues(parameter_list)
 
             menuSelection = int(trialMenu())
 
         await deviceManager.motorOff()
         await deviceManager.stopTrial()
+        deviceManager.handleDisconnect(deviceManager.client)
+        self.loadDataToCSV(deviceManager)
     #-----------------------------------------------------------------------------
+
+    def loadDataToCSV(self, deviceManager):
+        self.csvWriter.writeToCsv(deviceManager._realTimeProcessor._exo_data)

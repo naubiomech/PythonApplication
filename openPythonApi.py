@@ -4,7 +4,7 @@
 # exoskeleon firmware interprets.
 # Author: Payton Cox
 # Date Created: Jan 2024
-# Last updated: Jan 2024
+# Last updated: May 2024
 
 import asyncio
 import os
@@ -41,16 +41,16 @@ def calibrationMenu():
 #         isKilograms = False
 
 #     print("Enter weight: ")
-#     weight = input()
+# #     weight = input()
 
-    print("""Enter torque type
--------------------------
-|1. Assistance          |
-|2. Resistance          |
--------------------------""")
-    torqueType = int(input())
-    if torqueType != 1:
-        isAssist = False
+#     print("""Enter torque type
+# -------------------------
+# |1. Assistance          |
+# |2. Resistance          |
+# -------------------------""")
+#     torqueType = int(input())
+#     if torqueType != 1:
+#         isAssist = False
     cls()
     return isKilograms, weight, isAssist
 #-----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ def calibrationMenu():
 # Menu for actions to take upon connection
 def connectedMenu():
     print("""-------------------------
-|1. Calibrate           |
+|1. Start Trial          |
 -------------------------""")
     return int(input())
 

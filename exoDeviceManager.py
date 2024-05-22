@@ -109,6 +109,9 @@ class ExoDeviceManager() :
         totalLoops = 1
         loopCount = 0
 
+        #check if bilateral
+        if parameter_list[0] == True:
+            totalLoops = 2
         while loopCount != totalLoops:
 
             command = b'f'
@@ -117,30 +120,25 @@ class ExoDeviceManager() :
 
             float_values = (parameter_list)
 
-            for i in range (0, len(float_values)):
-                float_bytes = struct.pack('<d',float_values[i])
+            for i in range (1, len(float_values)):
+                if i == 1:
+                    if loopCount == 1 and float_values[1]%2 == 0:                                   #check for second loop and if on right side
+                        float_bytes = struct.pack('<d',self.jointDictionary[float_values[i]]-32)    #decriment joint ID by 32 (opposite joint is offset by 32)
+                    elif loopCount == 1 and float_values[1]%2 != 0:                                 #otherwise check for left side and second loop
+                        float_bytes = struct.pack('<d',self.jointDictionary[float_values[i]]+32)    #increment joint ID by 32 (opposite joint is offset by 32)
+                    else:                                                                           #otherwise run joint ID that was inputed
+                        float_bytes = struct.pack('<d',self.jointDictionary[float_values[i]])
+                else:
+                    float_bytes = struct.pack('<d',float_values[i])
                 print(struct.unpack('<d',float_bytes))
                 char = self.get_char_handle(self.UART_TX_UUID)
                 await self.client.write_gatt_char(char,float_bytes,False)
 
             loopCount += 1
     #-----------------------------------------------------------------------------
-            
-    # async def setTorque(self, initialTorque):
-    #     command = bytearray(b'F')  # send to command to initiate torque update
-
-    #     await self.client.write_gatt_char(self.UART_TX_UUID, command)
-    #     await asyncio.sleep(0.1)
-
-    #     for torqueVal in initialTorque:
-    #         command = struct.pack('<d',torqueVal) # Set data to be what Exo expects
-    #         await self.client.write_gatt_char(self.UART_TX_UUID, command)
-    #         await asyncio.sleep(0.2)
-    #-----------------------------------------------------------------------------
     
     async def scanAndConnect(self):
         print("using bleak scan\n")
-        # print("is exo connected: " + str(self.isConnected))
         print("Scanning...")
         self.set_device(await BleakScanner.find_device_by_filter(self.filterExo))
         print(self.device)
@@ -162,24 +160,11 @@ class ExoDeviceManager() :
         command = bytearray(b'R')
         char = self.get_char_handle(self.UART_TX_UUID)
 
-        # await self.client.write_gatt_char(char, command, False)
-
         fsrVals = fsrValList
         for i in range (0, len(fsrVals)):
             fsr_bytes = struct.pack('<d',fsrVals[i])
-            #print(struct.unpack('<d',fsr_bytes))
             char = self.get_char_handle(self.UART_TX_UUID)
             await self.client.write_gatt_char(char,fsr_bytes,False)
-
-        # command = struct.pack('<dd', 0.12, 0.12)
-        # print(struct.unpack('<dd'))
-        # await self.client.write_gatt_char(char, command, False)
-
-        # for fsrVal in fsrValList:
-        #     print(fsrVal)
-        #     command = struct.pack('f', fsrVal) # Set data to be what Exo expects]
-        #     await self.client.write_gatt_char(char, command, False)
-        #     await asyncio.sleep(0.1)
     #-----------------------------------------------------------------------------
     
     async def stopTrial(self):
