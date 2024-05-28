@@ -16,10 +16,10 @@ class ExoDeviceManager() :
         self.client = None
         self.services = None
         # UUID characteristic 
-        self.UART_TX_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e" #Nordic NUS characteristic for TX
-        self.UART_RX_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e" #Nordic NUS characteristic for RX
-        self.UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E" #Nordic Service UUID
-        # Joint dictionary
+        self.UART_TX_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"                                 #Nordic NUS characteristic for TX
+        self.UART_RX_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"                                 #Nordic NUS characteristic for RX
+        self.UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"                            #Nordic Service UUID
+        # Joint dictionary to map menu selection to joint ID
         self.jointDictionary = {
             1 : 33.0,
             2 : 65.0,
@@ -56,6 +56,7 @@ class ExoDeviceManager() :
         return False
     #-----------------------------------------------------------------------------
     
+    # Callback function to disconnect exo from system
     def handleDisconnect(self, _: BleakClient):
         self.isConnected = False
         print("is exo connected: " + str(self.isConnected))
@@ -64,8 +65,8 @@ class ExoDeviceManager() :
         for task in asyncio.all_tasks():
             task.cancel()
     #-----------------------------------------------------------------------------
-            
-    async def startExoMotors(self):
+        
+    async def startExoMotors(self):                                                                # Command to Exo to get motors on and ready to receive commands
         await asyncio.sleep(1)
         print("using bleak start\n")
         print("is exo connected: " + str(self.isConnected))
@@ -79,7 +80,7 @@ class ExoDeviceManager() :
             print(f"An error occurred: {e}")
     #-----------------------------------------------------------------------------
     
-    async def calibrateTorque(self):              # Command to calibrate the torque
+    async def calibrateTorque(self):                                                               # Command to calibrate the torque
         print("using bleak torque\n")
         print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'H')
@@ -88,7 +89,7 @@ class ExoDeviceManager() :
         await self.client.write_gatt_char(char, command, False)
     #-----------------------------------------------------------------------------
     
-    async def calibrateFSRs(self):                # Command to calibrate FSR sensors
+    async def calibrateFSRs(self):                                                                 # Command to calibrate FSR sensors
         print("using bleak FSR\n")
         print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'L')
@@ -97,14 +98,14 @@ class ExoDeviceManager() :
         await self.client.write_gatt_char(char, command, False)
     #-----------------------------------------------------------------------------
         
-    async def motorOff(self):
+    async def motorOff(self):                                                                      # Command to turn off motors 
         command =  bytearray(b'w')
         char = self.get_char_handle(self.UART_TX_UUID)
 
         await self.client.write_gatt_char(char, command, True)
     #-----------------------------------------------------------------------------
 
-    async def updateTorqueValues(self,parameter_list): #jointKey, controller, parameter, value):
+    async def updateTorqueValues(self,parameter_list):                                             #jointKey, controller, parameter, value):
 
         totalLoops = 1
         loopCount = 0
@@ -112,9 +113,9 @@ class ExoDeviceManager() :
         #check if bilateral
         if parameter_list[0] == True:
             totalLoops = 2
-        while loopCount != totalLoops:
+        while loopCount != totalLoops:                                                             # Loop if bilateral mode. No loop otherwise
 
-            command = b'f'
+            command = b'f'                                                                         # Set convert command 'f' into bytearray
             char = self.get_char_handle(self.UART_TX_UUID)
             await self.client.write_gatt_char(char,command,False)
 
@@ -122,11 +123,11 @@ class ExoDeviceManager() :
 
             for i in range (1, len(float_values)):
                 if i == 1:
-                    if loopCount == 1 and float_values[1]%2 == 0:                                   #check for second loop and if on right side
-                        float_bytes = struct.pack('<d',self.jointDictionary[float_values[i]]-32)    #decriment joint ID by 32 (opposite joint is offset by 32)
-                    elif loopCount == 1 and float_values[1]%2 != 0:                                 #otherwise check for left side and second loop
-                        float_bytes = struct.pack('<d',self.jointDictionary[float_values[i]]+32)    #increment joint ID by 32 (opposite joint is offset by 32)
-                    else:                                                                           #otherwise run joint ID that was inputed
+                    if loopCount == 1 and float_values[1]%2 == 0:                                   # check for second loop and if on right side
+                        float_bytes = struct.pack('<d',self.jointDictionary[float_values[i]]-32)    # decriment joint ID by 32 (opposite joint is offset by 32)
+                    elif loopCount == 1 and float_values[1]%2 != 0:                                 # otherwise check for left side and second loop
+                        float_bytes = struct.pack('<d',self.jointDictionary[float_values[i]]+32)    # increment joint ID by 32 (opposite joint is offset by 32)
+                    else:                                                                           # otherwise run joint ID that was inputed
                         float_bytes = struct.pack('<d',self.jointDictionary[float_values[i]])
                 else:
                     float_bytes = struct.pack('<d',float_values[i])
@@ -137,26 +138,26 @@ class ExoDeviceManager() :
             loopCount += 1
     #-----------------------------------------------------------------------------
     
-    async def scanAndConnect(self):
+    async def scanAndConnect(self):                                                                 # Scan for BLE devices
         print("using bleak scan\n")
         print("Scanning...")
-        self.set_device(await BleakScanner.find_device_by_filter(self.filterExo))
+        self.set_device(await BleakScanner.find_device_by_filter(self.filterExo))                   # Filter devices for only Exos
         print(self.device)
-        if self.device is None:
-            print("No matching device found, you may need to edit the filter.")
+        if self.device is None:                                                                     # No devices found from filter
+            print("No matching device found.")
             sys.exit(1)
-        self.set_client(BleakClient(self.device, disconnected_callback=self.handleDisconnect))
-        await self.client.connect()
+        self.set_client(BleakClient(self.device, disconnected_callback=self.handleDisconnect))      # Set client and diconnect callback
+        await self.client.connect()                                                                 # Connect to Exo
 
         self.isConnected = True
         print("is exo connected: " + str(self.isConnected))
 
         print(self.client)
-        self.set_services(await self.client.get_services())
-        await self.client.start_notify(self.UART_RX_UUID, self.DataIn)
+        self.set_services(await self.client.get_services())                                         # Get list of services from Exo
+        await self.client.start_notify(self.UART_RX_UUID, self.DataIn)                              # Start incoming data stream
     #-----------------------------------------------------------------------------
 
-    async def sendFsrValues(self, fsrValList):
+    async def sendFsrValues(self, fsrValList):                                                      # Send FSR values to Exo
         command = bytearray(b'R')
         char = self.get_char_handle(self.UART_TX_UUID)
 
@@ -167,14 +168,14 @@ class ExoDeviceManager() :
             await self.client.write_gatt_char(char,fsr_bytes,False)
     #-----------------------------------------------------------------------------
     
-    async def stopTrial(self):
+    async def stopTrial(self):                                                                      # Send stop trial command
         command  = bytearray(b'G')
         char = self.get_char_handle(self.UART_TX_UUID)
 
         await self.client.write_gatt_char(char, command, False)
     #-----------------------------------------------------------------------------
 
-    async def switchToAssist(self):
+    async def switchToAssist(self):                                                                 # Send switch to assist command
         print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'c')
         char = self.get_char_handle(self.UART_TX_UUID)
@@ -183,7 +184,7 @@ class ExoDeviceManager() :
         print("using bleak assist\n")
     #-----------------------------------------------------------------------------
         
-    async def switchToResist(self):
+    async def switchToResist(self):                                                                 # Send switch to resist command
         print("using bleak resist\n")
         command = bytearray(b'S')
         char = self.get_char_handle(self.UART_TX_UUID)

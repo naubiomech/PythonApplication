@@ -49,17 +49,20 @@ class CsvWritter():
         fileData.append(lFsr)
         fileData.append(rFsr)
 
+        # rotate 2D array to place lables on top
         fileDataTransposed = self.rotateArray(fileData)
         
-        today = datetime.now()
-        fileName = today.strftime("%Y-%b-%d-%H:%M:%S")
-        fileName += '.csv'
+        today = datetime.now()                              # Pull system time and date
+        fileName = today.strftime("%Y-%b-%d-%H:%M:%S")      # Format file name based on YYYY-MM-DD-HH:MM:SS
+        fileName += '.csv'                                  # Add .csv to file name
         print("file is: ", fileName)
 
-        with open(fileName, 'w') as csvFile:
-            csvwriter = csv.writer(csvFile)
+        with open(fileName, 'w') as csvFile:                # Open file with file name
+            csvwriter = csv.writer(csvFile)                 # Prep file for csv data
 
-            csvwriter.writerows(fileDataTransposed)
+            csvwriter.writerows(fileDataTransposed)         # Write flipped 2D array to file
 
-    def rotateArray(slef, arrayToFlip):
-        return [list(row) for row in zip(*arrayToFlip)]
+            csvFile.close                                   # Close file
+
+    def rotateArray(self, arrayToFlip):
+        return [list(row) for row in zip(*arrayToFlip)]     # Roate array so labels on left are on top

@@ -1,6 +1,7 @@
 import asyncio
 import DataToCsv
 
+# Options during trial. Change torque settings or end trial
 def trialMenu():
        print("""
 ------------------------
@@ -9,8 +10,9 @@ def trialMenu():
 ------------------------""")
        return input()
 
+# Options for updating the torque settings 
 def updateTorqueMenu():
-    print("Run in Bilateral Mode? (y/n): ")
+    print("Run in Bilateral Mode? (y/n): ")     # Choosing yes runs both exo joints with the same settings at once. No only updates selected joint
     bilateralOption = input()
     print("Select Joint")
     print("""------------------
@@ -29,10 +31,10 @@ def updateTorqueMenu():
     print("Enter Value: ")
     value = float(input())
 
-    # check for bilateral
+    # check for bilateral                         Type y, Y, or hit enter to select yes for bilateral
     if bilateralOption == 'y' or bilateralOption == "Y" or bilateralOption == "":
         isBilateral = True
-    else: 
+    else:
         isBilateral = False    
 
     return [isBilateral, joint, controller, parameter, value]
@@ -61,30 +63,32 @@ class ExoTrial:
     async def beginTrial(self, deviceManager):  # Start trial and send initial torque commands
         print("Starting trial...")
         await asyncio.sleep(1)
-        await deviceManager.startExoMotors()    #
+        await deviceManager.startExoMotors()    # Sets Exo motors to receive commands
         print("start motors\n")
 
-        await deviceManager.calibrateFSRs()   
+        await deviceManager.calibrateFSRs()     # Begins Exo calibration 
         print("calibrate fsr\n")
-        
+                                                # Send FSR value to Exo FSR
         await deviceManager.sendFsrValues([0.30, 0.30])
     #-----------------------------------------------------------------------------
 
     async def systemUpdate(self, deviceManager):  # Handles Next Steps After Baseline 
 
-        menuSelection = int(trialMenu())                       # Ensure to enter loop at least once
-        while menuSelection != 2:                              # keep getting torque values until end trial
-            parameter_list = updateTorqueMenu()
+        menuSelection = int(trialMenu())        # Ensure to enter loop at least once
+        while menuSelection != 2:               # Keep getting torque values until end trial
+            parameter_list = updateTorqueMenu() # Menu for updating torque
 
-            await deviceManager.updateTorqueValues(parameter_list)
+            await deviceManager.updateTorqueValues(parameter_list)  # Send torque values to Exo
 
-            menuSelection = int(trialMenu())
+            menuSelection = int(trialMenu())    # Get trial menu for loop
 
-        await deviceManager.motorOff()
-        await deviceManager.stopTrial()
-        deviceManager.handleDisconnect(deviceManager.client)
-        self.loadDataToCSV(deviceManager)
+        # End trial
+        await deviceManager.motorOff()          # Turn off motors
+        await deviceManager.stopTrial()         # Tell Exo to end trial
+        deviceManager.handleDisconnect(deviceManager.client)    # Disconnect from Exo
+        self.loadDataToCSV(deviceManager)       # Load data from Exo into CSV 
     #-----------------------------------------------------------------------------
 
+    # Loads exo data into csv
     def loadDataToCSV(self, deviceManager):
         self.csvWriter.writeToCsv(deviceManager._realTimeProcessor._exo_data)

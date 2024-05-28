@@ -3,8 +3,7 @@ import exoData
 
 class RealTimeProcessor():
     def __init__(self):
-        self.rawRegexString = r'0-9'
-        self._event_count_regex = re.compile("[0-9]+")
+        self._event_count_regex = re.compile("[0-9]+")                          # Regular Expression to find any number 1-9
         self._start_transmission = False
         self._command = None
         self._num_count = 0
@@ -15,83 +14,41 @@ class RealTimeProcessor():
         self._data_length = None
         self.x_time= 0
 
-    # def processEvent(self, data: bytearray):
-    #     dataUnpacked = data.decode('utf-8')     #Decode data from bytearry->String
-    #     print(f"data recieved: {dataUnpacked}")
-        
-    #     if dataUnpacked.__contains__('c'):
-    #         dataSplit = dataUnpacked.split('c')
-    #         eventData = dataSplit[1]
-    #         eventInfo = dataSplit[0]
-    #         count = self.event_count_regex.findall(eventInfo)
-    #         print(count)
-    #         for element in count:
-    #             self.dataLength = int(element)
-    #         start = eventInfo[0]
-    #         cmd = eventInfo[1]
-    #         eventWithOutCount = start + cmd + eventData
-    #         for char in eventWithOutCount:
-    #             if (char == 'S' and  not self._startTransmission):
-    #                 self._startTransmission = True
-    #                 return
-    #             elif self._startTransmission:
-    #                 if self.command == '':
-    #                     self.command = char
-    #                 elif char == 'n':
-    #                     self._numCount += 1
-    #                     self.result = self.result.join(self.buffer)
-    #                     floatParse = float(self.result)
-    #                     if floatParse == None:
-    #                         return
-    #                     else:
-    #                         self._payload.add(floatParse / 100.0)
-    #                         self.buffer.clear()
-    #                         if self._numCount == self.dataLength:
-    #                             self.processMessage(self.command, self._payload, self.dataLength)
-    #                             self.reset()
-    #                         else:
-    #                             return
-    #                 elif not (self.dataLength == 0):
-    #                     self.buffer.append(char)
-    #                 else:
-    #                     return
-    #             else:
-    #                 print("unknown command\n")
     def processEvent(self, event):
-        dataUnpacked = event.decode('utf-8')     #Decode data from bytearry->String
-        if 'c' in dataUnpacked:
-            data_split = dataUnpacked.split('c')
-            event_data = data_split[1]
-            event_info = data_split[0]
-            count_match = self._event_count_regex.search(event_info).group()
+        dataUnpacked = event.decode('utf-8')                                    # Decode data from bytearry->String
+        if 'c' in dataUnpacked:                                                 # 'c' acts as a delimiter for data
+            data_split = dataUnpacked.split('c')                                # Split data into 2 messages using 'c' as divider
+            event_data = data_split[1]                                          # Back half of split holds message data
+            event_info = data_split[0]                                          # Front half of split holds message information
+            count_match = self._event_count_regex.search(event_info).group()    # Look for data count described in data info
             self._data_length = int(count_match)
-            start = event_info[0]
-            cmd = event_info[1]
-            event_without_count = f"{start}{cmd}{event_data}"
+            start = event_info[0]                                               # Start of data
+            cmd = event_info[1]                                                 # Command the data holds
+            event_without_count = f"{start}{cmd}{event_data}"                   # Data without the count
+            # Parse the data and handle each part accordingly
             for element in event_without_count:
-                if element == 'S' and not self._start_transmission:
+                if element == 'S' and not self._start_transmission:             # 'S' signifies that start of the message
                     self._start_transmission = True
-                    continue
-                elif self._start_transmission:
+                    continue                                                    # Keep reading message
+                elif self._start_transmission:                                  # if the message has started
                     if not self._command:
-                        self._command = element
-                    elif element == 'n':
-                        self._num_count += 1
-                        result = ''.join(self._buffer)
-                        double_parse = tryParseFloat(result)
+                        self._command = element                                 # if command is empty, set command to current element
+                    elif element == 'n':                                        
+                        self._num_count += 1                                    # Increase the num count of message
+                        result = ''.join(self._buffer)                          # Join the buffer to result
+                        double_parse = tryParseFloat(result)                    # Parse the result and convert to double if possible, None if not possible
                         if double_parse is None:
-                            continue
+                            continue                                            # Keep reading message
                         else:
-                            print("here\n")
-                            self._payload.append(double_parse / 100.0)
+                            self._payload.append(double_parse / 100.0)          # Add data to payload
                             self._buffer.clear()
-                            if self._num_count == self._data_length:
+                            if self._num_count == self._data_length:            # If the data length is equal to the data count
                                 self.processMessage(self._command, self._payload, self._data_length)
-                                self._reset()
+                                self._reset()                                   # Reset message variables for a new message
                             else:
-                                continue
+                                continue                                        # Keep reading message
                     elif self._data_length != 0:
-                        self._buffer.append(element)
+                        self._buffer.append(element)                            # Add data to buffer
                     else:
                         return
                 else:
@@ -103,7 +60,7 @@ class RealTimeProcessor():
     def set_debug_event_listener(self, on_debug_event):
         self._on_debug_event = on_debug_event
 
-    def processGeneralData(self, payload, datalength):
+    def processGeneralData(self, payload, datalength):                          # Place general data derived from message to Exo data
         self.x_time += 1
         rightTorque = payload[0]
         rightSate = payload[1]
@@ -127,12 +84,11 @@ class RealTimeProcessor():
                                     leftFsr)
 
 
-    def processMessage(self, command, payload, dataLength):
-        if command == '?':
-            print(command)
+    def processMessage(self, command, payload, dataLength):                     # Process message based on command. Only handles general data although other data is comming through
+        if command == '?':                                                      # General command
             self.processGeneralData(payload, dataLength)
 
-    def _reset(self):
+    def _reset(self):                                                           # Reset message variables
         self._start_transmission = False
         self._command = None
         self._data_length = None
@@ -143,8 +99,8 @@ class RealTimeProcessor():
     def UnkownDataCommand(self):
         return "Unkown Command!"
     
-def tryParseFloat(stringVal):
+def tryParseFloat(stringVal):                                                   # Try to parse float data from String
     try:
-        return float(stringVal)
+        return float(stringVal)                                                 # If possible, return parsed
     except:
-        return None
+        return None                                                             # If not, return None
