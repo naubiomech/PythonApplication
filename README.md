@@ -13,6 +13,8 @@ BLE (Bluetooth Low Energy) is the heart of this project which provides a connect
 ## Operation of API
 This program runs in the command line with the system's keyboard as the input. Ensure Bluetooth is turned on before running the program.
 
+To start the program run the command `python3 openPythonApi` which is where main() is found
+
 *Start Scan*, a menu option on program startup, will begin a scan of all bluetooth devices that match the exoskeleton's UUID.
 
 There is a setup process for the device to calibrate and then the user will have the option to *Start Trial*

@@ -3,19 +3,24 @@ import DataToCsv
 
 # Options during trial. Change torque settings or end trial
 def trialMenu():
-       print("""
+       while True:
+        print("""
 ------------------------
 |1. Update Torque      |
 |2. End Trial          |
 ------------------------""")
-       return input()
+        option = int(input())
+        if option == 1 or option == 2:
+            return option
+        print("Choose a valid option")
 
 # Options for updating the torque settings 
 def updateTorqueMenu():
     print("Run in Bilateral Mode? (y/n): ")     # Choosing yes runs both exo joints with the same settings at once. No only updates selected joint
     bilateralOption = input()
-    print("Select Joint")
-    print("""------------------
+    while True:
+        print("Select Joint")
+        print("""------------------
 |1. Right Hip    |
 |2. Left Hip     |
 |3. Right Knee   |
@@ -23,7 +28,10 @@ def updateTorqueMenu():
 |5. Right Ankle  |
 |6. Left Ankle   |
 ------------------""")
-    joint = float(input())
+        joint = float(input())
+        if joint >= 1 and joint <= 6:
+            break
+        print("Choose a valid option")
     print("Enter Controller Number: ")
     controller = float(input())
     print("Enter Parameter: ")

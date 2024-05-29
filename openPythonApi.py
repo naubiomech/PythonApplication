@@ -8,6 +8,7 @@
 
 import asyncio
 import os
+import time
 import exoDeviceManager
 import exoTrial
 
@@ -30,19 +31,26 @@ def calibrationMenu():
 
 # Menu for actions to take upon connection
 def connectedMenu():
-    print("""-------------------------
+    while True:
+        print("""-------------------------
 |1. Start Trial          |
 -------------------------""")
-    return int(input())
+        option = int(input())
+        if option == 1:
+            return option
+        print("Choose a valid option")
 
 # Display menu and return what is entered
 def displayMenu():
-    print("""-------------------------
+    while True:
+        print("""-------------------------
 |1. Start Scan          |
 |2. End program         |
 -------------------------""")
-    
-    return int(input())
+        option = int(input())
+        if option == 1 or option == 2:
+            return option
+        print("Choose a valid option")
 #-----------------------------------------------------------------------------
 
 # Start up menu for UI purposes (Has no affect on the program)
@@ -54,42 +62,45 @@ async def startUpMenu():
        
 async def main():
     sleep_between_messages = 0.1
-    sages = 0.1
+    
+    try:
+        # Initial display
+        await startUpMenu()
 
-    # Initial display
-    await startUpMenu() 
-
-    # Set up Menu
-    menuSelection = displayMenu()
-    await asyncio.sleep(sleep_between_messages)
-
-    # Run loop until end program is selected
-    while menuSelection != 2:
-
-        # Scan and connect to an Exo
-        deviceManager = exoDeviceManager.ExoDeviceManager()
-        await deviceManager.scanAndConnect()
-
-        # If connection is successful
-        if deviceManager.client.is_connected:
-            print("Connected!\n")
-            connectedMenuSelection = connectedMenu()
-            
-            if (connectedMenuSelection == 1):           # start calibration                   Currently start trial is the only option for the connectedMenu. If further customization is added
-                cls()                                   #                                     simply extend the if statement
-                # variables set on function return do not have effect on exo control currently
-                isKilograms, weight, isAssistance = calibrationMenu()           
-                trial = exoTrial.ExoTrial(isKilograms, weight, isAssistance)
-                await trial.calibrate(deviceManager)    # Calibrate exo
-                await trial.beginTrial(deviceManager)   # Start trial
-                await trial.systemUpdate(deviceManager) # Update exo system after trial begins
-
-        menuSelection = displayMenu()                   # show display menu once trial has ended
+        # Set up Menu
+        menuSelection = displayMenu()
         await asyncio.sleep(sleep_between_messages)
 
-    print("Shutting down...")                           # Shutdown
-    asyncio.sleep(2)
-    cls()
+        # Run loop until end program is selected
+        while menuSelection != 2:
+            # Scan and connect to an Exo
+            deviceManager = exoDeviceManager.ExoDeviceManager()
+            await deviceManager.scanAndConnect()
+
+            # If connection is successful
+            if deviceManager.client.is_connected:
+                print("Connected!\n")
+                connectedMenuSelection = connectedMenu()
+                
+                if connectedMenuSelection == 1:
+                    cls()
+                    isKilograms, weight, isAssistance = calibrationMenu()
+                    trial = exoTrial.ExoTrial(isKilograms, weight, isAssistance)
+                    await trial.calibrate(deviceManager)    # Calibrate exo
+                    await trial.beginTrial(deviceManager)   # Start trial
+                    await trial.systemUpdate(deviceManager) # Update exo system after trial begins
+
+            menuSelection = displayMenu()  # show display menu once trial has ended
+
+        print("Shutting down...")  # Shutdown
+        await asyncio.sleep(2)
+        cls()
+
+    except asyncio.CancelledError:
+        print("Main task was cancelled")
+    finally:
+        # Cleanup resources if needed
+        pass
 #-----------------------------------------------------------------------------
 
 if __name__ == "__main__":
