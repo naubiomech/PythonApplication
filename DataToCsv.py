@@ -53,7 +53,7 @@ class CsvWritter():
         fileDataTransposed = self.rotateArray(fileData)
         
         today = datetime.now()                              # Pull system time and date
-        fileName = today.strftime("%Y-%b-%d-%H:%M:%S")      # Format file name based on YYYY-MM-DD-HH:MM:SS
+        fileName = today.strftime("%Y-%b-%d-%H-%M-%S")      # Format file name based on YYYY-MM-DD-HH:MM:SS
         fileName += '.csv'                                  # Add .csv to file name
         print("file is: ", fileName)
 
