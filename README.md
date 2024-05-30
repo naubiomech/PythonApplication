@@ -15,6 +15,8 @@ This program runs in the command line with the system's keyboard as the input. E
 
 To start the program run the command `python3 openPythonApi` which is where main() is found
 
+![program start] (/UI_Examples/ProgramStart.png "prgram start image")
+
 *Start Scan*, a menu option on program startup, will begin a scan of all bluetooth devices that match the exoskeleton's UUID.
 
 There is a setup process for the device to calibrate and then the user will have the option to *Start Trial*
