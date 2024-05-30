@@ -1,5 +1,8 @@
 # OpenPythonAPI
 ## Overview
+
+PAYTON: Recommend a tool to run the code [Visual Studio?], Include Images of Each Step?, Create a diagram that shows the flow of the code so that a novice can follow.
+
 Open source API (application programming interface) writen in Python for controlling the NAU Biomechatronics Lab's OpenExo system.
 
 This project uses the MIT License.
