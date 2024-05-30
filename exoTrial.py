@@ -63,7 +63,6 @@ class ExoTrial:
     #-----------------------------------------------------------------------------
     
     async def calibrate(self, deviceManager):   # sends start motor command to Exo
-        print(self.isKilograms, self.weight, self.isAssist)
 
         await deviceManager.calibrateTorque()
     #-----------------------------------------------------------------------------

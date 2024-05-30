@@ -71,8 +71,6 @@ class RealTimeProcessor():
         rightFsr = payload [6] if datalength >= 7 else 0
         leftFsr = payload[7] if datalength >= 8 else 0
 
-        print("left torque: ", leftTorque)
-
         self._exo_data.addDataPoints(self.x_time,
                                     rightTorque,
                                     rightSate,

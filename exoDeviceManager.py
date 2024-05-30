@@ -59,7 +59,6 @@ class ExoDeviceManager() :
     # Callback function to disconnect exo from system
     def handleDisconnect(self, _: BleakClient):
         self.isConnected = False
-        print("is exo connected: " + str(self.isConnected))
         print("Device was disconnected")
         # cancelling all tasks effectively ends the program
         for task in asyncio.all_tasks():
@@ -69,9 +68,7 @@ class ExoDeviceManager() :
     async def startExoMotors(self):                                                                # Command to Exo to get motors on and ready to receive commands
         await asyncio.sleep(1)
         print("using bleak start\n")
-        print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'E')
-        print(list(command))
         char = self.get_char_handle(self.UART_TX_UUID)
 
         try:
@@ -82,7 +79,6 @@ class ExoDeviceManager() :
     
     async def calibrateTorque(self):                                                               # Command to calibrate the torque
         print("using bleak torque\n")
-        print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'H')
         char = self.get_char_handle(self.UART_TX_UUID)
 
@@ -91,7 +87,6 @@ class ExoDeviceManager() :
     
     async def calibrateFSRs(self):                                                                 # Command to calibrate FSR sensors
         print("using bleak FSR\n")
-        print("is exo connected: " + str(self.isConnected))
         command = bytearray(b'L')
         char = self.get_char_handle(self.UART_TX_UUID)
 
@@ -175,8 +170,7 @@ class ExoDeviceManager() :
         await self.client.write_gatt_char(char, command, False)
     #-----------------------------------------------------------------------------
 
-    async def switchToAssist(self):                                                                 # Send switch to assist command
-        print("is exo connected: " + str(self.isConnected))
+    async def switchToAssist(self):                            
         command = bytearray(b'c')
         char = self.get_char_handle(self.UART_TX_UUID)
         
