@@ -1,5 +1,5 @@
 import asyncio
-import DataToCsv
+import Data.DataToCsv as DataToCsv
 
 # Options during trial. Change torque settings or end trial
 def trialMenu():

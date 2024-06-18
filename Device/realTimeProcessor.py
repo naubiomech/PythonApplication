@@ -1,5 +1,5 @@
 import re
-import exoData
+from Device import exoData
 
 class RealTimeProcessor():
     def __init__(self):

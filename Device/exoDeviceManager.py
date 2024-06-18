@@ -1,7 +1,7 @@
 import asyncio
 import struct
 import sys
-import realTimeProcessor
+from Device import realTimeProcessor
 import numpy as np
 from bleak import BleakClient, BleakScanner
 from bleak.backends.characteristic import BleakGATTCharacteristic
@@ -15,6 +15,7 @@ class ExoDeviceManager() :
         self.device = None
         self.client = None
         self.services = None
+        self.scanResults = None
         # UUID characteristic 
         self.UART_TX_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"                                 #Nordic NUS characteristic for TX
         self.UART_RX_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"                                 #Nordic NUS characteristic for RX
@@ -30,6 +31,9 @@ class ExoDeviceManager() :
         }
 
         self.isConnected = False
+
+    def set_scan_results(self, scans):
+        self.scanResults = scans
 
     def set_device(self, deviceVal):
         self.device = deviceVal
@@ -132,15 +136,18 @@ class ExoDeviceManager() :
 
             loopCount += 1
     #-----------------------------------------------------------------------------
+
+    async def connect(self, device):
+        print(device)
     
-    async def scanAndConnect(self):                                                                 # Scan for BLE devices
+    async def scanAndConnect(self):                                                                             # Scan for BLE devices
         print("using bleak scan\n")
         print("Scanning...")
         self.set_device(await BleakScanner.find_device_by_filter(self.filterExo))                   # Filter devices for only Exos
         print(self.device)
         if self.device is None:                                                                     # No devices found from filter
             print("No matching device found.")
-            sys.exit(1)
+            return
         self.set_client(BleakClient(self.device, disconnected_callback=self.handleDisconnect))      # Set client and diconnect callback
         await self.client.connect()                                                                 # Connect to Exo
 
