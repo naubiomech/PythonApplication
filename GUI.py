@@ -1,3 +1,4 @@
+import os
 import asyncio
 import threading
 from tkinter import *
@@ -20,7 +21,7 @@ class ControllerApp(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (ScanWindow, Calibrate):
+        for F in (ScanWindow, Calibrate, ActiveTrial):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -70,21 +71,54 @@ class ScanWindow(tk.Frame):
 
     async def startScanButtonClicked(self):
         await startScan()
-        await asyncio.sleep(3)
         self.deviceNameText.set(deviceManager.device)
-        self.startTrialButton.config(state="normal") 
+        self.startTrialButton.config(state="normal")
 #---------------------------------------------------------------------------------------------------------------
 
 class Calibrate(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        
+        self.create_widgets()
 
-        backButton = tk.Button(self, text="Back", command= lambda: self.controller.show_frame("ScanWindow"))
-        backButton.place(relx=.05, rely=.05)
+    def create_widgets(self):
+        backButton = tk.Button(self, text="Back",
+                               command= lambda: self.controller.show_frame("ScanWindow"))
+        backButton.place(relx= .05, rely= .05)
 
-        calibrationMenuLabel = tk.Label(self, text="Calibration Menu", font=(Arial, 40))
+        calibrationMenuLabel = tk.Label(self, text="Calibration Menu", font=("Arial", 40))
+        calibrationMenuLabel.place(relx= .5, rely= .1, anchor= CENTER)
+
+        controllerInputLabel = tk.Label(self, text= "Controller", font= ("Arial", 20))
+        controllerInput = tk.Text(self, height= 2, width= 10)
+        parameterInputLabel = tk.Label(self, text= "Parameter", font= ("Arial", 20))
+        parameterInput = tk.Text(self, height= 2, width= 10)
+        valueInputLabel = tk.Label(self, text= "Value", font= ("Arial", 20))
+        valueInput= tk.Text(self, height= 2, width= 10)
+
+        controllerInputLabel.place(relx= .3, rely= .27)
+        controllerInput.place(relx= .5, rely= .3, anchor = CENTER)
+        parameterInputLabel.place(relx= .3, rely= .47)
+        parameterInput.place(relx= .5, rely= .5, anchor= CENTER)
+        valueInputLabel.place(relx= .3, rely= .67)
+        valueInput.place(relx= .5, rely= .7, anchor= CENTER)
+
+        startTrialButton = tk.Button(self, text= "Start Trial",
+                                     command= lambda: self.controller.show_frame("ActiveTrial"))
+        startTrialButton.place(relx=.75, rely=.8,)
 #---------------------------------------------------------------------------------------------------------------
+
+class ActiveTrial(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        label = tk.Label(self, text= "ActiveTrial")
+        label.place(anchor= CENTER)
 
 def run_app():
     root = ControllerApp()
