@@ -5,7 +5,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import os
 import asyncio
-import threading
+from async_tkinter_loop import async_handler, async_mainloop
 from tkinter import *
 import tkinter as tk
 from tkinter import ttk
@@ -20,12 +20,11 @@ async def startScan():
 #---------------------------------------------------------------------------------------------------------------
 
 class ControllerApp(tk.Tk):                                     # Controller to switch frames 
-    def __init__(self, EventLoop, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.title("NAU Lab of Biomechatronics")
         self.geometry("720x420")
-        self.loop = EventLoop
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -35,26 +34,23 @@ class ControllerApp(tk.Tk):                                     # Controller to 
         self.frames = {}
         for F in (ScanWindow, Calibrate, ActiveTrial, UpdateTorque):          # Names of each frame goes here
             page_name = F.__name__
-            frame = F(parent=container, controller=self, loop=self.loop)
+            frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
 
             frame.grid(row=0, column=0, sticky="nsew")
 
-    def StartUi(self):
         self.show_frame("ScanWindow")                           # Switch to Scan Window Frame
 
     def show_frame(self, page_name):                            # Method to swithc frames
         frame = self.frames[page_name]
         frame.tkraise()
-        self.update()
 #---------------------------------------------------------------------------------------------------------------
 
 class ScanWindow(tk.Frame):                                     # Main window for the app
-    def __init__(self, parent, controller, loop):                     # Frame Constructor
+    def __init__(self, parent, controller):                     # Frame Constructor
         super().__init__(parent)
         # Initialize variables
         self.controller = controller                            # Controller object to switch frames
-        self.loop = loop
         self.deviceNameText = StringVar()                       # String variable for device name text
         self.startTrialButton = None
 
@@ -71,7 +67,7 @@ class ScanWindow(tk.Frame):                                     # Main window fo
 
         # Start Scan button
         startScanButton = tk.Button(self, text="Start Scan", 
-                                    command=self.on_start_scan_button_clicked)
+                                    command=async_handler(self.on_start_scan_button_clicked))
         startScanButton.place(relx=.5, rely=.45, anchor=CENTER)
 
         # Device name label
@@ -85,18 +81,19 @@ class ScanWindow(tk.Frame):                                     # Main window fo
                                           state=DISABLED)
         self.startTrialButton.place(relx=.75, rely=.8,)
 
-    def on_start_scan_button_clicked(self):                     # Initiate scan
+    async def on_start_scan_button_clicked(self):                     # Initiate scan
         self.deviceNameText.set("Scanning...")
-        asyncio.create_task(self.startScanButtonClicked())
+        await self.startScanButtonClicked()
 
     async def startScanButtonClicked(self):                     # Start scanning and update screen
+        print("test")
         await startScan()
         self.deviceNameText.set(deviceManager.device)
         self.startTrialButton.config(state="normal")
 #---------------------------------------------------------------------------------------------------------------
 
 class Calibrate(tk.Frame):                                      # Frame to start exo and calibrate
-    def __init__(self, parent, controller, loop):                     # Constructor for Frame
+    def __init__(self, parent, controller):                     # Constructor for Frame
         super().__init__(parent)
         # Initialize variables
         self.controller = controller                            # Controller object to switch frames
@@ -132,15 +129,13 @@ class Calibrate(tk.Frame):                                      # Frame to start
 
         # Button to start trial
         startTrialButton = tk.Button(self, text= "Calibrate and Start Trial",
-                                     command= lambda: self.on_start_trial_button_clicked(
+                                     command= async_handler(self.on_start_trial_button_clicked,
                                      controllerInput, parameterInput, valueInput))
         startTrialButton.place(relx= .7, rely= .8)
    
-    def on_start_trial_button_clicked(self, controllerInput, parameterInput, valueInput):
+    async def on_start_trial_button_clicked(self, controllerInput, parameterInput, valueInput):
         print("test\n")
-        asyncio.run_coroutine_threadsafe(
-            self.StartTrialButtonClicked(controllerInput, parameterInput, valueInput),
-            asyncio.get_event_loop())
+        await self.StartTrialButtonClicked(controllerInput, parameterInput, valueInput)
 
     async def StartTrialButtonClicked(self, controllerInput, parameterInput, valueInput):
         controllerVal = controllerInput.get(1.0, "end-1c")      # get input minus enline char from input form
@@ -149,13 +144,13 @@ class Calibrate(tk.Frame):                                      # Frame to start
 
         await trial.calibrate()                                 # Calibrate ExoSkeleton
         await trial.beginTrial()                                # Start Exoskeleton systems and begin trial 
-        await deviceManager.updateTorqueValues([controllerVal, parameterVal, valueVal]) # Set Torque
+        await deviceManager.updateTorqueValues([65.0, controllerVal, parameterVal, valueVal]) # Set Torque
 
         self.controller.show_frame("ActiveTrial")
 #---------------------------------------------------------------------------------------------------------------
 
 class ActiveTrial(tk.Frame):                                    # Active Trial Frame
-    def __init__(self, parent, controller, loop):                     # Constructor for frame
+    def __init__(self, parent, controller):                     # Constructor for frame
         super().__init__(parent)
         self.controller = controller                            # Controller object to switch frames
 
@@ -194,12 +189,11 @@ class ActiveTrial(tk.Frame):                                    # Active Trial F
 
         # End Trial Button
         endTrialButton = tk.Button(self, text= "End Trial",
-                                   command= lambda: self.on_end_trial_button_clicked)
+                                   command= async_handler(self.on_end_trial_button_clicked))
         endTrialButton.place(relx= .75, rely= .8)
 
-    def on_end_trial_button_clicked(self):
-        asyncio.run_coroutine_threadsafe(self.endTrialButtonClicked(), asyncio.get_event_loop())
-
+    async def on_end_trial_button_clicked(self):
+        await self.endTrialButtonClicked()
 
     async def endTrialButtonClicked(self):
         await self.ShutdownExo() 
@@ -216,7 +210,7 @@ class ActiveTrial(tk.Frame):                                    # Active Trial F
 #---------------------------------------------------------------------------------------------------------------
 
 class UpdateTorque(tk.Frame):                                   # Frame to start exo and calibrate
-    def __init__(self, parent, controller, loop):                     # Constructor for Frame
+    def __init__(self, parent, controller):                     # Constructor for Frame
         super().__init__(parent)
         # Initialize variables
         self.controller = controller                            # Controller object to switch frames
@@ -252,33 +246,28 @@ class UpdateTorque(tk.Frame):                                   # Frame to start
 
         # Button to start trial
         startTrialButton = tk.Button(self, text= "Send Data", 
-                                     command= lambda: 
-                                     self.on_update_torque_button_clicked(
+                                     command= async_handler(self.on_update_torque_button_clicked,
                                      controllerInput, parameterInput, valueInput))
         startTrialButton.place(relx= .75, rely= .8,)
 
-    def on_update_torque_button_clicked(self, controllerInput, parameterInput, valueInput):
-        asyncio.run_coroutine_threadsafe(
-            self.UpdateTorqueButtonClicked(controllerInput, parameterInput, valueInput), 
-            asyncio.get_event_loop())
+    async def on_update_torque_button_clicked(self, controllerInput, parameterInput, valueInput):
+         await self.UpdateTorqueButtonClicked(controllerInput, parameterInput, valueInput)
 
     async def UpdateTorqueButtonClicked(self, controllerInput, parameterInput, valueInput):
         controllerVal = controllerInput.get(1.0, "end-1c")      # get input minus enline char from input form
         parameterVal = parameterInput.get(1.0, "end-1c")
         valueVal = valueInput.get(1.0, "end-1c")
 
-        await deviceManager.updateTorqueValues([controllerVal, parameterVal, valueVal]) # Update Torque
+        await deviceManager.updateTorqueValues([65.0, controllerVal, parameterVal, valueVal]) # Update Torque
 
         self.controller.show_frame("ActiveTrial")
 
 #---------------------------------------------------------------------------------------------------------------
 
-class App:
-    async def exec(self):
-        self.controller = ControllerApp(asyncio.get_event_loop)
-        self.controller.StartUi()
-        self.controller.mainloop()
+def exec():
+    controller = ControllerApp()
+    async_mainloop(controller)
 #---------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    asyncio.run(App().exec())
+    exec()
