@@ -1,14 +1,17 @@
 import asyncio
 import struct
 import sys
-from Device import realTimeProcessor
+
 import numpy as np
 from bleak import BleakClient, BleakScanner
 from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 
-class ExoDeviceManager() :
+from Device import realTimeProcessor
+
+
+class ExoDeviceManager:
 
     def __init__(self):
         self._realTimeProcessor = realTimeProcessor.RealTimeProcessor()
@@ -16,18 +19,22 @@ class ExoDeviceManager() :
         self.client = None
         self.services = None
         self.scanResults = None
-        # UUID characteristic 
-        self.UART_TX_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"                                 #Nordic NUS characteristic for TX
-        self.UART_RX_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"                                 #Nordic NUS characteristic for RX
-        self.UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"                            #Nordic Service UUID
+        # UUID characteristic
+        # Nordic NUS characteristic for TX
+        self.UART_TX_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
+        # Nordic NUS characteristic for RX
+        self.UART_RX_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
+        self.UART_SERVICE_UUID = (
+            "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"  # Nordic Service UUID
+        )
         # Joint dictionary to map menu selection to joint ID
         self.jointDictionary = {
-            1 : 33.0,
-            2 : 65.0,
-            3 : 34.0,
-            4 : 66.0,
-            5 : 36.0,
-            6 : 68.0
+            1: 33.0,
+            2: 65.0,
+            3: 34.0,
+            4: 66.0,
+            5: 36.0,
+            6: 68.0,
         }
 
         self.isConnected = False
@@ -40,7 +47,7 @@ class ExoDeviceManager() :
 
     def set_client(self, clientVal):
         self.client = clientVal
-    
+
     def set_services(self, servicesVal):
         self.services = servicesVal
 
@@ -48,7 +55,9 @@ class ExoDeviceManager() :
         self._realTimeProcessor.processEvent(data)
 
     def get_char_handle(self, char_UUID):
-        return self.services.get_service(self.UART_SERVICE_UUID).get_characteristic(char_UUID)
+        return self.services.get_service(self.UART_SERVICE_UUID).get_characteristic(
+            char_UUID
+        )
 
     def filterExo(self, device: BLEDevice, adv: AdvertisementData):
         # This assumes that the device includes the Advanced control service in the
@@ -58,8 +67,9 @@ class ExoDeviceManager() :
             return True
 
         return False
-    #-----------------------------------------------------------------------------
-    
+
+    # -----------------------------------------------------------------------------
+
     # Callback function to disconnect exo from system
     def handleDisconnect(self, _: BleakClient):
         self.isConnected = False
@@ -67,128 +77,170 @@ class ExoDeviceManager() :
         # cancelling all tasks effectively ends the program
         for task in asyncio.all_tasks():
             task.cancel()
-    #-----------------------------------------------------------------------------
-        
-    async def startExoMotors(self):                                                                # Command to Exo to get motors on and ready to receive commands
+
+    # -----------------------------------------------------------------------------
+
+    # Command to Exo to get motors on and ready to receive commands
+    async def startExoMotors(self):
         await asyncio.sleep(1)
         print("using bleak start\n")
-        command = bytearray(b'E')
+        command = bytearray(b"E")
         char = self.get_char_handle(self.UART_TX_UUID)
 
         try:
             await self.client.write_gatt_char(char, command, False)
         except Exception as e:
             print(f"An error occurred: {e}")
-    #-----------------------------------------------------------------------------
-    
-    async def calibrateTorque(self):                                                               # Command to calibrate the torque
+
+    # -----------------------------------------------------------------------------
+
+    # Command to calibrate the torque
+    async def calibrateTorque(self):
         print("using bleak torque\n")
-        command = bytearray(b'H')
+        command = bytearray(b"H")
         char = self.get_char_handle(self.UART_TX_UUID)
 
         await self.client.write_gatt_char(char, command, False)
-    #-----------------------------------------------------------------------------
-    
-    async def calibrateFSRs(self):                                                                 # Command to calibrate FSR sensors
+
+    # -----------------------------------------------------------------------------
+
+    # Command to calibrate FSR sensors
+    async def calibrateFSRs(self):
         print("using bleak FSR\n")
-        command = bytearray(b'L')
+        command = bytearray(b"L")
         char = self.get_char_handle(self.UART_TX_UUID)
 
         await self.client.write_gatt_char(char, command, False)
-    #-----------------------------------------------------------------------------
-        
-    async def motorOff(self):                                                                      # Command to turn off motors 
-        command =  bytearray(b'w')
+
+    # -----------------------------------------------------------------------------
+
+    # Command to turn off motors
+    async def motorOff(self):
+        command = bytearray(b"w")
         char = self.get_char_handle(self.UART_TX_UUID)
 
         await self.client.write_gatt_char(char, command, True)
-    #-----------------------------------------------------------------------------
 
-    async def updateTorqueValues(self,parameter_list):                                             #jointKey, controller, parameter, value):
+    # -----------------------------------------------------------------------------
+
+    # jointKey, controller, parameter, value):
+    async def updateTorqueValues(self, parameter_list):
 
         totalLoops = 1
         loopCount = 0
 
-        #check if bilateral
-        if parameter_list[0] == True:
+        # check if bilateral
+        if parameter_list[0] is True:
             totalLoops = 2
-        while loopCount != totalLoops:                                                             # Loop if bilateral mode. No loop otherwise
+        # Loop if bilateral mode. No loop otherwise
+        while loopCount != totalLoops:
 
-            command = b'f'                                                                         # Set convert command 'f' into bytearray
+            # Set convert command 'f' into bytearray
+            command = b"f"
             char = self.get_char_handle(self.UART_TX_UUID)
-            await self.client.write_gatt_char(char,command,False)
+            await self.client.write_gatt_char(char, command, False)
 
-            float_values = (parameter_list)
+            float_values = parameter_list
 
-            for i in range (1, len(float_values)):
+            for i in range(1, len(float_values)):
                 if i == 1:
-                    if loopCount == 1 and float_values[1]%2 == 0:                                   # check for second loop and if on right side
-                        float_bytes = struct.pack('<d',self.jointDictionary[float_values[i]]-32)    # decriment joint ID by 32 (opposite joint is offset by 32)
-                    elif loopCount == 1 and float_values[1]%2 != 0:                                 # otherwise check for left side and second loop
-                        float_bytes = struct.pack('<d',self.jointDictionary[float_values[i]]+32)    # increment joint ID by 32 (opposite joint is offset by 32)
-                    else:                                                                           # otherwise run joint ID that was inputed
-                        float_bytes = struct.pack('<d',self.jointDictionary[float_values[i]])
+                    # check for second loop and if on right side
+                    if loopCount == 1 and float_values[1] % 2 == 0:
+                        # decriment joint ID by 32 (opposite joint is offset by 32)
+                        float_bytes = struct.pack(
+                            "<d", self.jointDictionary[float_values[i]] - 32
+                        )
+                    # otherwise check for left side and second loop
+                    elif loopCount == 1 and float_values[1] % 2 != 0:
+                        # increment joint ID by 32 (opposite joint is offset by 32)
+                        float_bytes = struct.pack(
+                            "<d", self.jointDictionary[float_values[i]] + 32
+                        )
+                    # otherwise run joint ID that was inputed
+                    else:
+                        float_bytes = struct.pack(
+                            "<d", self.jointDictionary[float_values[i]]
+                        )
                 else:
-                    float_bytes = struct.pack('<d',float_values[i])
-                print(struct.unpack('<d',float_bytes))
+                    print(float_values[i])
+                    float_bytes = struct.pack("<d", float_values[i])
+                print(struct.unpack("<d", float_bytes))
                 char = self.get_char_handle(self.UART_TX_UUID)
-                await self.client.write_gatt_char(char,float_bytes,False)
+                await self.client.write_gatt_char(char, float_bytes, False)
 
             loopCount += 1
-    #-----------------------------------------------------------------------------
+
+    # -----------------------------------------------------------------------------
 
     async def connect(self, device):
         print(device)
-    
-    async def scanAndConnect(self):                                                                             # Scan for BLE devices
+
+    # Scan for BLE devices
+    async def scanAndConnect(self):
         print("using bleak scan\n")
         print("Scanning...")
-        self.set_device(await BleakScanner.find_device_by_filter(self.filterExo))                   # Filter devices for only Exos
+        # Filter devices for only Exos
+        self.set_device(await BleakScanner.find_device_by_filter(self.filterExo))
         print(self.device)
-        if self.device is None:                                                                     # No devices found from filter
+        # No devices found from filter
+        if self.device is None:
             print("No matching device found.")
             return
-        self.set_client(BleakClient(self.device, disconnected_callback=self.handleDisconnect))      # Set client and diconnect callback
-        await self.client.connect()                                                                 # Connect to Exo
+        # Set client and diconnect callback
+        self.set_client(
+            BleakClient(self.device, disconnected_callback=self.handleDisconnect)
+        )
+        # Connect to Exo
+        await self.client.connect()
 
         self.isConnected = True
         print("is exo connected: " + str(self.isConnected))
 
         print(self.client)
-        self.set_services(await self.client.get_services())                                         # Get list of services from Exo
-        await self.client.start_notify(self.UART_RX_UUID, self.DataIn)                              # Start incoming data stream
-    #-----------------------------------------------------------------------------
+        # Get list of services from Exo
+        self.set_services(await self.client.get_services())
+        # Start incoming data stream
+        await self.client.start_notify(self.UART_RX_UUID, self.DataIn)
 
-    async def sendFsrValues(self, fsrValList):                                                      # Send FSR values to Exo
-        command = bytearray(b'R')
+    # -----------------------------------------------------------------------------
+
+    # Send FSR values to Exo
+    async def sendFsrValues(self, fsrValList):
+        command = bytearray(b"R")
         char = self.get_char_handle(self.UART_TX_UUID)
 
         fsrVals = fsrValList
-        for i in range (0, len(fsrVals)):
-            fsr_bytes = struct.pack('<d',fsrVals[i])
+        for i in range(0, len(fsrVals)):
+            fsr_bytes = struct.pack("<d", fsrVals[i])
             char = self.get_char_handle(self.UART_TX_UUID)
-            await self.client.write_gatt_char(char,fsr_bytes,False)
-    #-----------------------------------------------------------------------------
-    
-    async def stopTrial(self):                                                                      # Send stop trial command
-        command  = bytearray(b'G')
+            await self.client.write_gatt_char(char, fsr_bytes, False)
+
+    # -----------------------------------------------------------------------------
+
+    # Send stop trial command
+    async def stopTrial(self):
+        command = bytearray(b"G")
         char = self.get_char_handle(self.UART_TX_UUID)
 
         await self.client.write_gatt_char(char, command, False)
-    #-----------------------------------------------------------------------------
 
-    async def switchToAssist(self):                            
-        command = bytearray(b'c')
+    # -----------------------------------------------------------------------------
+
+    async def switchToAssist(self):
+        command = bytearray(b"c")
         char = self.get_char_handle(self.UART_TX_UUID)
-        
+
         await self.client.write_gatt_char(char, command, False)
         print("using bleak assist\n")
-    #-----------------------------------------------------------------------------
-        
-    async def switchToResist(self):                                                                 # Send switch to resist command
+
+    # -----------------------------------------------------------------------------
+
+    # Send switch to resist command
+    async def switchToResist(self):
         print("using bleak resist\n")
-        command = bytearray(b'S')
+        command = bytearray(b"S")
         char = self.get_char_handle(self.UART_TX_UUID)
-        
+
         await self.client.write_gatt_char(char, command, False)
-    #-----------------------------------------------------------------------------
+
+    # -----------------------------------------------------------------------------
