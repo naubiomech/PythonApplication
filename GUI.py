@@ -95,7 +95,7 @@ class ScanWindow(tk.Frame):  # Main window for the app
         self.startTrialButton = tk.Button(
             self,
             text="Start Trial",
-            command=lambda: self.controller.show_frame("Calibrate"),
+            command=async_handler(self.on_start_trial_button_clicked),
             state=DISABLED,
         )
         self.startTrialButton.place(
@@ -108,10 +108,18 @@ class ScanWindow(tk.Frame):  # Main window for the app
         await self.startScanButtonClicked()
 
     async def startScanButtonClicked(self):  # Start scanning and update screen
-        print("test")
         await startScan()
         self.deviceNameText.set(deviceManager.device)
         self.startTrialButton.config(state="normal")
+
+    async def on_start_trial_button_clicked(self):
+        await self.StartTrialButtonClicked()
+
+    async def StartTrialButtonClicked(self):
+        self.controller.show_frame("ActiveTrial")
+        await trial.calibrate(deviceManager)  # Calibrate ExoSkeleton
+        # Start Exoskeleton systems and begin trial
+        await trial.beginTrial(deviceManager)
 
 
 class Calibrate(tk.Frame):  # Frame to start exo and calibrate
@@ -336,7 +344,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
     def create_widgets(self):  # Frame UI elements
         # Back button to go back to Scan Window
         backButton = tk.Button(
-            self, text="Back", command=lambda: self.controller.show_frame("ScanWindow")
+            self, text="Back", command=lambda: self.controller.show_frame("ActiveTrial")
         )
         backButton.place(relx=0.05, rely=0.05)
 

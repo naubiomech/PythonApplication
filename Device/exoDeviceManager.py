@@ -188,7 +188,8 @@ class ExoDeviceManager:
             return
         # Set client and diconnect callback
         self.set_client(
-            BleakClient(self.device, disconnected_callback=self.handleDisconnect)
+            BleakClient(
+                self.device, disconnected_callback=self.handleDisconnect)
         )
         # Connect to Exo
         await self.client.connect()
