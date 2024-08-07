@@ -1,20 +1,23 @@
 import csv
+
 from _datetime import datetime
 
-class CsvWritter():
+
+class CsvWritter:
     def writeToCsv(self, exoData):
+        print("Creating filedata")
         # initialize array for output file
         fileData = []
         # establish field arrays for output file
-        tStep = ['TStep']
-        rTorque = ['RTorque']
-        rSetP = ['RSetP']
-        rState = ['RState']
-        lTorque = ['LTorque']
-        lSetP = ['LSetP']
-        LState = ['LState']
-        lFsr = ['LFsr']
-        rFsr = ['RFsr']
+        tStep = ["TStep"]
+        rTorque = ["RTorque"]
+        rSetP = ["RSetP"]
+        rState = ["RState"]
+        lTorque = ["LTorque"]
+        lSetP = ["LSetP"]
+        LState = ["LState"]
+        lFsr = ["LFsr"]
+        rFsr = ["RFsr"]
 
         # append data to field array
         for xt in exoData.tStep:
@@ -51,18 +54,25 @@ class CsvWritter():
 
         # rotate 2D array to place lables on top
         fileDataTransposed = self.rotateArray(fileData)
-        
-        today = datetime.now()                              # Pull system time and date
-        fileName = today.strftime("%Y-%b-%d-%H-%M-%S")      # Format file name based on YYYY-MM-DD-HH:MM:SS
-        fileName += '.csv'                                  # Add .csv to file name
+        print("flipping array")
+
+        today = datetime.now()  # Pull system time and date
+        fileName = today.strftime(
+            "%Y-%b-%d-%H-%M-%S"
+        )  # Format file name based on YYYY-MM-DD-HH:MM:SS
+        fileName += ".csv"  # Add .csv to file name
         print("file is: ", fileName)
 
-        with open(fileName, 'w') as csvFile:                # Open file with file name
-            csvwriter = csv.writer(csvFile)                 # Prep file for csv data
+        with open(fileName, "w") as csvFile:  # Open file with file name
+            csvwriter = csv.writer(csvFile)  # Prep file for csv data
+            print("creating and opening file")
 
-            csvwriter.writerows(fileDataTransposed)         # Write flipped 2D array to file
+            # Write flipped 2D array to file
+            csvwriter.writerows(fileDataTransposed)
 
-            csvFile.close                                   # Close file
+            csvFile.close  # Close file
 
     def rotateArray(self, arrayToFlip):
-        return [list(row) for row in zip(*arrayToFlip)]     # Roate array so labels on left are on top
+        return [
+            list(row) for row in zip(*arrayToFlip)
+        ]  # Roate array so labels on left are on top

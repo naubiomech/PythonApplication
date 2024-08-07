@@ -1,2 +1,0 @@
-class ScanResults(tk.Frame):
-    

@@ -1,4 +1,4 @@
-class ExoData():
+class ExoData:
     def __init__(self):
         self.tStep = []
         self.rTorque = []
@@ -10,7 +10,18 @@ class ExoData():
         self.lFsr = []
         self.rFsr = []
 
-    def addDataPoints(self,x_Time, rightToque, rightState, rightSet, leftTorque, leftState, leftSet, rightFsr, leftFsr):
+    def addDataPoints(
+        self,
+        x_Time,
+        rightToque,
+        rightState,
+        rightSet,
+        leftTorque,
+        leftState,
+        leftSet,
+        rightFsr,
+        leftFsr,
+    ):
         self.tStep.append(x_Time)
         self.rTorque.append(rightToque)
         self.rSetP.append(rightSet)
