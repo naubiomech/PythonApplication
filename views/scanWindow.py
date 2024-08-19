@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import CENTER, DISABLED, StringVar
+from tkinter import (BOTH, BOTTOM, CENTER, DISABLED, LEFT, RIGHT, TOP,
+                     PhotoImage, StringVar, X, Y)
 
 from async_tkinter_loop import async_handler
 
@@ -16,27 +17,35 @@ class ScanWindow(tk.Frame):
 
     # Holds all UI elements
     def create_widgets(self):
-        titleLabel = tk.Label(
-            self, text="ExoSkeleton Controller", font=("Arial", 40))
-        titleLabel.place(relx=0.5, rely=0.1, anchor=CENTER)
-        startScanLabel = tk.Label(self, text="Begin Scanning for Exoskeletons")
-        startScanLabel.place(relx=0.5, rely=0.35, anchor=CENTER)
+        titleLabel = tk.Label(self, text="ExoSkeleton Controller", font=("Arial", 50))
+        titleLabel.pack(expand=False, fill=X, ipady=50)
+        startScanLabel = tk.Label(
+            self, text="Begin Scanning for Exoskeletons", font=("Arial", 30)
+        )
+        startScanLabel.pack(expand=False, fill=X, ipady=10)
+        self.deviceNameText.set("Not Connected")
+        deviceNameLabel = tk.Label(
+            self, textvariable=self.deviceNameText, font=("Arial", 20)
+        )
+        deviceNameLabel.pack(expand=False, pady=10)
         startScanButton = tk.Button(
             self,
+            height=2,
+            width=10,
             text="Start Scan",
             command=async_handler(self.on_start_scan_button_clicked),
         )
-        startScanButton.place(relx=0.5, rely=0.45, anchor=CENTER)
-        self.deviceNameText.set("Not Connected")
-        deviceNameLabel = tk.Label(self, textvariable=self.deviceNameText)
-        deviceNameLabel.place(relx=0.5, rely=0.60, anchor=CENTER)
+        startScanButton.pack(expand=False, fill=Y, ipadx=40, pady=100)
         self.startTrialButton = tk.Button(
             self,
             text="Start Trial",
+            height=3,
             command=async_handler(self.on_start_trial_button_clicked),
             state=DISABLED,
         )
-        self.startTrialButton.place(relx=0.75, rely=0.8)
+        self.startTrialButton.pack(
+            expand=False, fill=BOTH, side=BOTTOM, pady=20, padx=20
+        )
 
     # Async function to handle button click
     async def on_start_scan_button_clicked(self):

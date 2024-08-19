@@ -14,7 +14,8 @@ class ControllerApp(tk.Tk):
         self.trial = exoTrial.ExoTrial(True, 1, True)
         self.deviceManager = exoDeviceManager.ExoDeviceManager()
         self.title("NAU Lab of Biomechatronics")
-        self.geometry("1420x920")
+        self.geometry("920x720")
+        self.minsize(900, 700)
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -36,8 +37,8 @@ class ControllerApp(tk.Tk):
         frame = self.frames[page_name]
         frame.tkraise()
 
-        if page_name == "ActiveTrial":
-            frame.show()
+        #if page_name == "ActiveTrial":
+        #    frame.show()
 
 
 def exec():

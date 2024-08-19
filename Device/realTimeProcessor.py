@@ -87,6 +87,7 @@ class RealTimeProcessor:
     ):  # Place general data derived from message to Exo data
         self.x_time += 1
         rightTorque = payload[0]
+        print(f"realTimeData: {rightTorque}")
         rightSate = payload[1]
         rightSet = payload[2]
         leftTorque = payload[3]

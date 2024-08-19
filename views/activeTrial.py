@@ -1,11 +1,13 @@
 import datetime as dt
 import tkinter as tk
-from tkinter import CENTER
+from tkinter import BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, X, Y
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 from async_tkinter_loop import async_handler
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+from Widgets.Charts.chart import LeftTorquePlot, RightTorquePlot
 
 
 # Active Trial Frame
@@ -13,35 +15,71 @@ class ActiveTrial(tk.Frame):
     # Constructor for frame
     def __init__(self, parent, controller):
         super().__init__(parent)
-        # Controller object to switch frames
         self.controller = controller
+        self.var = IntVar()
 
         self.create_widgets()
 
     # Frame UI elements
     def create_widgets(self):
         # Active Trial title label
-        calibrationMenuLabel = tk.Label(
-            self, text="Active Trial", font=("Arial", 40))
-        calibrationMenuLabel.place(relx=0.5, rely=0.1, anchor=CENTER)
+        calibrationMenuLabel = tk.Label(self, text="Active Trial", font=("Arial", 40))
+        calibrationMenuLabel.pack(side=TOP, pady=20)
+
+        leftPlot = LeftTorquePlot(self, (0.30, 0.75))
+        rightPlot = RightTorquePlot(self, (0.30, 0.35))
 
         # Update torque button
         updateTorqueButton = tk.Button(
             self,
             text="Update Torque",
+            height=2,
+            width=10,
             command=lambda: self.controller.show_frame("UpdateTorque"),
         )
-        updateTorqueButton.place(relx=0.75, rely=0.35)
+        updateTorqueButton.pack(side=LEFT)
+
+        # Radio Button chart selector
+        torqueRadioButton = tk.Radiobutton(
+            self, text="Torque", variable=self.var, value=1, command=self.selectChart
+        )
+        torqueRadioButton.pack(side=LEFT)
+        stateRadioButton = tk.Radiobutton(
+            self, text="State", variable=self.var, value=2, command=self.selectChart
+        )
+        stateRadioButton.pack(side=LEFT)
 
         # End Trial Button
         endTrialButton = tk.Button(
             self,
             text="End Trial",
+            height=2,
+            width=10,
             command=async_handler(self.on_end_trial_button_clicked),
         )
-        endTrialButton.place(relx=0.75, rely=0.8)
+        endTrialButton.pack(side=BOTTOM, anchor=E, pady=7, padx=7)
 
-    def initialize_plot(self):
+    def selectChart(self):
+        selection = self.var.get()
+
+    def initialize_left_torque_plot(self):
+        fig = plt.Figure()
+        self.ax = fig.add_subplot(1, 1, 1)
+        self.xValues = []
+        self.yValues = []
+
+        self.canvas = FigureCanvasTkAgg(fig, master=self)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack()
+
+        self.ani = animation.FuncAnimation(
+            fig,
+            self.animateLeftTorque,
+            fargs=(self.xValues, self.yValues),
+            interval=200,
+        )
+
+    def initialize_right_torque_plot(self):
         # plotter ########################################################
         fig = plt.Figure()
         self.ax = fig.add_subplot(1, 1, 1)
@@ -50,14 +88,32 @@ class ActiveTrial(tk.Frame):
 
         self.canvas = FigureCanvasTkAgg(fig, master=self)
         self.canvas.draw()
-        self.canvas.get_tk_widget().place(relx=0.25, rely=0.5, anchor=CENTER)
-
+        self.canvas.get_tk_widget().pack()
         self.ani = animation.FuncAnimation(
-            fig, self.animate, fargs=(
-                self.xValues, self.yValues), interval=200
+            fig,
+            self.animateRightTorque,
+            fargs=(self.xValues, self.yValues),
+            interval=200,
         )
 
-    def animate(self, i, xValues, yValues):
+    def animateLeftTorque(self, i, xValues, yValues):
+        leftTorque = (
+            self.controller.deviceManager._realTimeProcessor._chart_data.leftTorque
+        )
+
+        xValues.append(dt.datetime.now().strftime("%M:%S"))
+        yValues.append(leftTorque)
+
+        # Limit values to 20 items
+        xValues = xValues[-20:]
+        yValues = yValues[-20:]
+
+        self.ax.clear()
+        self.ax.plot(xValues, yValues)
+
+        self.ax.set_title("Left Torque")
+
+    def animateRightTorque(self, i, xValues, yValues):
         rightTorque = (
             self.controller.deviceManager._realTimeProcessor._chart_data.rightTorque
         )
@@ -74,8 +130,11 @@ class ActiveTrial(tk.Frame):
 
         self.ax.set_title("Right Torque")
 
-    def show(self):
-        self.initialize_plot()
+    #def show(self):
+        #LeftTorquePlot(self, (0.30, 0.75))
+        #RightTorquePlot(self, (0.30, 0.75))
+        #self.initialize_right_torque_plot()
+        #self.initialize_left_torque_plot()
 
     async def on_end_trial_button_clicked(self):
         await self.endTrialButtonClicked()
