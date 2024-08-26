@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 from async_tkinter_loop import async_handler
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from Widgets.Charts.chart import LeftTorquePlot, RightTorquePlot
+from Widgets.Charts.chart import (LeftStatePlot, LeftTorquePlot,
+                                  RightStatePlot, RightTorquePlot)
 
 
 # Active Trial Frame
@@ -17,6 +18,10 @@ class ActiveTrial(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         self.var = IntVar()
+        self.rightTorquePlot = RightTorquePlot(self)
+        self.leftTorquePlot = LeftTorquePlot(self)
+        #self.rightStatePlot = RightStatePlot(self)
+        #self.leftStatePlot = LeftStatePlot(self)
 
         self.create_widgets()
 
@@ -25,9 +30,6 @@ class ActiveTrial(tk.Frame):
         # Active Trial title label
         calibrationMenuLabel = tk.Label(self, text="Active Trial", font=("Arial", 40))
         calibrationMenuLabel.pack(side=TOP, pady=20)
-
-        leftPlot = LeftTorquePlot(self, (0.30, 0.75))
-        rightPlot = RightTorquePlot(self, (0.30, 0.35))
 
         # Update torque button
         updateTorqueButton = tk.Button(
@@ -49,7 +51,7 @@ class ActiveTrial(tk.Frame):
         )
         stateRadioButton.pack(side=LEFT)
 
-        # End Trial Button
+        # End Trial Buttuu
         endTrialButton = tk.Button(
             self,
             text="End Trial",
@@ -61,6 +63,11 @@ class ActiveTrial(tk.Frame):
 
     def selectChart(self):
         selection = self.var.get()
+
+    #    if selection == 1:
+    #
+    #    elif selection == 2:
+    #         self.leftTorquePlot
 
     def initialize_left_torque_plot(self):
         fig = plt.Figure()
@@ -130,11 +137,11 @@ class ActiveTrial(tk.Frame):
 
         self.ax.set_title("Right Torque")
 
-    #def show(self):
-        #LeftTorquePlot(self, (0.30, 0.75))
-        #RightTorquePlot(self, (0.30, 0.75))
-        #self.initialize_right_torque_plot()
-        #self.initialize_left_torque_plot()
+    # def show(self):
+    # LeftTorquePlot(self, (0.30, 0.75))
+    # RightTorquePlot(self, (0.30, 0.75))
+    # self.initialize_right_torque_plot()
+    # self.initialize_left_torque_plot()
 
     async def on_end_trial_button_clicked(self):
         await self.endTrialButtonClicked()

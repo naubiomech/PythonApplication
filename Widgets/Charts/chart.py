@@ -7,9 +7,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class BasePlot:
-    def __init__(self, master, position, title):
+    def __init__(self, master, title):
         self.master = master
-        self.position = position
         self.title = title
         self.figure = plt.Figure(figsize=(5, 2.5))
         self.ax = self.figure.add_subplot(1, 1, 1)
@@ -40,8 +39,8 @@ class BasePlot:
 
 
 class LeftTorquePlot(BasePlot):
-    def __init__(self, master, position):
-        super().__init__(master, position, "Left Torque")
+    def __init__(self, master):
+        super().__init__(master, "Left Torque")
 
     def animate(self, i, xValues, yValues):
         leftTorque = (
@@ -53,22 +52,21 @@ class LeftTorquePlot(BasePlot):
 
 
 class RightTorquePlot(BasePlot):
-    def __init__(self, master, position):
-        super().__init__(master, position, "Right Torque")
+    def __init__(self, master):
+        super().__init__(master, "Right Torque")
 
     def animate(self, i, xValues, yValues):
         rightTorque = (
             self.master.controller.deviceManager._realTimeProcessor._chart_data.rightTorque
         )
-        print(f"chartTroque {rightTorque}")
         xValues.append(dt.datetime.now().strftime("%H:%M:%S"))
         yValues.append(rightTorque)
         self.update_plot(xValues, yValues, "Right Torque")
 
 
 class LeftStatePlot(BasePlot):
-    def __init__(self, master, position):
-        super().__init__(master, position, "Left State")
+    def __init__(self, master):
+        super().__init__(master, "Left State")
 
     def animate(self, i, xValues, yValues):
         leftState = (
@@ -80,8 +78,8 @@ class LeftStatePlot(BasePlot):
 
 
 class RightStatePlot(BasePlot):
-    def __init__(self, master, position):
-        super().__init__(master, position, "Right State")
+    def __init__(self, master):
+        super().__init__(master, "Right State")
 
     def animate(self, i, xValues, yValues):
         rightState = (

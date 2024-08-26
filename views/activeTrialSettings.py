@@ -103,7 +103,6 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
     async def on_update_button_clicked(
         self, controllerInput, parameterInput, valueInput
     ):
-        print(self.jointVar.get())
         await self.UpdateButtonClicked(
             self.isBilateral,
             jointMap[self.jointVar.get()],
@@ -119,6 +118,12 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         controllerVal = float(controllerInput.get(1.0, "end-1c"))
         parameterVal = float(parameterInput.get(1.0, "end-1c"))
         valueVal = float(valueInput.get(1.0, "end-1c"))
+
+        print(f"bilateral: {isBilateral}")
+        print(f"joint: {joint}")
+        print(f"controller: {controllerVal}")
+        print(f"paramter: {parameterVal}")
+        print(f"value: {valueVal}")
 
         # Set Torque
         await self.controller.deviceManager.updateTorqueValues(

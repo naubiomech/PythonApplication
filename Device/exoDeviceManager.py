@@ -128,6 +128,7 @@ class ExoDeviceManager:
 
         totalLoops = 1
         loopCount = 0
+        float_values = parameter_list
 
         # check if bilateral
         if parameter_list[0] is True:
@@ -140,31 +141,31 @@ class ExoDeviceManager:
             char = self.get_char_handle(self.UART_TX_UUID)
             await self.client.write_gatt_char(char, command, False)
 
-            float_values = parameter_list
-
             for i in range(1, len(float_values)):
                 if i == 1:
                     # check for second loop and if on right side
                     if loopCount == 1 and float_values[1] % 2 == 0:
                         # decriment joint ID by 32 (opposite joint is offset by 32)
+                        print(f"joint: {self.jointDictionary[float_values[i]] - 32}")
                         float_bytes = struct.pack(
                             "<d", self.jointDictionary[float_values[i]] - 32
                         )
                     # otherwise check for left side and second loop
                     elif loopCount == 1 and float_values[1] % 2 != 0:
                         # increment joint ID by 32 (opposite joint is offset by 32)
+                        print(f"joint: {self.jointDictionary[float_values[i]] + 32}")
                         float_bytes = struct.pack(
                             "<d", self.jointDictionary[float_values[i]] + 32
                         )
                     # otherwise run joint ID that was inputed
                     else:
+                        print(f"joint: {self.jointDictionary[float_values[i]]}")
                         float_bytes = struct.pack(
                             "<d", self.jointDictionary[float_values[i]]
                         )
                 else:
                     print(float_values[i])
                     float_bytes = struct.pack("<d", float_values[i])
-                print(struct.unpack("<d", float_bytes))
                 char = self.get_char_handle(self.UART_TX_UUID)
                 await self.client.write_gatt_char(char, float_bytes, False)
 
@@ -188,8 +189,7 @@ class ExoDeviceManager:
             return
         # Set client and diconnect callback
         self.set_client(
-            BleakClient(
-                self.device, disconnected_callback=self.handleDisconnect)
+            BleakClient(self.device, disconnected_callback=self.handleDisconnect)
         )
         # Connect to Exo
         await self.client.connect()

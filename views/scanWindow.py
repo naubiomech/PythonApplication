@@ -60,6 +60,8 @@ class ScanWindow(tk.Frame):
     async def startScanButtonClicked(self):
         await self.startScan()
         self.deviceNameText.set(self.controller.deviceManager.device)
+        # Un-comment this line to enable connected validation
+        # if self.deviceNameText.get() != "None":
         self.startTrialButton.config(state="normal")
 
     # Handle start trial button clicked
