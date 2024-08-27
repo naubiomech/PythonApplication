@@ -20,8 +20,8 @@ class ActiveTrial(tk.Frame):
         self.var = IntVar()
         self.rightTorquePlot = RightTorquePlot(self)
         self.leftTorquePlot = LeftTorquePlot(self)
-        #self.rightStatePlot = RightStatePlot(self)
-        #self.leftStatePlot = LeftStatePlot(self)
+        # self.rightStatePlot = RightStatePlot(self)
+        # self.leftStatePlot = LeftStatePlot(self)
 
         self.create_widgets()
 

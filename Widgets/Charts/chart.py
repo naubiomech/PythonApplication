@@ -19,14 +19,9 @@ class BasePlot:
         self.canvas.draw()
         self.canvas.get_tk_widget().pack()
 
-        self.ani = animation.FuncAnimation(
-            self.figure,
-            self.animate,
-            fargs=(self.xValues, self.yValues),
-            interval=200,
-        )
+        self.update_plot_continuously()
 
-    def animate(self, i, xValues, yValues):
+    def animate(self):
         raise NotImplementedError("Subclasses should implement this method")
 
     def update_plot(self, xValues, yValues, title):
@@ -36,55 +31,60 @@ class BasePlot:
         self.ax.clear()
         self.ax.plot(xValues, yValues)
         self.ax.set_title(title)
+        self.canvas.draw()
+
+    def update_plot_continuously(self):
+        self.animate()
+        self.master.after(20, self.update_plot_continuously)
 
 
 class LeftTorquePlot(BasePlot):
     def __init__(self, master):
         super().__init__(master, "Left Torque")
 
-    def animate(self, i, xValues, yValues):
+    def animate(self):
         leftTorque = (
             self.master.controller.deviceManager._realTimeProcessor._chart_data.leftTorque
         )
-        xValues.append(dt.datetime.now().strftime("%S"))
-        yValues.append(leftTorque)
-        self.update_plot(xValues, yValues, "Left Torque")
+        self.xValues.append(" ")
+        self.yValues.append(leftTorque)
+        self.update_plot(self.xValues, self.yValues, "Left Torque")
 
 
 class RightTorquePlot(BasePlot):
     def __init__(self, master):
         super().__init__(master, "Right Torque")
 
-    def animate(self, i, xValues, yValues):
+    def animate(self):
         rightTorque = (
             self.master.controller.deviceManager._realTimeProcessor._chart_data.rightTorque
         )
-        xValues.append(dt.datetime.now().strftime("%H:%M:%S"))
-        yValues.append(rightTorque)
-        self.update_plot(xValues, yValues, "Right Torque")
+        self.xValues.append(" ")
+        self.yValues.append(rightTorque)
+        self.update_plot(self.xValues, self.yValues, "Right Torque")
 
 
 class LeftStatePlot(BasePlot):
     def __init__(self, master):
         super().__init__(master, "Left State")
 
-    def animate(self, i, xValues, yValues):
+    def animate(self):
         leftState = (
             self.master.controller.deviceManager._realTimeProcessor._chart_data.leftState
         )
-        xValues.append(dt.datetime.now().strftime("%H:%M:%S"))
-        yValues.append(leftState)
-        self.update_plot(xValues, yValues, "Left State")
+        self.xValues.append(" ")
+        self.yValues.append(leftState)
+        self.update_plot(self.xValues, self.yValues, "Left State")
 
 
 class RightStatePlot(BasePlot):
     def __init__(self, master):
         super().__init__(master, "Right State")
 
-    def animate(self, i, xValues, yValues):
+    def animate(self):
         rightState = (
             self.master.controller.deviceManager._realTimeProcessor._chart_data.rightState
         )
-        xValues.append(dt.datetime.now().strftime("%H:%M:%S"))
-        yValues.append(rightState)
-        self.update_plot(xValues, yValues, "Right State")
+        self.xValues.append(" ")
+        self.yValues.append(rightState)
+        self.update_plot(self.xValues, self.yValues, "Right State")
