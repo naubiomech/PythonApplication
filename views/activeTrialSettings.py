@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import CENTER, StringVar, ttk
+from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, N, S, StringVar, W,
+                     X, Y, ttk)
 
 from async_tkinter_loop import async_handler
 
@@ -44,28 +45,24 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
     def create_widgets(self):  # Frame UI elements
         # Back button to go back to Scan Window
         backButton = tk.Button(
-            self,
-            text="Back",
-            command=lambda: self.controller.show_frame("ActiveTrial")
+            self, text="Back", command=lambda: self.controller.show_frame("ActiveTrial")
         )
-        backButton.place(relx=0.05, rely=0.05)
+        backButton.pack(side=TOP, anchor=W, pady=20, padx=10)
 
         # Calibrate Menu label
         calibrationMenuLabel = tk.Label(
             self, text="Update Torque Settings", font=("Arial", 40)
         )
-        calibrationMenuLabel.place(relx=0.5, rely=0.1, anchor=CENTER)
+        calibrationMenuLabel.pack(anchor=CENTER, side=TOP, pady=15)
 
         # Controller label
-        controllerInputLabel = tk.Label(
-            self, text="Controller", font=("Arial", 20))
+        controllerInputLabel = tk.Label(self, text="Controller", font=("Arial", 30))
         controllerInput = tk.Text(self, height=2, width=10)
         # Parameter Label
-        parameterInputLabel = tk.Label(
-            self, text="Parameter", font=("Arial", 20))
+        parameterInputLabel = tk.Label(self, text="Parameter", font=("Arial", 30))
         parameterInput = tk.Text(self, height=2, width=10)
         # Value label
-        valueInputLabel = tk.Label(self, text="Value", font=("Arial", 20))
+        valueInputLabel = tk.Label(self, text="Value", font=("Arial", 30))
         valueInput = tk.Text(self, height=2, width=10)
 
         self.jointSelector.bind("<<ComboboxSelected>>", self.newSelection)
@@ -73,22 +70,27 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         bilateralButton = tk.Button(
             self,
             textvariable=self.bilateralButtonVar,
-            command=self.toggleBilateral
+            height=2,
+            width=10,
+            command=self.toggleBilateral,
         )
 
-        controllerInputLabel.place(relx=0.15, rely=0.27)
-        controllerInput.place(relx=0.35, rely=0.3, anchor=CENTER)
-        parameterInputLabel.place(relx=0.15, rely=0.47)
-        parameterInput.place(relx=0.35, rely=0.5, anchor=CENTER)
-        valueInputLabel.place(relx=0.15, rely=0.67)
-        valueInput.place(relx=0.35, rely=0.7, anchor=CENTER)
-        self.jointSelector.place(relx=0.75, rely=0.30, anchor=CENTER)
-        bilateralButton.place(relx=0.75, rely=0.50, anchor=CENTER)
+        jointLabel = tk.Label(self, text="Select Joint", font=("Arial", 30)).pack()
+        self.jointSelector.pack(pady=5)
+        bilateralButton.pack(pady=5)
+        controllerInputLabel.pack(pady=5)
+        controllerInput.pack(pady=5)
+        parameterInputLabel.pack(pady=5)
+        parameterInput.pack(pady=5)
+        valueInputLabel.pack(pady=5)
+        valueInput.pack(pady=5)
 
         # Button to start trial
         updateTorqueButton = tk.Button(
             self,
             text="Update Torque",
+            height=2,
+            width=10,
             command=async_handler(
                 self.on_update_button_clicked,
                 controllerInput,
@@ -96,12 +98,11 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
                 valueInput,
             ),
         )
-        updateTorqueButton.place(relx=0.7, rely=0.8)
+        updateTorqueButton.pack(side=BOTTOM, fill=X, padx=20, pady=20)
 
     async def on_update_button_clicked(
         self, controllerInput, parameterInput, valueInput
     ):
-        print(self.jointVar.get())
         await self.UpdateButtonClicked(
             self.isBilateral,
             jointMap[self.jointVar.get()],
@@ -117,6 +118,12 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         controllerVal = float(controllerInput.get(1.0, "end-1c"))
         parameterVal = float(parameterInput.get(1.0, "end-1c"))
         valueVal = float(valueInput.get(1.0, "end-1c"))
+
+        print(f"bilateral: {isBilateral}")
+        print(f"joint: {joint}")
+        print(f"controller: {controllerVal}")
+        print(f"paramter: {parameterVal}")
+        print(f"value: {valueVal}")
 
         # Set Torque
         await self.controller.deviceManager.updateTorqueValues(
