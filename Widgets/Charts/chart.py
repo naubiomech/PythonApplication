@@ -46,7 +46,7 @@ class LeftTorquePlot(BasePlot):
         leftTorque = (
             self.master.controller.deviceManager._realTimeProcessor._chart_data.leftTorque
         )
-        xValues.append(dt.datetime.now().strftime("%H:%M:%S"))
+        xValues.append(dt.datetime.now().strftime("%S"))
         yValues.append(leftTorque)
         self.update_plot(xValues, yValues, "Left Torque")
 
