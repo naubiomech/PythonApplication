@@ -1,11 +1,8 @@
-import datetime as dt
 import tkinter as tk
-from tkinter import BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, X, Y
+from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, N, StringVar,
+                     W, X, Y, ttk)
 
-import matplotlib.animation as animation
-import matplotlib.pyplot as plt
 from async_tkinter_loop import async_handler
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from Widgets.Charts.chart import (LeftStatePlot, LeftTorquePlot,
                                   RightStatePlot, RightTorquePlot)
@@ -18,19 +15,39 @@ class ActiveTrial(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         self.var = IntVar()
-        self.rightTorquePlot = RightTorquePlot(self)
+        self.chartVar = StringVar()
+
+        self.chartDropdown = ttk.Combobox(
+            self,
+            textvariable=self.chartVar,
+            state="readonly",
+            values=[
+                "Torque",
+                "State",
+            ],
+        )
+        # Active Trial title label
+        calibrationMenuLabel = tk.Label(
+            self, text="Active Trial", font=("Arial", 40))
+        calibrationMenuLabel.pack(side=TOP, anchor=N, pady=20)
+
+        self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
+        self.chartDropdown.pack(side=tk.BOTTOM, anchor=tk.S, pady=10)
+
         self.leftTorquePlot = LeftTorquePlot(self)
-        # self.rightStatePlot = RightStatePlot(self)
-        # self.leftStatePlot = LeftStatePlot(self)
+        self.rightTorquePlot = RightTorquePlot(self)
+        self.leftStatePlot = LeftStatePlot(self)
+        self.rightStatePlot = RightStatePlot(self)
+
+        self.leftStatePlot.canvas.get_tk_widget().pack_forget()
+        self.rightStatePlot.canvas.get_tk_widget().pack_forget()
+
+        self.currentPlots = [self.leftTorquePlot, self.rightTorquePlot]
 
         self.create_widgets()
 
     # Frame UI elements
     def create_widgets(self):
-        # Active Trial title label
-        calibrationMenuLabel = tk.Label(self, text="Active Trial", font=("Arial", 40))
-        calibrationMenuLabel.pack(side=TOP, pady=20)
-
         # Update torque button
         updateTorqueButton = tk.Button(
             self,
@@ -39,19 +56,12 @@ class ActiveTrial(tk.Frame):
             width=10,
             command=lambda: self.controller.show_frame("UpdateTorque"),
         )
-        updateTorqueButton.pack(side=LEFT)
+        updateTorqueButton.pack(side=BOTTOM, anchor=W, padx=7)
 
-        # Radio Button chart selector
-        torqueRadioButton = tk.Radiobutton(
-            self, text="Torque", variable=self.var, value=1, command=self.selectChart
-        )
-        torqueRadioButton.pack(side=LEFT)
-        stateRadioButton = tk.Radiobutton(
-            self, text="State", variable=self.var, value=2, command=self.selectChart
-        )
-        stateRadioButton.pack(side=LEFT)
+        self.chartDropdown.bind("<<ComboSelected>>", self.newSelection)
+        self.chartDropdown.pack(side=BOTTOM, anchor=W)
 
-        # End Trial Buttuu
+        # End Trial Button
         endTrialButton = tk.Button(
             self,
             text="End Trial",
@@ -61,13 +71,39 @@ class ActiveTrial(tk.Frame):
         )
         endTrialButton.pack(side=BOTTOM, anchor=E, pady=7, padx=7)
 
-    def selectChart(self):
-        selection = self.var.get()
+    def newSelection(self, event=None):
+        # Clear previous plots
+        for plot in self.currentPlots:
+            plot.canvas.get_tk_widget().pack_forget()
+        self.currentPlots = []
 
-    #    if selection == 1:
-    #
-    #    elif selection == 2:
-    #         self.leftTorquePlot
+        # Determine which plots to show
+        selection = self.chartVar.get()
+        if selection == "Torque":
+            self.currentPlots = [self.leftTorquePlot, self.rightTorquePlot]
+        elif selection == "State":
+            # Assuming LeftStatePlot and RightStatePlot are defined similarly
+            self.currentPlots = [self.leftStatePlot, self.rightStatePlot]
+
+        # Pack the selected plots
+        for plot in self.currentPlots:
+            plot.canvas.get_tk_widget().pack()
+
+        self.plot_update_flag = True  # Start updating the selected plots
+        self.update_plots()
+
+    def update_plots(self):
+        if self.plot_update_flag:
+            for plot in self.currentPlots:
+                plot.animate()
+            self.after(20, self.update_plots)  # Re-schedule the update
+
+    def stop_plot_updates(self):
+        self.plot_update_flag = False
+
+    def show(self):
+        self.newSelection()  # Ensure plots are updated when the frame is shown
+        self.tkraise()
 
     async def on_end_trial_button_clicked(self):
         await self.endTrialButtonClicked()

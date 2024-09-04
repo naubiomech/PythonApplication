@@ -19,8 +19,6 @@ class BasePlot:
         self.canvas.draw()
         self.canvas.get_tk_widget().pack()
 
-        self.update_plot_continuously()
-
     def animate(self):
         raise NotImplementedError("Subclasses should implement this method")
 
@@ -33,20 +31,17 @@ class BasePlot:
         self.ax.set_title(title)
         self.canvas.draw()
 
-    def update_plot_continuously(self):
-        self.animate()
-        self.master.after(20, self.update_plot_continuously)
-
 
 class LeftTorquePlot(BasePlot):
     def __init__(self, master):
         super().__init__(master, "Left Torque")
 
     def animate(self):
+        tStep = self.master.controller.deviceManager._realTimeProcessor.x_time
         leftTorque = (
             self.master.controller.deviceManager._realTimeProcessor._chart_data.leftTorque
         )
-        self.xValues.append(" ")
+        self.xValues.append(tStep)
         self.yValues.append(leftTorque)
         self.update_plot(self.xValues, self.yValues, "Left Torque")
 
@@ -56,10 +51,11 @@ class RightTorquePlot(BasePlot):
         super().__init__(master, "Right Torque")
 
     def animate(self):
+        tStep = self.master.controller.deviceManager._realTimeProcessor.x_time
         rightTorque = (
             self.master.controller.deviceManager._realTimeProcessor._chart_data.rightTorque
         )
-        self.xValues.append(" ")
+        self.xValues.append(dt.datetime.now().strftime("%S.%f")[:-3])
         self.yValues.append(rightTorque)
         self.update_plot(self.xValues, self.yValues, "Right Torque")
 
@@ -69,10 +65,11 @@ class LeftStatePlot(BasePlot):
         super().__init__(master, "Left State")
 
     def animate(self):
+        tStep = self.master.controller.deviceManager._realTimeProcessor.x_time
         leftState = (
             self.master.controller.deviceManager._realTimeProcessor._chart_data.leftState
         )
-        self.xValues.append(" ")
+        self.xValues.append(dt.datetime.now().strftime("%H:%M:%S"))
         self.yValues.append(leftState)
         self.update_plot(self.xValues, self.yValues, "Left State")
 
@@ -82,9 +79,10 @@ class RightStatePlot(BasePlot):
         super().__init__(master, "Right State")
 
     def animate(self):
+        tStep = self.master.controller.deviceManager._realTimeProcessor.x_time
         rightState = (
             self.master.controller.deviceManager._realTimeProcessor._chart_data.rightState
         )
-        self.xValues.append(" ")
+        self.xValues.append(tStep)
         self.yValues.append(rightState)
         self.update_plot(self.xValues, self.yValues, "Right State")

@@ -1,8 +1,6 @@
 import asyncio
 import struct
-import sys
 
-import numpy as np
 from bleak import BleakClient, BleakScanner
 from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
