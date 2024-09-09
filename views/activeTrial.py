@@ -4,8 +4,7 @@ from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, N, StringVar,
 
 from async_tkinter_loop import async_handler
 
-from Widgets.Charts.chart import (LeftStatePlot, LeftTorquePlot,
-                                  RightStatePlot, RightTorquePlot)
+from Widgets.Charts.chart import (TopPlot, BottomPlot)
 
 
 # Active Trial Frame
@@ -16,6 +15,7 @@ class ActiveTrial(tk.Frame):
         self.controller = controller
         self.var = IntVar()
         self.chartVar = StringVar()
+        self.chartVar.set("Torque")
 
         self.chartDropdown = ttk.Combobox(
             self,
@@ -27,22 +27,18 @@ class ActiveTrial(tk.Frame):
             ],
         )
         # Active Trial title label
-        calibrationMenuLabel = tk.Label(
-            self, text="Active Trial", font=("Arial", 40))
+        calibrationMenuLabel = tk.Label(self, text="Active Trial", font=("Arial", 40))
         calibrationMenuLabel.pack(side=TOP, anchor=N, pady=20)
 
+        self.topPlot = TopPlot(self)
+        self.bottomPlot =BottomPlot(self)
+
         self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
-        self.chartDropdown.pack(side=tk.BOTTOM, anchor=tk.S, pady=10)
+        self.chartDropdown.pack()
 
-        self.leftTorquePlot = LeftTorquePlot(self)
-        self.rightTorquePlot = RightTorquePlot(self)
-        self.leftStatePlot = LeftStatePlot(self)
-        self.rightStatePlot = RightStatePlot(self)
-
-        self.leftStatePlot.canvas.get_tk_widget().pack_forget()
-        self.rightStatePlot.canvas.get_tk_widget().pack_forget()
-
-        self.currentPlots = [self.leftTorquePlot, self.rightTorquePlot]
+        self.currentPlots = [self.topPlot, self.bottomPlot]
+        self.plot_update_job = None  # Store the job reference
+        self.update_plots("Torque")
 
         self.create_widgets()
 
@@ -56,10 +52,7 @@ class ActiveTrial(tk.Frame):
             width=10,
             command=lambda: self.controller.show_frame("UpdateTorque"),
         )
-        updateTorqueButton.pack(side=BOTTOM, anchor=W, padx=7)
-
-        self.chartDropdown.bind("<<ComboSelected>>", self.newSelection)
-        self.chartDropdown.pack(side=BOTTOM, anchor=W)
+        updateTorqueButton.pack(side=BOTTOM, anchor=W, padx=7, pady=7)
 
         # End Trial Button
         endTrialButton = tk.Button(
@@ -72,34 +65,28 @@ class ActiveTrial(tk.Frame):
         endTrialButton.pack(side=BOTTOM, anchor=E, pady=7, padx=7)
 
     def newSelection(self, event=None):
-        # Clear previous plots
-        for plot in self.currentPlots:
-            plot.canvas.get_tk_widget().pack_forget()
-        self.currentPlots = []
-
         # Determine which plots to show
         selection = self.chartVar.get()
-        if selection == "Torque":
-            self.currentPlots = [self.leftTorquePlot, self.rightTorquePlot]
-        elif selection == "State":
-            # Assuming LeftStatePlot and RightStatePlot are defined similarly
-            self.currentPlots = [self.leftStatePlot, self.rightStatePlot]
+        self.update_plots(selection)
 
-        # Pack the selected plots
+    def update_plots(self, selection):
+        # Cancel the previous update job if it exists
+        if self.plot_update_job:
+            self.after_cancel(self.plot_update_job)
+
+        # Animate all current plots
         for plot in self.currentPlots:
-            plot.canvas.get_tk_widget().pack()
+            plot.animate(selection)
 
-        self.plot_update_flag = True  # Start updating the selected plots
-        self.update_plots()
-
-    def update_plots(self):
-        if self.plot_update_flag:
-            for plot in self.currentPlots:
-                plot.animate()
-            self.after(20, self.update_plots)  # Re-schedule the update
+        # Schedule the next update
+        self.plot_update_job = self.after(
+            20, self.update_plots, selection
+        )  # Schedule with a delay
 
     def stop_plot_updates(self):
-        self.plot_update_flag = False
+        if self.plot_update_job:
+            self.after_cancel(self.plot_update_job)
+            self.plot_update_job = None
 
     def show(self):
         self.newSelection()  # Ensure plots are updated when the frame is shown
@@ -110,7 +97,6 @@ class ActiveTrial(tk.Frame):
 
     async def endTrialButtonClicked(self):
         await self.ShutdownExo()
-
         self.controller.show_frame("ScanWindow")
 
     async def ShutdownExo(self):
