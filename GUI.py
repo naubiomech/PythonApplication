@@ -35,6 +35,8 @@ class ControllerApp(tk.Tk):
 
     def show_frame(self, page_name):  # Method to switch frames
         frame = self.frames[page_name]
+        if frame == "ActiveTrial":
+            self.frame[frame].show()
 
         # Stop plot updates when switching frames
         if hasattr(self.frames.get("ActiveTrial", None), "stop_plot_updates"):

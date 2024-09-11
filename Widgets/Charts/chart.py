@@ -15,6 +15,7 @@ class BasePlot:
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.xValues = []
         self.yValues = []
+        self.secondY = []
 
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.master)
         self.canvas.draw()
@@ -23,12 +24,14 @@ class BasePlot:
     def animate(self):
         raise NotImplementedError("Subclasses should implement this method")
 
-    def update_plot(self, xValues, yValues, title):
+    def update_plot(self, xValues, yValues, secondY, title):
         xValues = xValues[-20:]
         yValues = yValues[-20:]
+        secondY = secondY[-20:]
 
         self.ax.clear()
         self.ax.plot(xValues, yValues)
+        self.ax.plot(xValues, secondY)
         self.ax.set_ylim(auto=True)
         self.ax.set_xticks([])
 
@@ -42,22 +45,33 @@ class TopPlot(BasePlot):
         super().__init__(master, "Left Torque")
 
     def animate(self, chartSelection):
-        match chartSelection:
-            case "Torque":
-                leftTorque = (
-                    self.master.controller.deviceManager._realTimeProcessor._chart_data.leftTorque
-                )
-                self.xValues.append(dt.datetime.now())
-                self.yValues.append(leftTorque)
-                self.update_plot(self.xValues, self.yValues, "Left Torque")
+        topController = None
+        title = " "
+        if chartSelection == "Controller":
+            topController = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.leftTorque
+            )
+            topMeasure = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.leftSet
+            )
+            title = "Controller"
+        elif chartSelection == "Sensor":
+            topController = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.leftState
+            )
+            topMeasure = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.leftFsr
+            )
+            title = "Sensor"
+        if topController is None or topMeasure is None:
+            topController = 0
+            topMeasure = 0
 
-            case "State":
-                leftState = (
-                    self.master.controller.deviceManager._realTimeProcessor._chart_data.leftState
-                )
-                self.xValues.append(dt.datetime.now())
-                self.yValues.append(leftState)
-                self.update_plot(self.xValues, self.yValues, "Left State")
+        self.xValues.append(dt.datetime.now())
+        self.yValues.append(topController)
+        self.secondY.append(topMeasure)
+
+        self.update_plot(self.xValues, self.yValues, self.secondY, title)
 
 
 class BottomPlot(BasePlot):
@@ -65,18 +79,31 @@ class BottomPlot(BasePlot):
         super().__init__(master, "Right Torque")
 
     def animate(self, chartSelection):
-        match chartSelection:
-            case "Torque":
-                rightTorque = (
-                    self.master.controller.deviceManager._realTimeProcessor._chart_data.rightTorque
-                )
-                self.xValues.append(dt.datetime.now())
-                self.yValues.append(rightTorque)
-                self.update_plot(self.xValues, self.yValues, "Right Torque")
-            case "State":
-                rightState = (
-                    self.master.controller.deviceManager._realTimeProcessor._chart_data.rightState
-                )
-                self.xValues.append(dt.datetime.now())
-                self.yValues.append(rightState)
-                self.update_plot(self.xValues, self.yValues, "Right State")
+        topController = None
+        title = " "
+        if chartSelection == "Controller":
+            topController = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.rightTorque
+            )
+            topMeasure = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.rightSet
+            )
+            title = "Controller"
+        elif chartSelection == "Sensor":
+            topController = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.rightState
+            )
+            topMeasure = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.rightFsr
+            )
+            title = "Sensor"
+
+        if topController is None or topMeasure is None:
+            topController = 0
+            topMeasure = 0
+
+        self.xValues.append(dt.datetime.now())
+        self.yValues.append(topController)
+        self.secondY.append(topMeasure)
+
+        self.update_plot(self.xValues, self.yValues, self.secondY, title)

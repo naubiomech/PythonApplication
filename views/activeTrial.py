@@ -4,7 +4,7 @@ from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, N, StringVar,
 
 from async_tkinter_loop import async_handler
 
-from Widgets.Charts.chart import (TopPlot, BottomPlot)
+from Widgets.Charts.chart import BottomPlot, TopPlot
 
 
 # Active Trial Frame
@@ -15,15 +15,15 @@ class ActiveTrial(tk.Frame):
         self.controller = controller
         self.var = IntVar()
         self.chartVar = StringVar()
-        self.chartVar.set("Torque")
+        self.chartVar.set("Controller")
 
         self.chartDropdown = ttk.Combobox(
             self,
             textvariable=self.chartVar,
             state="readonly",
             values=[
-                "Torque",
-                "State",
+                "Controller",
+                "Sensor",
             ],
         )
         # Active Trial title label
@@ -31,14 +31,13 @@ class ActiveTrial(tk.Frame):
         calibrationMenuLabel.pack(side=TOP, anchor=N, pady=20)
 
         self.topPlot = TopPlot(self)
-        self.bottomPlot =BottomPlot(self)
+        self.bottomPlot = BottomPlot(self)
 
         self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
         self.chartDropdown.pack()
 
         self.currentPlots = [self.topPlot, self.bottomPlot]
         self.plot_update_job = None  # Store the job reference
-        self.update_plots("Torque")
 
         self.create_widgets()
 
@@ -89,9 +88,7 @@ class ActiveTrial(tk.Frame):
             self.plot_update_job = None
 
     def show(self):
-        self.newSelection()  # Ensure plots are updated when the frame is shown
-        self.tkraise()
-
+        self.newSelection()
     async def on_end_trial_button_clicked(self):
         await self.endTrialButtonClicked()
 

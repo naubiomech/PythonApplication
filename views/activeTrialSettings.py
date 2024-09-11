@@ -11,6 +11,8 @@ jointMap = {
     "Left knee": 4,
     "Right ankle": 5,
     "Left ankle": 6,
+    "Right elbow": 7,
+    "Left elbow": 8,
 }
 
 
@@ -32,9 +34,11 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
                 "Left hip",
                 "Left knee",
                 "Left ankle",
+                "Left elbow",
                 "Right hip",
                 "Right knee",
                 "Right ankle",
+                "Right elbow"
             ],
         )
 

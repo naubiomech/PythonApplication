@@ -33,6 +33,8 @@ class ExoDeviceManager:
             4: 66.0,
             5: 36.0,
             6: 68.0,
+            7: 40.0,
+            8: 72.0
         }
 
         self.isConnected = False
