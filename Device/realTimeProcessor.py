@@ -96,7 +96,15 @@ class RealTimeProcessor:
         leftFsr = payload[7] if datalength >= 8 else 0
 
         self._chart_data.updateValues(
-            rightTorque, rightSate, leftTorque, leftState)
+            rightTorque,
+            rightSate,
+            leftTorque,
+            leftState,
+            rightSet,
+            leftSet,
+            rightFsr,
+            leftFsr,
+        )
 
         self._exo_data.addDataPoints(
             self.x_time,
