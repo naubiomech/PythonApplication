@@ -5,6 +5,8 @@ from async_tkinter_loop import async_handler, async_mainloop
 from Device import exoDeviceManager, exoTrial
 from views.activeTrial import ActiveTrial
 from views.activeTrialSettings import UpdateTorque
+from views.bioFeedback import BioFeedback
+
 from views.scanWindow import ScanWindow
 
 
@@ -24,11 +26,10 @@ class ControllerApp(tk.Tk):
 
         self.frames = {}
         # Names of each frame goes here
-        for F in (ScanWindow, ActiveTrial, UpdateTorque):
+        for F in (ScanWindow, ActiveTrial, UpdateTorque, BioFeedback):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
-
             frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame("ScanWindow")  # Switch to Scan Window Frame

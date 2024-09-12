@@ -48,20 +48,30 @@ class ActiveTrial(tk.Frame):
             self,
             text="Update Torque",
             height=2,
-            width=10,
+            width=20,
             command=lambda: self.controller.show_frame("UpdateTorque"),
         )
-        updateTorqueButton.pack(side=BOTTOM, anchor=W, padx=7, pady=7)
-
+        updateTorqueButton.pack(side=BOTTOM, anchor=W, padx=7, pady=7, fill='x')
+        updateTorqueButton.pack(side='left')
         # End Trial Button
         endTrialButton = tk.Button(
             self,
             text="End Trial",
             height=2,
-            width=10,
+            width=20,
             command=async_handler(self.on_end_trial_button_clicked),
         )
-        endTrialButton.pack(side=BOTTOM, anchor=E, pady=7, padx=7)
+        endTrialButton.pack(side=BOTTOM, anchor=E, pady=7, padx=7,fill='x')
+        endTrialButton.pack(side='right')
+
+        BioFeedbackButton = tk.Button(
+            self,
+            text="Bio Feedback",
+            height=2,
+            width=20,
+            command=lambda: self.controller.show_frame("BioFeedback"),
+        )
+        BioFeedbackButton.pack(side=BOTTOM, anchor=N, pady=31, padx=7)
 
     def newSelection(self, event=None):
         # Determine which plots to show
