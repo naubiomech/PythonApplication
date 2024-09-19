@@ -48,10 +48,8 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
 
     def create_widgets(self):  # Frame UI elements
         # Back button to go back to Scan Window
-        backButton = tk.Button(
-            self, text="Back", command=lambda: self.controller.show_frame("ActiveTrial")
-        )
-        backButton.pack(side=TOP, anchor=W, pady=20, padx=10)
+        backButton = tk.Button(self, text="Back", command=self.handle_back_button)
+        backButton.pack(side=TOP, anchor=W, pady=10, padx=10)
 
         # Calibrate Menu label
         calibrationMenuLabel = tk.Label(
@@ -103,7 +101,12 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
             ),
         )
         updateTorqueButton.pack(side=BOTTOM, fill=X, padx=20, pady=20)
-
+        
+    def handle_back_button(self):
+        self.controller.show_frame("ActiveTrial")
+        active_trial_frame = self.controller.frames["ActiveTrial"]
+        active_trial_frame.newSelection(self)
+        
     async def on_update_button_clicked(
         self, controllerInput, parameterInput, valueInput
     ):

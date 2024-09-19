@@ -73,3 +73,7 @@ class ScanWindow(tk.Frame):
         self.controller.show_frame("ActiveTrial")
         await self.controller.trial.calibrate(self.controller.deviceManager)
         await self.controller.trial.beginTrial(self.controller.deviceManager)
+
+        #Starts new selection once Active trial has started
+        active_trial_frame = self.controller.frames["ActiveTrial"]
+        active_trial_frame.newSelection(self)

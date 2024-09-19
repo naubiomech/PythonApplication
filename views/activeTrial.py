@@ -41,6 +41,7 @@ class ActiveTrial(tk.Frame):
 
         self.create_widgets()
 
+
     # Frame UI elements
     def create_widgets(self):
         # Update torque button
@@ -63,7 +64,11 @@ class ActiveTrial(tk.Frame):
         )
         endTrialButton.pack(side=BOTTOM, anchor=E, pady=7, padx=7,fill='x')
         endTrialButton.pack(side='right')
+        
+        self.bioFeedbackButtonHandler()
 
+
+    def bioFeedbackButtonHandler(self):
         BioFeedbackButton = tk.Button(
             self,
             text="Bio Feedback",
@@ -99,6 +104,7 @@ class ActiveTrial(tk.Frame):
 
     def show(self):
         self.newSelection()
+        
     async def on_end_trial_button_clicked(self):
         await self.endTrialButtonClicked()
 

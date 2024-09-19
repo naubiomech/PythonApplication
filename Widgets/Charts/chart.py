@@ -107,3 +107,58 @@ class BottomPlot(BasePlot):
         self.secondY.append(topMeasure)
 
         self.update_plot(self.xValues, self.yValues, self.secondY, title)
+
+class LeftPlot(BasePlot):
+    def __init__(self, master):
+        super().__init__(master, "Left FSR")
+
+    def animate(self, chartSelection):
+        topController = None
+        title = " "
+        if chartSelection == "Left Leg":
+            topMeasure = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.leftSet
+            )
+            title = "Left Leg"
+        elif chartSelection == "Right Leg":
+            topMeasure = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.leftFsr
+            )
+            title = "Right Leg"
+
+        if topMeasure is None:
+            topMeasure = 0
+
+        self.xValues.append(dt.datetime.now())
+        self.yValues.append(topController)
+        self.secondY.append(topMeasure)
+
+        self.update_plot(self.xValues, self.yValues, self.secondY, title)
+
+
+class RightPlot(BasePlot):
+    def __init__(self, master):
+        super().__init__(master, "Right FSR")
+
+    def animate(self, chartSelection):
+        topController = None
+        title = " "
+        if chartSelection == "Right Leg":
+            topMeasure = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.rightSet
+            )
+            title = "Right Leg"
+        elif chartSelection == "Left Leg":
+            topMeasure = (
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.rightFsr
+            )
+            title = "Left Leg"
+
+        if topMeasure is None:
+            topMeasure = 0
+
+        self.xValues.append(dt.datetime.now())
+        self.yValues.append(topController)
+        self.secondY.append(topMeasure)
+
+        self.update_plot(self.xValues, self.yValues, self.secondY, title)
