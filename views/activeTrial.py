@@ -65,23 +65,41 @@ class ActiveTrial(tk.Frame):
         endTrialButton.pack(side=BOTTOM, anchor=E, pady=7, padx=7,fill='x')
         endTrialButton.pack(side='right')
         
-        self.bioFeedbackButtonHandler()
-
-
-    def bioFeedbackButtonHandler(self):
         BioFeedbackButton = tk.Button(
             self,
             text="Bio Feedback",
             height=2,
             width=20,
-            command=lambda: self.controller.show_frame("BioFeedback"),
-        )
+            command=self.handle_BioFeedbackButton_button)
         BioFeedbackButton.pack(side=BOTTOM, anchor=N, pady=31, padx=7)
 
+
+    def handle_BioFeedbackButton_button(self):
+        self.controller.show_frame("BioFeedback")
+        bioFeedback_frame = self.controller.frames["BioFeedback"]
+        bioFeedback_frame.newSelection(self)
+
     def newSelection(self, event=None):
+        # Disable buttons and dropdown untril proccess complete
+        self.disable_interactions()
+
         # Determine which plots to show
         selection = self.chartVar.get()
         self.update_plots(selection)
+
+    def disable_interactions(self):
+        # Disable all interactive elements
+        self.chartDropdown.config(state='disabled')
+        for widget in self.winfo_children():
+            if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
+                widget.config(state='disabled')
+
+    def enable_interactions(self):
+        # Enable all interactive elements
+        self.chartDropdown.config(state='normal')
+        for widget in self.winfo_children():
+            if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
+                widget.config(state='normal')
 
     def update_plots(self, selection):
         # Cancel the previous update job if it exists
@@ -97,12 +115,16 @@ class ActiveTrial(tk.Frame):
             20, self.update_plots, selection
         )  # Schedule with a delay
 
+        # Enable interactions after the first plot update is complete
+        self.after(20, self.enable_interactions)
+
     def stop_plot_updates(self):
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
             self.plot_update_job = None
 
     def show(self):
+        # Show the frame and update plots
         self.newSelection()
         
     async def on_end_trial_button_clicked(self):

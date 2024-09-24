@@ -7,6 +7,7 @@ import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
+
 class BasePlot:
     def __init__(self, master, title):
         self.master = master
@@ -34,9 +35,8 @@ class BasePlot:
         self.ax.plot(xValues, secondY)
         self.ax.set_ylim(auto=True)
         self.ax.set_xticks([])
-
         self.ax.set_title(title)
-
+        
         self.canvas.draw()
 
 
@@ -108,57 +108,50 @@ class BottomPlot(BasePlot):
 
         self.update_plot(self.xValues, self.yValues, self.secondY, title)
 
-class LeftPlot(BasePlot):
-    def __init__(self, master):
+class FSRPlot(BasePlot):
+    def __init__(self, master, goal=None):
         super().__init__(master, "Left FSR")
+        self.goal = None  # Store the goal value
+        self.counter_above_goal = 0  # Initialize the counter
+        self.above_goal = False  # Track if currently above the goal
+
+        # Initialize plot lines for FSR and target
+        self.line_fsr, = self.ax.plot([], [], label='FSR Value', color='blue')
+        self.line_target, = self.ax.plot([], [], label='Target Value', color='red', linestyle='--')
+
+    def set_goal(self, goal):
+        self.goal = goal  # Set the new goal
 
     def animate(self, chartSelection):
-        topController = None
+        topMeasure  = None
+
         title = " "
         if chartSelection == "Left Leg":
             topMeasure = (
-                self.master.controller.deviceManager._realTimeProcessor._chart_data.leftSet
+                self.master.controller.deviceManager._realTimeProcessor._chart_data.leftFsr
             )
             title = "Left Leg"
         elif chartSelection == "Right Leg":
             topMeasure = (
-                self.master.controller.deviceManager._realTimeProcessor._chart_data.leftFsr
-            )
-            title = "Right Leg"
-
-        if topMeasure is None:
-            topMeasure = 0
-
-        self.xValues.append(dt.datetime.now())
-        self.yValues.append(topController)
-        self.secondY.append(topMeasure)
-
-        self.update_plot(self.xValues, self.yValues, self.secondY, title)
-
-
-class RightPlot(BasePlot):
-    def __init__(self, master):
-        super().__init__(master, "Right FSR")
-
-    def animate(self, chartSelection):
-        topController = None
-        title = " "
-        if chartSelection == "Right Leg":
-            topMeasure = (
-                self.master.controller.deviceManager._realTimeProcessor._chart_data.rightSet
-            )
-            title = "Right Leg"
-        elif chartSelection == "Left Leg":
-            topMeasure = (
                 self.master.controller.deviceManager._realTimeProcessor._chart_data.rightFsr
             )
-            title = "Left Leg"
+            title = "Right Leg"
 
         if topMeasure is None:
             topMeasure = 0
 
         self.xValues.append(dt.datetime.now())
-        self.yValues.append(topController)
+        self.yValues.append(self.goal)
         self.secondY.append(topMeasure)
 
+        # Check if topMeasure crosses the goal
+        if self.goal is not None:
+            if topMeasure > self.goal and not self.above_goal:
+                self.counter_above_goal += 1  # Increment the counter
+                self.above_goal = True  # Set the flag to true
+                self.master.update_counter_label()  # Notify BioFeedback to update counter
+            elif topMeasure <= self.goal:
+                self.above_goal = False  # Reset the flag when it goes below or equal to the goal
+
         self.update_plot(self.xValues, self.yValues, self.secondY, title)
+
