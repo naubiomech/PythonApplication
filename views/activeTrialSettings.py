@@ -21,6 +21,8 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         super().__init__(parent)  # Correctly initialize the tk.Frame part
         # Initialize variables
         self.controller = controller  # Controller object to switch frames
+        self.previous_frame = None  # Track the previous frame
+
         self.bilateralButtonVar = StringVar()
         self.bilateralButtonVar.set("Bilateral Mode On")
         self.jointVar = StringVar()
@@ -103,9 +105,15 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         updateTorqueButton.pack(side=BOTTOM, fill=X, padx=20, pady=20)
         
     def handle_back_button(self):
-        self.controller.show_frame("ActiveTrial")
-        active_trial_frame = self.controller.frames["ActiveTrial"]
-        active_trial_frame.newSelection(self)
+        # Return to the previous frame
+        if self.previous_frame:
+            self.controller.show_frame(self.previous_frame)
+            active_trial_frame = self.controller.frames[self.previous_frame]
+            active_trial_frame.newSelection(self)
+        else:
+            self.controller.show_frame("ActiveTrial")
+            active_trial_frame = self.controller.frames["ActiveTrial"]
+            active_trial_frame.newSelection(self)
         
     async def on_update_button_clicked(
         self, controllerInput, parameterInput, valueInput
@@ -137,7 +145,14 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
             [isBilateral, joint, controllerVal, parameterVal, valueVal]
         )
 
-        self.controller.show_frame("ActiveTrial")
+        if self.previous_frame:
+            self.controller.show_frame(self.previous_frame)
+            active_trial_frame = self.controller.frames[self.previous_frame]
+            active_trial_frame.newSelection(self)
+        else:
+            self.controller.show_frame("ActiveTrial")
+            active_trial_frame = self.controller.frames["ActiveTrial"]
+            active_trial_frame.newSelection(self)
 
     def newSelection(self, event):
         self.jointVar.set(self.jointSelector.get())

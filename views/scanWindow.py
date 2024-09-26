@@ -11,6 +11,8 @@ class ScanWindow(tk.Frame):
         self.controller = controller  # Reference to the main application controller
         self.deviceNameText = StringVar()  # Variable to hold device name text
         self.startTrialButton = None  # Button for starting the trial
+        self.calTorqueButton = None
+
         self.create_widgets()  # Create UI elements
 
     # Holds all UI elements
@@ -42,6 +44,7 @@ class ScanWindow(tk.Frame):
         )
         startScanButton.pack(expand=False, fill=Y, ipadx=40, pady=100)
 
+
         # Button to start the trial (initially disabled)
         self.startTrialButton = tk.Button(
             self,
@@ -53,11 +56,22 @@ class ScanWindow(tk.Frame):
         self.startTrialButton.pack(
             expand=False, fill=BOTH, side=BOTTOM, pady=20, padx=20
         )
+        #Calibrate Torque
+        self.calTorqueButton = tk.Button(
+            self,
+            text="Calibrate Torque",
+            command=async_handler(self.on_calibrate_torque_button_clicked),
+            state=DISABLED,
+        )
+        self.calTorqueButton.pack(expand=False, fill=None, side=BOTTOM, pady=0, padx=0)
 
     # Async function to handle the start scan button click
     async def on_start_scan_button_clicked(self):
         self.deviceNameText.set("Scanning...")  # Update device name text
         await self.startScanButtonClicked()  # Initiate the scanning process
+
+    async def on_calibrate_torque_button_clicked(self):
+        await self.controller.trial.calibrate(self.controller.deviceManager)
 
     # Start scanning for exoskeleton devices
     async def startScan(self):
@@ -70,6 +84,7 @@ class ScanWindow(tk.Frame):
         # Enable the Start Trial button if a device is connected
         if self.deviceNameText.get() != "None":
             self.startTrialButton.config(state="normal")
+            self.calTorqueButton.config(state="normal")
 
     # Handle the start trial button click
     async def on_start_trial_button_clicked(self):

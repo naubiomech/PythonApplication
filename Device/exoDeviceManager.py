@@ -1,6 +1,8 @@
 import asyncio
 import struct
+import sys
 
+import numpy as np
 from bleak import BleakClient, BleakScanner
 from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
@@ -244,4 +246,39 @@ class ExoDeviceManager:
 
         await self.client.write_gatt_char(char, command, False)
 
+    # -----------------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------------
+    # Send stiffness values to Exo
+    async def sendStiffness(self, stiffness):
+        command = bytearray(b"A") #character code, keyed to Arduino software
+        char = self.get_char_handle(self.UART_TX_UUID)
+        await self.client.write_gatt_char(char, command, False) #send the command code
+
+
+    
+        stiff_bytes= struct.pack("<i", stiffness)
+        await self.client.write_gatt_char(char, stiff_bytes, False) #followed by our data
+        print(f"Stiffness is {stiffness}")
+    # -----------------------------------------------------------------------------
+
+        # ----------------------------------------------------------------------------
+    # Send stiffness values to Exo, helper function 
+    async def newStiffness(self, stiffness):
+        await self.sendStiffness(stiffness) #send the command code
+        
+    # -----------------------------------------------------------------------------
+
+        # ----------------------------------------------------------------------------
+    # Send stiffness values to Exo
+    async def isAlive(self, stiffness):
+        command = bytearray(b"P") #character code, keyed to Arduino software
+        char = self.get_char_handle(self.UART_TX_UUID)
+        await self.client.write_gatt_char(char, command, False) #send the command code
+        stiff_bytes= struct.pack("<f", stiffness)
+        await self.client.write_gatt_char(char, stiff_bytes, False) #followed by our data
+        print(f"Stiffness is {stiffness}")
+
+
+        print("Anyone there?")
     # -----------------------------------------------------------------------------

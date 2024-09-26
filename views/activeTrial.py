@@ -28,13 +28,19 @@ class ActiveTrial(tk.Frame):
         )
         # Active Trial title label
         calibrationMenuLabel = tk.Label(self, text="Active Trial", font=("Arial", 40))
-        calibrationMenuLabel.pack(side=TOP, anchor=N, pady=20)
+        calibrationMenuLabel.pack(side=TOP, anchor=N, pady=10)
+
+        # For battery Label
+        batteryPercentLabel = tk.Label(self, 
+            textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
+                font=("Arial", 12))
+        batteryPercentLabel.pack(side=TOP, anchor=E, pady=0, padx=0)
 
         self.topPlot = TopPlot(self)
         self.bottomPlot = BottomPlot(self)
 
         self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
-        self.chartDropdown.pack()
+        self.chartDropdown.pack(pady=10, padx=10)
 
         self.currentPlots = [self.topPlot, self.bottomPlot]
         self.plot_update_job = None  # Store the job reference
@@ -45,15 +51,34 @@ class ActiveTrial(tk.Frame):
     # Frame UI elements
     def create_widgets(self):
         # Update torque button
+        button_frame = tk.Frame(self)
+        button_frame.pack(side=BOTTOM, pady=7)  # Pack the button frame at the bottom
+
         updateTorqueButton = tk.Button(
             self,
             text="Update Torque",
             height=2,
             width=20,
-            command=lambda: self.controller.show_frame("UpdateTorque"),
+            command=self.go_to_update_torque,
         )
-        updateTorqueButton.pack(side=BOTTOM, anchor=W, padx=7, pady=7, fill='x')
-        updateTorqueButton.pack(side='left')
+        updateTorqueButton.pack(side=LEFT, padx=7)  # Pack the button to the left
+        
+        BioFeedbackButton = tk.Button(
+            self,
+            text="Bio Feedback",
+            height=2,
+            width=20,
+            command=self.handle_BioFeedbackButton_button)
+        BioFeedbackButton.pack(side=LEFT, padx=7)  # Pack the button to the left
+
+        MachineLearningButton = tk.Button(
+            self,
+            text="Machine Learning",
+            height=2,
+            width=20,
+            command=self.handle_MachineLearning_button)
+        MachineLearningButton.pack(side=LEFT, padx=7)  # Pack the button to the left
+        
         # End Trial Button
         endTrialButton = tk.Button(
             self,
@@ -62,22 +87,17 @@ class ActiveTrial(tk.Frame):
             width=20,
             command=async_handler(self.on_end_trial_button_clicked),
         )
-        endTrialButton.pack(side=BOTTOM, anchor=E, pady=7, padx=7,fill='x')
-        endTrialButton.pack(side='right')
-        
-        BioFeedbackButton = tk.Button(
-            self,
-            text="Bio Feedback",
-            height=2,
-            width=20,
-            command=self.handle_BioFeedbackButton_button)
-        BioFeedbackButton.pack(side=BOTTOM, anchor=N, pady=31, padx=7)
-
+        endTrialButton.pack(side=RIGHT, padx=7)  # Pack the button to the left
 
     def handle_BioFeedbackButton_button(self):
         self.controller.show_frame("BioFeedback")
         bioFeedback_frame = self.controller.frames["BioFeedback"]
         bioFeedback_frame.newSelection(self)
+
+    def handle_MachineLearning_button(self):
+        self.controller.show_frame("MachineLearning")
+        machineLearning_frame = self.controller.frames["MachineLearning"]
+        machineLearning_frame.newSelection(self)
 
     def newSelection(self, event=None):
         # Disable buttons and dropdown untril proccess complete
@@ -100,6 +120,11 @@ class ActiveTrial(tk.Frame):
         for widget in self.winfo_children():
             if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
                 widget.config(state='normal')
+
+    def go_to_update_torque(self):
+        # Set the previous frame to this one
+        self.controller.frames["UpdateTorque"].previous_frame = "ActiveTrial"
+        self.controller.show_frame("UpdateTorque")
 
     def update_plots(self, selection):
         # Cancel the previous update job if it exists

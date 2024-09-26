@@ -45,6 +45,12 @@ class BioFeedback(tk.Frame):
         calibrationMenuLabel = tk.Label(self, text="Biofeedback", font=("Arial", 40))
         calibrationMenuLabel.pack(side=TOP, anchor=N, pady=20)
 
+        # For battery Label
+        batteryPercentLabel = tk.Label(self, 
+            textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
+                font=("Arial", 12))
+        batteryPercentLabel.pack(side=TOP, anchor=E, pady=0, padx=0)
+
         # Initialize the FSR plot
         self.FSRPlot = FSRPlot(self)
         self.currentPlots = self.FSRPlot  # Current plot reference

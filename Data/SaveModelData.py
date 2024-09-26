@@ -1,25 +1,20 @@
 import csv
 
-from _datetime import datetime
+from datetime import datetime
 
-
+'''
+this file is essentially the same as DataToCSV.py, except trimmed down 
+just to include the features and labels used to generate the training data for our machine learning model
+label = human supvervised classification
+task = machine predicted walking task 
+'''
 class CsvWritter:
-    def writeToCsv(self, exoData):
+    def writeToCsv(self, exoData, predictor):
         print("Creating filedata")
         # initialize array for output file
         fileData = []
         # establish field arrays for output file
-        tStep = ["TStep"]
-        rTorque = ["RTorque"]
-        rSetP = ["RSetP"]
-        rState = ["RState"]
-        lTorque = ["LTorque"]
-        lSetP = ["LSetP"]
-        LState = ["LState"]
-        lFsr = ["LFsr"]
-        rFsr = ["RFsr"]
-
-        #record our model features
+        #tStep = ["TStep"]
         minSV = ["minSV"]
         maxSV = ["maxSV"]
         minSA = ["minSA"]
@@ -27,43 +22,31 @@ class CsvWritter:
         maxFSR = ["maxFSR"]
         stancetime = ["StanceTime"]
         swingtime = ["SwingTime"]
-
-        #and predicted task/state
-        Task = ["Task"]
-        mark = ["Mark"]
+        labels = ["Labels"] #from human supervision
 
         # append data to field array
+        """         
         for xt in exoData.tStep:
-            tStep.append(xt)
-        for rT in exoData.rTorque:
-            rTorque.append(rT)
-        for rSP in exoData.rSetP:
-            rSetP.append(rSP)
-        for rS in exoData.rState:
-            rState.append(rS)
-        for lT in exoData.lTorque:
-            lTorque.append(lT)
-        for lSP in exoData.lSetP:
-            lSetP.append(lSP)
-        for lS in exoData.lState:
-            LState.append(lS)
-        for rF in exoData.rFsr:
-            rFsr.append(rF)
-        for lF in exoData.lFsr:
-            lFsr.append(lF)
-        for tS in exoData.tStep:
-            tStep.append(tS)
+        tStep.append(xt) """
+        for min in [row[0] for row in predictor.database]:
+            minSV.append(min)
+        for max in [row[1] for row in predictor.database]:
+            maxSV.append(max)
+        for inSA in [row[2] for row in predictor.database]:
+            minSA.append(inSA)
+        for axSA in [row[3] for row in predictor.database]:
+            maxSA.append(axSA)
+        for fsr in [row[4] for row in predictor.database]:
+            maxFSR.append(fsr)
+        for moment in [row[5] for row in predictor.database]:
+            stancetime.append(moment)
+        for moment in [row[6] for row in predictor.database]:
+            swingtime.append(moment)
+        for lab in [row[7] for row in predictor.database]:
+            labels.append(lab)
 
         # add field array with data to output file
-        fileData.append(tStep)
-        fileData.append(rTorque)
-        fileData.append(rSetP)
-        fileData.append(rState)
-        fileData.append(lTorque)
-        fileData.append(lSetP)
-        fileData.append(LState)
-        fileData.append(lFsr)
-        fileData.append(rFsr)
+        #fileData.append(tStep)
         fileData.append(minSV)
         fileData.append(maxSV)
         fileData.append(minSA)
@@ -71,17 +54,15 @@ class CsvWritter:
         fileData.append(maxFSR)
         fileData.append(stancetime)
         fileData.append(swingtime)
-        fileData.append(Task)
-        fileData.append(mark)
-        
+        fileData.append(labels)
+
+
         # rotate 2D array to place lables on top
         fileDataTransposed = self.rotateArray(fileData)
         print("flipping array")
 
         today = datetime.now()  # Pull system time and date
-        fileName = today.strftime(
-            "%Y-%b-%d-%H-%M-%S"
-        )  # Format file name based on YYYY-MM-DD-HH:MM:SS
+        fileName = "ModelData"  # Format file name based on YYYY-MM-DD-HH:MM:SS
         fileName += ".csv"  # Add .csv to file name
         print("file is: ", fileName)
 

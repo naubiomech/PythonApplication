@@ -1,6 +1,6 @@
 import re
 
-from Device import chart_data, exoData
+from Device import chart_data, exoData, MLModel
 
 
 class RealTimeProcessor:
@@ -18,6 +18,7 @@ class RealTimeProcessor:
         self._chart_data = chart_data.ChartData()
         self._data_length = None
         self.x_time = 0
+        self._predictor= MLModel.MLModel() #create the machine learning model object
 
     def processEvent(self, event):
         # Decode data from bytearry->String
@@ -94,6 +95,15 @@ class RealTimeProcessor:
         leftSet = payload[5]
         rightFsr = payload[6] if datalength >= 7 else 0
         leftFsr = payload[7] if datalength >= 8 else 0
+        #record features
+        minSV = payload[8] if datalength >= 9 else 0
+        maxSV = payload[9] if datalength >= 10 else 0
+        minSA = payload[10] if datalength >= 11 else 0
+        maxSA = payload[11] if datalength >= 12 else 0
+        battery = payload[12] if datalength >= 13 else 0
+        maxFSR = payload[13] if datalength >= 14 else 0
+        stancetime = payload[14] if datalength >= 15 else 0
+        swingtime = payload[15] if datalength >= 16 else 0
 
         self._chart_data.updateValues(
             rightTorque,
@@ -105,6 +115,10 @@ class RealTimeProcessor:
             rightFsr,
             leftFsr,
         )
+        self._predictor.addDataPoints([minSV,maxSV,minSA,maxSA,maxFSR,stancetime,swingtime,self._predictor.state]) #add data to model, if recording data
+        
+        self._predictor.predictModel([minSV,maxSV,minSA,maxSA, maxFSR,stancetime,swingtime]) #predict results from model
+
 
         self._exo_data.addDataPoints(
             self.x_time,
@@ -116,6 +130,16 @@ class RealTimeProcessor:
             leftSet,
             rightFsr,
             leftFsr,
+            #store features
+            minSV,
+            maxSV,
+            minSA,
+            maxSA,
+            maxFSR,
+            stancetime,
+            swingtime,
+            self._predictor.prediction, #store prediction
+            battery
         )
 
     def processMessage(
