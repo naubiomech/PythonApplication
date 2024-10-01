@@ -53,7 +53,24 @@ class CsvWritter:
             lFsr.append(lF)
         for tS in exoData.tStep:
             tStep.append(tS)
-
+        for min in exoData.tStep:
+            minSV.append(min)
+        for max in exoData.MaxShankVel:
+            maxSV.append(max)
+        for inSa in exoData.MinShankAng:
+            minSA.append(inSa)
+        for axSA in exoData.MaxShankAng:
+            maxSA.append(axSA)
+        for fsr in exoData.MaxFSR:
+            maxFSR.append(fsr)
+        for task in exoData.Task:
+            Task.append(task)
+        for trig in exoData.mark:
+            mark.append(trig)
+        for moment in exoData.StanceTime:
+            stancetime.append(moment)
+        for moment in exoData.SwingTime:
+            swingtime.append(moment)
         # add field array with data to output file
         fileData.append(tStep)
         fileData.append(rTorque)

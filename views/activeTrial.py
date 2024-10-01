@@ -56,7 +56,7 @@ class ActiveTrial(tk.Frame):
 
         updateTorqueButton = tk.Button(
             self,
-            text="Update Torque",
+            text="Update Controller",
             height=2,
             width=20,
             command=self.go_to_update_torque,
@@ -100,7 +100,7 @@ class ActiveTrial(tk.Frame):
         machineLearning_frame.newSelection(self)
 
     def newSelection(self, event=None):
-        # Disable buttons and dropdown untril proccess complete
+        # Disable buttons and dropdown untill proccess complete
         self.disable_interactions()
 
         # Determine which plots to show

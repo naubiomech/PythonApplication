@@ -2,9 +2,7 @@ import tkinter as tk
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import Data.SaveModelData as saveModelData
-
-from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, N, S, IntVar, StringVar, W,
-                     X, Y, ttk)
+from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, N, S, IntVar, StringVar, W, X, Y, ttk)
 from async_tkinter_loop import async_handler
 from Widgets.Charts.chart import BottomPlot, TopPlot
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -16,65 +14,73 @@ class MachineLearning(tk.Frame):
         super().__init__(parent)
         # Controller object to switch frames
         self.controller = controller
+        
+        # Variables to manage states and UI elements
         self.var = IntVar()
         self.chartVar = StringVar()
         self.chartVar.set("Controller")
 
-
-        #create our model controll names, frequently changed
-        self.levelButtonName=StringVar()
-        self.descendButtonName=StringVar()
-        self.ascendButtonName=StringVar()
-        self.modelButtonName=StringVar()
-        self.deleteModelButtonName=StringVar()
-        self.confirmation=0 #used as a flag to request second confirmation form user to delete model
-        self.modelDataWriter = saveModelData.CsvWritter()
+        # Create StringVars for button names
+        self.levelButtonName = StringVar()
+        self.descendButtonName = StringVar()
+        self.ascendButtonName = StringVar()
+        self.modelButtonName = StringVar()
+        self.deleteModelButtonName = StringVar()
         
+        # Confirmation flag for deleting model
+        self.confirmation = 0
+        self.modelDataWriter = saveModelData.CsvWritter()
+
+        # Dropdown for chart selection
         self.chartDropdown = ttk.Combobox(
             self,
             textvariable=self.chartVar,
             state="readonly",
-            values=[
-                "Controller",
-                "Sensor",
-            ],
+            values=["Controller", "Sensor"],
         )
 
         # Back button to return to the Active Trial frame
         backButton = tk.Button(self, text="Back", command=self.handle_back_button)
         backButton.pack(side=TOP, anchor=W, pady=10, padx=10)
 
-        # Active Trial title label
+        # Title label for the frame
         calibrationMenuLabel = tk.Label(self, text="Machine learning", font=("Arial", 40))
         calibrationMenuLabel.pack(side=TOP, anchor=N, pady=10)
 
-        # For battery Label
-        batteryPercentLabel = tk.Label(self, 
+        # Battery status label
+        batteryPercentLabel = tk.Label(
+            self, 
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
-                font=("Arial", 12))
+            font=("Arial", 12)
+        )
         batteryPercentLabel.pack(side=TOP, anchor=E, pady=0, padx=0)
 
+        # Initialize top and bottom plots
         self.topPlot = TopPlot(self)
         self.bottomPlot = BottomPlot(self)
 
+        # Bind dropdown selection to update function
         self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
         self.chartDropdown.pack(pady=10, padx=10)
 
+        # Store current plots for updating
         self.currentPlots = [self.topPlot, self.bottomPlot]
         self.plot_update_job = None  # Store the job reference
 
-
+        # Create the UI elements
         self.create_widgets()
 
     # Frame UI elements
     def create_widgets(self):
-
-        #Define Model Status
+        # Model Status Label
         modelStatusLabel = tk.Label(
-            self, textvariable=self.controller.deviceManager._realTimeProcessor._predictor.modelStatus, font=("Arial", 12))
+            self, 
+            textvariable=self.controller.deviceManager._realTimeProcessor._predictor.modelStatus, 
+            font=("Arial", 12)
+        )
         modelStatusLabel.place(relx=0.75, rely=0.55)
 
-        # Update torque button
+        # Update Torque Button
         updateTorqueButton = tk.Button(
             self,
             text="Update Torque",
@@ -82,6 +88,7 @@ class MachineLearning(tk.Frame):
         )
         updateTorqueButton.place(relx=0.75, rely=0.35)
 
+        # Recalibrate FSRs Button
         self.recalibrateFSRButton = tk.Button(
             self,
             text="Recalibrate FSRs",
@@ -113,12 +120,15 @@ class MachineLearning(tk.Frame):
             command=async_handler(self.on_level_trial_button_clicked),
         )
         levelTrialButton.place(relx=0.75, rely=0.6)
-        #Display Level Step Count 
+        
+        # Display Level Step Count
         lvlstepsLabel = tk.Label(
-            self, textvariable=self.controller.deviceManager._realTimeProcessor._predictor.levelStepsLabel, font=("Arial", 12))
+            self, 
+            textvariable=self.controller.deviceManager._realTimeProcessor._predictor.levelStepsLabel, 
+            font=("Arial", 12)
+        )
         lvlstepsLabel.place(relx=0.7, rely=0.6)
 
-        
         # Descend Trial Button
         self.descendButtonName.set("Collect Descend Data")
         descendTrialButton = tk.Button(
@@ -127,12 +137,15 @@ class MachineLearning(tk.Frame):
             command=async_handler(self.on_descend_trial_button_clicked),
         )
         descendTrialButton.place(relx=0.75, rely=0.65)
-        #Display Descend Step Count 
+
+        # Display Descend Step Count
         desstepsLabel = tk.Label(
-            self, textvariable=self.controller.deviceManager._realTimeProcessor._predictor.descendStepsLabel, font=("Arial", 12))
+            self, 
+            textvariable=self.controller.deviceManager._realTimeProcessor._predictor.descendStepsLabel, 
+            font=("Arial", 12)
+        )
         desstepsLabel.place(relx=0.7, rely=0.65)
 
-        
         # Ascend Trial Button
         self.ascendButtonName.set("Collect Ascend Data")
         ascendTrialButton = tk.Button(
@@ -141,15 +154,21 @@ class MachineLearning(tk.Frame):
             command=async_handler(self.on_ascend_trial_button_clicked),
         )
         ascendTrialButton.place(relx=0.75, rely=0.7)
+
+        # Display Ascend Step Count
         ascstepsLabel = tk.Label(
-            self, textvariable=self.controller.deviceManager._realTimeProcessor._predictor.ascendStepsLabel, font=("Arial", 12))
+            self, 
+            textvariable=self.controller.deviceManager._realTimeProcessor._predictor.ascendStepsLabel, 
+            font=("Arial", 12)
+        )
         ascstepsLabel.place(relx=0.7, rely=0.7)
 
-        #Create Model Button
-        if (self.controller.deviceManager._realTimeProcessor._predictor.modelExists): #if there is no model
-            self.modelButtonName.set("Stair Model Active " + str(self.controller.deviceManager._realTimeProcessor._predictor.optimizedscore) +"% Acc") #do nothing and request the user collect data first
+        # Create Model Button
+        if self.controller.deviceManager._realTimeProcessor._predictor.modelExists:
+            self.modelButtonName.set("Stair Model Active " + str(self.controller.deviceManager._realTimeProcessor._predictor.optimizedscore) + "% Acc")
         else:
             self.modelButtonName.set("Create Stair Model")
+
         createModelButton = tk.Button(
             self,
             textvariable=self.modelButtonName,
@@ -157,7 +176,7 @@ class MachineLearning(tk.Frame):
         )
         createModelButton.place(relx=0.75, rely=0.75)
 
-        #Delete Model Button 
+        # Delete Model Button
         self.deleteModelButtonName.set("Delete Model")
         deleteModelButton = tk.Button(
             self,
@@ -166,95 +185,104 @@ class MachineLearning(tk.Frame):
         )
         deleteModelButton.place(relx=0.1, rely=0.9)
 
+    # Navigate to the Update Torque frame
     def go_to_update_torque(self):
-        # Set the previous frame to this one
         self.controller.frames["UpdateTorque"].previous_frame = "MachineLearning"
         self.controller.show_frame("UpdateTorque")
 
+    # Handle back button press
     def handle_back_button(self):
-        # Stops plotting and goes back to Active Trial
-        self.stop_plot_updates()  # Stop any ongoing plot updates
+        self.stop_plot_updates()  # Stop ongoing plot updates
         self.controller.show_frame("ActiveTrial")  # Switch to ActiveTrial frame
         active_trial_frame = self.controller.frames["ActiveTrial"]
-        active_trial_frame.newSelection(self)  # Start the plotting on active trial
+        active_trial_frame.newSelection(self)  # Start plotting in the active trial
 
+    # Show frame and update plots
     def show(self):
-        # Show the frame and update plots
         self.newSelection()
 
+    # Handle Level Trial Button click
     async def on_level_trial_button_clicked(self):
         '''
         If not currently recording data, 
-            record and label data as level
-        If recording
-            end the recording       
+            record and label data as level.
+        If recording, end the recording.
         '''
-        if self.controller.deviceManager._realTimeProcessor._predictor.state ==0:#if not recording data
-            self.controller.deviceManager._realTimeProcessor._predictor.state =1 #record and label as level
+        if self.controller.deviceManager._realTimeProcessor._predictor.state == 0:  # If not recording
+            self.controller.deviceManager._realTimeProcessor._predictor.state = 1  # Record as level
             self.levelButtonName.set("End Level Collection")
-        elif self.controller.deviceManager._realTimeProcessor._predictor.state ==1: #if recording
-            self.controller.deviceManager._realTimeProcessor._predictor.state =0 #stop
+        elif self.controller.deviceManager._realTimeProcessor._predictor.state == 1:  # If recording
+            self.controller.deviceManager._realTimeProcessor._predictor.state = 0  # Stop recording
             self.levelButtonName.set("Collect Level Data")
 
+    # Handle Descend Trial Button click
     async def on_descend_trial_button_clicked(self):
-        if self.controller.deviceManager._realTimeProcessor._predictor.state ==0:#if not recording data
-            self.controller.deviceManager._realTimeProcessor._predictor.state =2 #record and label as descend
+        if self.controller.deviceManager._realTimeProcessor._predictor.state == 0:  # If not recording
+            self.controller.deviceManager._realTimeProcessor._predictor.state = 2  # Record as descend
             self.descendButtonName.set("End Descend Collection")
-        elif self.controller.deviceManager._realTimeProcessor._predictor.state ==2: #if recording
-            self.controller.deviceManager._realTimeProcessor._predictor.state =0 #stop
+        elif self.controller.deviceManager._realTimeProcessor._predictor.state == 2:  # If recording
+            self.controller.deviceManager._realTimeProcessor._predictor.state = 0  # Stop recording
             self.descendButtonName.set("Collect Descend Data")
 
+    # Handle Ascend Trial Button click
     async def on_ascend_trial_button_clicked(self):
-        if self.controller.deviceManager._realTimeProcessor._predictor.state ==0: #if not recording data
-            self.controller.deviceManager._realTimeProcessor._predictor.state =3 #record and label as ascend
+        if self.controller.deviceManager._realTimeProcessor._predictor.state == 0:  # If not recording
+            self.controller.deviceManager._realTimeProcessor._predictor.state = 3  # Record as ascend
             self.ascendButtonName.set("End Ascend Collection")
-        elif self.controller.deviceManager._realTimeProcessor._predictor.state ==3: #if recording
-            self.controller.deviceManager._realTimeProcessor._predictor.state =0 #stop
+        elif self.controller.deviceManager._realTimeProcessor._predictor.state == 3:  # If recording
+            self.controller.deviceManager._realTimeProcessor._predictor.state = 0  # Stop recording
             self.ascendButtonName.set("Collect Ascend Data")
-    
-    async def on_model_button_clicked(self):
-        if not (self.controller.deviceManager._realTimeProcessor._predictor.modelExists): #if there is no model
-            if len(self.controller.deviceManager._realTimeProcessor._predictor.database): #if there is data 
-                self.controller.deviceManager._realTimeProcessor._predictor.createModel() #create the model
-                self.modelButtonName.set("Stair Model Active " + str(self.controller.deviceManager._realTimeProcessor._predictor.optimizedscore) +"% Acc")
-                if self.controller.deviceManager._realTimeProcessor._predictor.database: #if we collected data to generate a mode
-                    #save the data, for trouble shooting, replication, or future use
-                    self.modelDataWriter.writeToCsv(self.controller.deviceManager._realTimeProcessor._exo_data,self.controller.deviceManager._realTimeProcessor._predictor)
-            else:
-                self.modelButtonName.set("Collect Level, Descend, Ascend Data First") #do nothing and request the user collect data first
-        else:
-            self.modelButtonName.set("Stair Model Active " + str(self.controller.deviceManager._realTimeProcessor._predictor.optimizedscore) +"% Acc")
-            
-    
-    async def on_delete_model_button_clicked(self):
-        if self.confirmation==0: #flag
-            self.deleteModelButtonName.set("Are you Sure?") #ask the user to confirm intentions to delete model
-            self.confirmation=self.confirmation+1 
-        else:
-            self.controller.deviceManager._realTimeProcessor._predictor.deleteModel() #user indicated confirmation, delete model
-            self.modelButtonName.set("Create Stair Model") #reset labels and flags
-            self.deleteModelButtonName.set("Delete Model")
-            self.confirmation=0
 
+    # Handle Model Button click
+    async def on_model_button_clicked(self):
+        if not self.controller.deviceManager._realTimeProcessor._predictor.modelExists:  # If there is no model
+            if len(self.controller.deviceManager._realTimeProcessor._predictor.database):  # If there is data
+                self.controller.deviceManager._realTimeProcessor._predictor.createModel()  # Create the model
+                self.modelButtonName.set("Stair Model Active " + str(self.controller.deviceManager._realTimeProcessor._predictor.optimizedscore) + "% Acc")
+                # Save the data for troubleshooting or future use
+                if self.controller.deviceManager._realTimeProcessor._predictor.database:  
+                    self.modelDataWriter.writeToCsv(self.controller.deviceManager._realTimeProcessor._exo_data, self.controller.deviceManager._realTimeProcessor._predictor)
+            else:
+                self.modelButtonName.set("Collect Level, Descend, Ascend Data First")  # Prompt to collect data first
+        else:
+            self.modelButtonName.set("Stair Model Active " + str(self.controller.deviceManager._realTimeProcessor._predictor.optimizedscore) + "% Acc")
+
+    # Handle Delete Model Button click
+    async def on_delete_model_button_clicked(self):
+        if self.confirmation == 0:  # Flag for confirmation
+            self.deleteModelButtonName.set("Are you Sure?")  # Ask for confirmation
+            self.confirmation += 1 
+        else:
+            self.controller.deviceManager._realTimeProcessor._predictor.deleteModel()  # Delete model
+            self.modelButtonName.set("Create Stair Model")  # Reset labels and flags
+            self.deleteModelButtonName.set("Delete Model")
+            self.confirmation = 0
+
+    # Handle Mark Button click
     async def on_mark_button_clicked(self):
         self.controller.deviceManager._realTimeProcessor._exo_data.MarkVal += 1
-        self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel.set("Mark: " +str(self.controller.deviceManager._realTimeProcessor._exo_data.MarkVal))
+        self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel.set("Mark: " + str(self.controller.deviceManager._realTimeProcessor._exo_data.MarkVal))
 
+    # Handle Recalibrate FSRs Button click
     async def on_recal_FSR_button_clicked(self):
         await self.recalibrateFSR()
 
+    # Recalibrate FSRs
     async def recalibrateFSR(self):
         await self.controller.deviceManager.calibrateFSRs()
 
+    # Handle End Trial Button click
     async def on_end_trial_button_clicked(self):
         await self.endTrialButtonClicked()
 
+    # End Trial Button click functionality
     async def endTrialButtonClicked(self):
         await self.ShutdownExo()
         self.controller.show_frame("ScanWindow")
 
+    # Update plots based on selection
     def update_plots(self, selection):
-        # Cancel the previous update job if it exists
+        # Cancel previous update job if it exists
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
 
@@ -263,44 +291,41 @@ class MachineLearning(tk.Frame):
             plot.animate(selection)
 
         # Schedule the next update
-        self.plot_update_job = self.after(
-            20, self.update_plots, selection
-        )  # Schedule with a delay
-        # Enable interactions after the first plot update is complete
-        self.after(20, self.enable_interactions)
+        self.plot_update_job = self.after(20, self.update_plots, selection)  # Schedule with a delay
+        self.after(20, self.enable_interactions)  # Enable interactions after first update
 
+    # Handle new selection in dropdown
     def newSelection(self, event=None):
-        # Disable buttons and dropdown until proccess complete
+        # Disable buttons and dropdown until process completes
         self.disable_interactions()
 
         # Determine which plots to show
         selection = self.chartVar.get()
         self.update_plots(selection)
 
+    # Disable interactions for buttons and dropdown
     def disable_interactions(self):
-        # Disable all interactive elements
         self.chartDropdown.config(state='disabled')
         for widget in self.winfo_children():
             if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
                 widget.config(state='disabled')
 
+    # Enable interactions for buttons and dropdown
     def enable_interactions(self):
-        # Enable all interactive elements
         self.chartDropdown.config(state='normal')
         for widget in self.winfo_children():
             if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
                 widget.config(state='normal')
 
+    # Stop plot updates
     def stop_plot_updates(self):
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
             self.plot_update_job = None
 
+    # Shutdown the exoskeleton
     async def ShutdownExo(self):
-        # End trial
         await self.controller.deviceManager.motorOff()  # Turn off motors
         await self.controller.deviceManager.stopTrial()  # End trial
-        # Disconnect from Exo
-        self.controller.trial.loadDataToCSV(
-            self.controller.deviceManager
-        )  # Load data from Exo into CSV
+        # Load data from Exo into CSV
+        self.controller.trial.loadDataToCSV(self.controller.deviceManager)

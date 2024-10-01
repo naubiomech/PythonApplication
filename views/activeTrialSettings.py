@@ -55,7 +55,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
 
         # Calibrate Menu label
         calibrationMenuLabel = tk.Label(
-            self, text="Update Torque Settings", font=("Arial", 40)
+            self, text="Update Controller Settings", font=("Arial", 40)
         )
         calibrationMenuLabel.pack(anchor=CENTER, side=TOP, pady=15)
 
@@ -75,7 +75,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
             self,
             textvariable=self.bilateralButtonVar,
             height=2,
-            width=10,
+            width=15,
             command=self.toggleBilateral,
         )
 
