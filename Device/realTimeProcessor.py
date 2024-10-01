@@ -97,6 +97,7 @@ class RealTimeProcessor:
         rightFsr = payload[6] if datalength >= 7 else 0
         leftFsr = payload[7] if datalength >= 8 else 0
         #record features
+        #feature 1-7 change every spot in the code
         minSV = payload[8] if datalength >= 9 else 0
         maxSV = payload[9] if datalength >= 10 else 0
         minSA = payload[10] if datalength >= 11 else 0

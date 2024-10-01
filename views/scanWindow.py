@@ -12,6 +12,7 @@ class ScanWindow(tk.Frame):
         self.deviceNameText = StringVar()  # Variable to hold device name text
         self.startTrialButton = None  # Button for starting the trial
         self.calTorqueButton = None
+        self.startScanButton = None  # Store reference to Start Scan button
 
         self.create_widgets()  # Create UI elements
 
@@ -35,15 +36,14 @@ class ScanWindow(tk.Frame):
         deviceNameLabel.pack(expand=False, pady=10)
 
         # Button to start scanning for devices
-        startScanButton = tk.Button(
+        self.startScanButton = tk.Button(
             self,
             height=2,
             width=10,
             text="Start Scan",
             command=async_handler(self.on_start_scan_button_clicked),
         )
-        startScanButton.pack(expand=False, fill=Y, ipadx=40, pady=100)
-
+        self.startScanButton.pack(expand=False, fill=Y, ipadx=40, pady=100)
 
         # Button to start the trial (initially disabled)
         self.startTrialButton = tk.Button(
@@ -56,7 +56,8 @@ class ScanWindow(tk.Frame):
         self.startTrialButton.pack(
             expand=False, fill=BOTH, side=BOTTOM, pady=20, padx=20
         )
-        #Calibrate Torque
+
+        # Calibrate Torque
         self.calTorqueButton = tk.Button(
             self,
             text="Calibrate Torque",
@@ -68,7 +69,9 @@ class ScanWindow(tk.Frame):
     # Async function to handle the start scan button click
     async def on_start_scan_button_clicked(self):
         self.deviceNameText.set("Scanning...")  # Update device name text
+        self.startScanButton.config(state=DISABLED)  # Disable the Start Scan button
         await self.startScanButtonClicked()  # Initiate the scanning process
+        self.startScanButton.config(state="normal")  # Re-enable the Start Scan button after scanning
 
     async def on_calibrate_torque_button_clicked(self):
         await self.controller.trial.calibrate(self.controller.deviceManager)
@@ -85,6 +88,8 @@ class ScanWindow(tk.Frame):
         if self.deviceNameText.get() != "None":
             self.startTrialButton.config(state="normal")
             self.calTorqueButton.config(state="normal")
+        else:
+            self.deviceNameText.set("Not Connected. Try Again.")  # Provide feedback if not connected
 
     # Handle the start trial button click
     async def on_start_trial_button_clicked(self):
@@ -103,3 +108,4 @@ class ScanWindow(tk.Frame):
 
         # Starts new selection once Active trial has started
         active_trial_frame.newSelection(self)
+
