@@ -1,6 +1,6 @@
 import csv
 
-from _datetime import datetime
+from datetime import datetime
 
 
 class CsvWritter:
@@ -53,6 +53,26 @@ class CsvWritter:
             lFsr.append(lF)
         for tS in exoData.tStep:
             tStep.append(tS)
+        for min in exoData.MinShankVel:
+            minSV.append(min)
+        for max in exoData.MaxShankVel:
+            maxSV.append(max)
+        for inSA in exoData.MinShankAng:
+            minSA.append(inSA)
+        for axSA in exoData.MaxShankAng:
+            maxSA.append(axSA)
+        for fsr in exoData.MaxFSR:
+            maxFSR.append(fsr)
+        for task in exoData.Task:
+            Task.append(task)
+        for trig in exoData.Mark:
+            mark.append(trig)
+        for moment in exoData.StanceTime:
+            stancetime.append(moment)
+        for moment in exoData.SwingTime:
+            swingtime.append(moment)
+
+
         for min in exoData.tStep:
             minSV.append(min)
         for max in exoData.MaxShankVel:
@@ -90,6 +110,7 @@ class CsvWritter:
         fileData.append(swingtime)
         fileData.append(Task)
         fileData.append(mark)
+
         
         # rotate 2D array to place lables on top
         fileDataTransposed = self.rotateArray(fileData)

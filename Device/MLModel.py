@@ -33,6 +33,8 @@ class MLModel:
         self.descendStepsLabel.set(str(self.descendSteps))
         self.ascendStepsLabel=StringVar()
         self.ascendStepsLabel.set(str(self.ascendSteps))
+        self.controlModeLabel=StringVar()
+        self.controlMode=0
         
 
         try: #check whether or not we already have a model made previously

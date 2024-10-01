@@ -55,6 +55,29 @@ class ExoDeviceManager:
 
     async def DataIn(self, sender: BleakGATTCharacteristic, data: bytearray):
         self._realTimeProcessor.processEvent(data)
+        await self.MachineLearnerControl()
+
+
+    async def MachineLearnerControl(self):
+        if self._realTimeProcessor._predictor.modelExists: #if the machine model exists
+            #print("Model Exists")
+            if self._realTimeProcessor._predictor.controlMode==1: #if the mahine learning model authorized control
+                #print("Machine Learning Mode Engaged")
+                if self._realTimeProcessor._exo_data.Task[-2] != self._realTimeProcessor._predictor.prediction:
+                    print("Prediction Changed") 
+                    #check to see if current prediction has changed from previous prediction
+                    if self._realTimeProcessor._predictor.prediction == 1: #if the state is level, medium stiffness
+                        await self.sendStiffness(0.5)
+                    elif self._realTimeProcessor._predictor.prediction == 2: #if state is descend, high stiffness (better braking?)
+                        await self.sendStiffness(1)
+                    elif self._realTimeProcessor._predictor.prediction == 3: #if state is ascend, low stiffness (maximum range of motion?)
+                        await self.sendStiffness(0)
+                    else:
+                        await self.sendStiffness(0.5)
+                    
+                
+            #else:
+                #print("Manual Mode")
 
     def get_char_handle(self, char_UUID):
         return self.services.get_service(self.UART_SERVICE_UUID).get_characteristic(
@@ -255,30 +278,15 @@ class ExoDeviceManager:
         char = self.get_char_handle(self.UART_TX_UUID)
         await self.client.write_gatt_char(char, command, False) #send the command code
 
-
-    
-        stiff_bytes= struct.pack("<i", stiffness)
+        stiff_bytes= struct.pack("<d", stiffness)
         await self.client.write_gatt_char(char, stiff_bytes, False) #followed by our data
         print(f"Stiffness is {stiffness}")
     # -----------------------------------------------------------------------------
 
-        # ----------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
     # Send stiffness values to Exo, helper function 
-    async def newStiffness(self, stiffness):
-        await self.sendStiffness(stiffness) #send the command code
+    async def newStiffness(self, stiffnessInput):
+        stiffnessVal = float(stiffnessInput.get(1.0, "end-1c"))
+        await self.sendStiffness(stiffnessVal) #send the command code
         
-    # -----------------------------------------------------------------------------
-
-        # ----------------------------------------------------------------------------
-    # Send stiffness values to Exo
-    async def isAlive(self, stiffness):
-        command = bytearray(b"P") #character code, keyed to Arduino software
-        char = self.get_char_handle(self.UART_TX_UUID)
-        await self.client.write_gatt_char(char, command, False) #send the command code
-        stiff_bytes= struct.pack("<f", stiffness)
-        await self.client.write_gatt_char(char, stiff_bytes, False) #followed by our data
-        print(f"Stiffness is {stiffness}")
-
-
-        print("Anyone there?")
     # -----------------------------------------------------------------------------
