@@ -19,6 +19,7 @@ class RealTimeProcessor:
         self._data_length = None
         self.x_time = 0
         self._predictor= MLModel.MLModel() #create the machine learning model object
+        
 
     def processEvent(self, event):
         # Decode data from bytearry->String
@@ -141,6 +142,7 @@ class RealTimeProcessor:
             self._predictor.prediction, #store prediction
             battery
         )
+        
 
     def processMessage(
         self, command, payload, dataLength

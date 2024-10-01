@@ -27,6 +27,8 @@ class MachineLearning(tk.Frame):
         self.ascendButtonName=StringVar()
         self.modelButtonName=StringVar()
         self.deleteModelButtonName=StringVar()
+        #self.controlModeLabel=StringVar()
+        #self.controlMode=0
         self.confirmation=0 #used as a flag to request second confirmation form user to delete model
         self.modelDataWriter = saveModelData.CsvWritter()
         
@@ -166,6 +168,24 @@ class MachineLearning(tk.Frame):
         )
         deleteModelButton.place(relx=0.1, rely=0.9)
 
+        stiffnessInput = tk.Text(self, height=2, width=10)
+        stiffnessInput.place(relx=0.9, rely=0.65)
+        
+        updateStiffnessButton = tk.Button(
+            self,
+            text="Update Stiffness",
+            command=async_handler(self.controller.deviceManager.newStiffness,stiffnessInput),
+        )
+        updateStiffnessButton.place(relx=0.9, rely=0.7)
+
+        self.controller.deviceManager._realTimeProcessor._predictor.controlModeLabel.set("Control Mode: Manual")
+        toggleControlButton = tk.Button(
+            self,
+            textvariable=self.controller.deviceManager._realTimeProcessor._predictor.controlModeLabel,
+            command=async_handler(self.on_toggle_control_button_clicked),
+        )
+        toggleControlButton.place(relx=0.9, rely=0.75)
+
     def go_to_update_torque(self):
         # Set the previous frame to this one
         self.controller.frames["UpdateTorque"].previous_frame = "MachineLearning"
@@ -235,6 +255,18 @@ class MachineLearning(tk.Frame):
             self.modelButtonName.set("Create Stair Model") #reset labels and flags
             self.deleteModelButtonName.set("Delete Model")
             self.confirmation=0
+    
+    async def toggleControl(self):
+        self.controller.deviceManager._realTimeProcessor._predictor.controlMode+=1 #toggle to the next mode
+        if self.controller.deviceManager._realTimeProcessor._predictor.controlMode==1: #check new mode
+            self.controller.deviceManager._realTimeProcessor._predictor.controlModeLabel.set("Control Mode: Machine Learner") 
+        else: #if we exceed total number of modes, return to default
+            self.controller.deviceManager._realTimeProcessor._predictor.controlMode=0
+            self.controller.deviceManager._realTimeProcessor._predictor.controlModeLabel.set("Control Mode: Manual") 
+            
+
+    async def on_toggle_control_button_clicked(self):
+        await self.toggleControl()
 
     async def on_mark_button_clicked(self):
         self.controller.deviceManager._realTimeProcessor._exo_data.MarkVal += 1
