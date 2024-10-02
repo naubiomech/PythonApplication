@@ -1,4 +1,5 @@
 import tkinter as tk
+
 from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, N, StringVar,
                      W, X, Y, ttk)
 
@@ -62,7 +63,17 @@ class ActiveTrial(tk.Frame):
             command=self.go_to_update_torque,
         )
         updateTorqueButton.pack(side=LEFT, padx=7)  # Pack the button to the left
-        
+
+        # Recalibrate FSRs Button
+        self.recalibrateFSRButton = tk.Button(
+            self,
+            text="Recalibrate FSRs",
+            height=2,
+            width=20,
+            command=async_handler(self.on_recal_FSR_button_clicked),
+        )
+        self.recalibrateFSRButton.pack(side=LEFT, padx=7)
+
         BioFeedbackButton = tk.Button(
             self,
             text="Bio Feedback",
@@ -151,7 +162,15 @@ class ActiveTrial(tk.Frame):
     def show(self):
         # Show the frame and update plots
         self.newSelection()
-        
+
+    # Handle Recalibrate FSRs Button click
+    async def on_recal_FSR_button_clicked(self):
+        await self.recalibrateFSR()
+
+    # Recalibrate FSRs
+    async def recalibrateFSR(self):
+        await self.controller.deviceManager.calibrateFSRs()
+
     async def on_end_trial_button_clicked(self):
         await self.endTrialButtonClicked()
 

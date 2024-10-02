@@ -89,13 +89,25 @@ class BioFeedback(tk.Frame):
         self.target_label = tk.Label(self, textvariable=self.target_var, font=("Arial", 20))
         self.target_label.pack(side=TOP, anchor=CENTER, pady=10)
 
+        # Frame for advanced buttons
+        advanced_frame = tk.Frame(self)
+        advanced_frame.pack(side=TOP, anchor=CENTER, pady=10)
+        
         # Mark Trial Button
         markButton = tk.Button(
-            self,
+            advanced_frame,
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel,
             command=async_handler(self.on_mark_button_clicked),
         )
-        markButton.pack(side=TOP, anchor=CENTER, pady=10)
+        markButton.pack(side=LEFT, anchor=CENTER, padx=5)
+
+        # Recalibrate FSRs Button
+        self.recalibrateFSRButton = tk.Button(
+            advanced_frame,
+            text="Recalibrate FSRs",
+            command=async_handler(self.on_recal_FSR_button_clicked),
+        )
+        self.recalibrateFSRButton.pack(side=LEFT, anchor=CENTER, padx=5)
 
     def ask_target_value(self):
         # Prompt the user for a target value
@@ -186,3 +198,11 @@ class BioFeedback(tk.Frame):
         self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel.set(
             "Mark: " + str(self.controller.
                 deviceManager._realTimeProcessor._exo_data.MarkVal))
+
+    # Handle Recalibrate FSRs Button click
+    async def on_recal_FSR_button_clicked(self):
+        await self.recalibrateFSR()
+
+    # Recalibrate FSRs
+    async def recalibrateFSR(self):
+        await self.controller.deviceManager.calibrateFSRs()
