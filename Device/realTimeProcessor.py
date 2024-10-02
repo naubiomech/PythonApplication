@@ -88,28 +88,26 @@ class RealTimeProcessor:
         self, payload, datalength
     ):  # Place general data derived from message to Exo data
         self.x_time += 1
-        rightTorque = payload[0]
-        rightSate = payload[1]
-        rightSet = payload[2]
-        leftTorque = payload[3]
-        leftState = payload[4]
-        leftSet = payload[5]
-        rightFsr = payload[6] if datalength >= 7 else 0
-        leftFsr = payload[7] if datalength >= 8 else 0
-        #record features
-        #feature 1-7 change every spot in the code
-        minSV = payload[8] if datalength >= 9 else 0
-        maxSV = payload[9] if datalength >= 10 else 0
-        minSA = payload[10] if datalength >= 11 else 0
-        maxSA = payload[11] if datalength >= 12 else 0
-        battery = payload[12] if datalength >= 13 else 0
-        maxFSR = payload[13] if datalength >= 14 else 0
-        stancetime = payload[14] if datalength >= 15 else 0
-        swingtime = payload[15] if datalength >= 16 else 0
+        rightTorque = payload[0] if len(payload) > 0 else 0
+        rightState = payload[1] if len(payload) > 1 else 0
+        rightSet = payload[2] if len(payload) > 2 else 0
+        leftTorque = payload[3] if len(payload) > 3 else 0
+        leftState = payload[4] if len(payload) > 4 else 0
+        leftSet = payload[5] if len(payload) > 5 else 0
+        rightFsr = payload[6] if datalength >= 7 and len(payload) > 6 else 0
+        leftFsr = payload[7] if datalength >= 8 and len(payload) > 7 else 0
+        minSV = payload[8] if datalength >= 9 and len(payload) > 8 else 0
+        maxSV = payload[9] if datalength >= 10 and len(payload) > 9 else 0
+        minSA = payload[10] if datalength >= 11 and len(payload) > 10 else 0
+        maxSA = payload[11] if datalength >= 12 and len(payload) > 11 else 0
+        battery = payload[12] if datalength >= 13 and len(payload) > 12 else 0
+        maxFSR = payload[13] if datalength >= 14 and len(payload) > 13 else 0
+        stancetime = payload[14] if datalength >= 15 and len(payload) > 14 else 0
+        swingtime = payload[15] if datalength >= 16 and len(payload) > 15 else 0
 
         self._chart_data.updateValues(
             rightTorque,
-            rightSate,
+            rightState,
             leftTorque,
             leftState,
             rightSet,
@@ -125,7 +123,7 @@ class RealTimeProcessor:
         self._exo_data.addDataPoints(
             self.x_time,
             rightTorque,
-            rightSate,
+            rightState,
             rightSet,
             leftTorque,
             leftState,

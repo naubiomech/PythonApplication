@@ -47,7 +47,8 @@ class BioFeedback(tk.Frame):
 
         # For battery Label
         batteryPercentLabel = tk.Label(self, 
-            textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
+            textvariable=self.controller.
+            deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
                 font=("Arial", 12))
         batteryPercentLabel.pack(side=TOP, anchor=E, pady=0, padx=0)
 
@@ -62,7 +63,8 @@ class BioFeedback(tk.Frame):
         self.plot_update_job = None  # Store the job reference for plot updates
 
         # Label to display targets reached
-        self.targets_reached_label = tk.Label(self, text="Targets Reached: 0", font=("Arial", 20))
+        self.targets_reached_label = tk.Label(self, text="Targets Reached: 0",
+                                               font=("Arial", 20))
         self.targets_reached_label.pack(side=TOP, anchor=CENTER, pady=10)
 
         # Create the buttons and labels
@@ -74,16 +76,26 @@ class BioFeedback(tk.Frame):
         target_frame.pack(side=TOP, anchor=CENTER, pady=10)
 
         # Button to set target value
-        self.target_button = tk.Button(target_frame, text="Set Target Value", command=self.ask_target_value)
+        self.target_button = tk.Button(target_frame, text="Set Target Value", 
+            command=self.ask_target_value)
         self.target_button.pack(side=LEFT, padx=5)
 
         # Reset button for target value
-        self.reset_button = tk.Button(target_frame, text="Reset Target Value", command=self.reset_target, state="disabled")
+        self.reset_button = tk.Button(target_frame, 
+            text="Reset Target Value", command=self.reset_target, state="disabled")
         self.reset_button.pack(side=LEFT, padx=5)
 
         # Label to display the target value
         self.target_label = tk.Label(self, textvariable=self.target_var, font=("Arial", 20))
         self.target_label.pack(side=TOP, anchor=CENTER, pady=10)
+
+        # Mark Trial Button
+        markButton = tk.Button(
+            self,
+            textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel,
+            command=async_handler(self.on_mark_button_clicked),
+        )
+        markButton.pack(side=TOP, anchor=CENTER, pady=10)
 
     def ask_target_value(self):
         # Prompt the user for a target value
@@ -168,3 +180,9 @@ class BioFeedback(tk.Frame):
     def show(self):
         # Show the current selection in the plots
         self.newSelection()  # Update the plots based on current selection
+
+    async def on_mark_button_clicked(self):
+        self.controller.deviceManager._realTimeProcessor._exo_data.MarkVal += 1
+        self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel.set(
+            "Mark: " + str(self.controller.
+                deviceManager._realTimeProcessor._exo_data.MarkVal))
