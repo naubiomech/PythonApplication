@@ -29,4 +29,8 @@ This program when starting up creates a window with tkinter. To start scanning f
 To start the program run the command in any terminal `python3 GUI.py` which is where main() is found and will initialize the windows and frames of the program.
 
 ## Video Example
-<video src="./Resources/video1508385852.mp4" controls></video>
+
+
+
+https://github.com/user-attachments/assets/6269629e-252b-4e77-b327-0914770ae9e3
+
