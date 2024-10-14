@@ -19,6 +19,9 @@ class ExoDeviceManager:
         self.client = None
         self.services = None
         self.scanResults = None
+        # Initialize FSR values
+        self.curr_left_fsr_value = 0.25
+        self.curr_right_fsr_value = 0.25
         # UUID characteristic
         # Nordic NUS characteristic for TX
         self.UART_TX_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
@@ -150,7 +153,6 @@ class ExoDeviceManager:
 
     # jointKey, controller, parameter, value):
     async def updateTorqueValues(self, parameter_list):
-
         totalLoops = 1
         loopCount = 0
         float_values = parameter_list
@@ -231,17 +233,25 @@ class ExoDeviceManager:
     # -----------------------------------------------------------------------------
 
     # Send FSR values to Exo
-    async def sendFsrValues(self, fsrValList):
-        command = bytearray(b"R")
+    async def sendFsrValues(self, left_fsr, right_fsr):
+        command = bytearray(b"R")  # Command to indicate sending FSR values
         char = self.get_char_handle(self.UART_TX_UUID)
+        
+        # Update the stored values
+        self.curr_left_fsr_value = left_fsr
+        self.curr_right_fsr_value = right_fsr
 
-        fsrVals = fsrValList
-        for i in range(0, len(fsrVals)):
-            fsr_bytes = struct.pack("<d", fsrVals[i])
-            char = self.get_char_handle(self.UART_TX_UUID)
+        # Send the command to indicate that we are sending FSR values
+        await self.client.write_gatt_char(char, command, False)
+
+        # Pack the left and right FSR values as doubles
+        for fsr_value in (left_fsr, right_fsr):  # Loop over both values
+            fsr_bytes = struct.pack("<d", fsr_value)  # Pack each value as double
             await self.client.write_gatt_char(char, fsr_bytes, False)
-
     # -----------------------------------------------------------------------------
+
+    async def sendPresetFsrValues(self):
+        await self.sendFsrValues(self.curr_left_fsr_value, self.curr_right_fsr_value)
 
     # Send stop trial command
     async def stopTrial(self):
@@ -269,9 +279,8 @@ class ExoDeviceManager:
 
         await self.client.write_gatt_char(char, command, False)
 
-    # -----------------------------------------------------------------------------
-
     # ----------------------------------------------------------------------------
+    
     # Send stiffness values to Exo
     async def sendStiffness(self, stiffness):
         command = bytearray(b"A") #character code, keyed to Arduino software
@@ -281,9 +290,9 @@ class ExoDeviceManager:
         stiff_bytes= struct.pack("<d", stiffness)
         await self.client.write_gatt_char(char, stiff_bytes, False) #followed by our data
         print(f"Stiffness is {stiffness}")
+   
     # -----------------------------------------------------------------------------
-
-    # ----------------------------------------------------------------------------
+    
     # Send stiffness values to Exo, helper function 
     async def newStiffness(self, stiffnessInput):
         stiffnessVal = float(stiffnessInput.get(1.0, "end-1c"))

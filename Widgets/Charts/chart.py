@@ -26,9 +26,10 @@ class BasePlot:
         raise NotImplementedError("Subclasses should implement this method")
 
     def update_plot(self, xValues, yValues, secondY, title):
-        xValues = xValues[-20:]
-        yValues = yValues[-20:]
-        secondY = secondY[-20:]
+        max_points = -20
+        xValues = xValues[max_points:]
+        yValues = yValues[max_points:]
+        secondY = secondY[max_points:]
 
         self.ax.clear()
         self.ax.plot(xValues, yValues)

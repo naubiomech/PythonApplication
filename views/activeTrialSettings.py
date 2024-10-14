@@ -60,13 +60,13 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         calibrationMenuLabel.pack(anchor=CENTER, side=TOP, pady=15)
 
         # Controller label
-        controllerInputLabel = tk.Label(self, text="Controller", font=("Arial", 30))
+        controllerInputLabel = tk.Label(self, text="Controller", font=("Arial", 20))
         controllerInput = tk.Text(self, height=2, width=10)
         # Parameter Label
-        parameterInputLabel = tk.Label(self, text="Parameter", font=("Arial", 30))
+        parameterInputLabel = tk.Label(self, text="Parameter", font=("Arial", 20))
         parameterInput = tk.Text(self, height=2, width=10)
         # Value label
-        valueInputLabel = tk.Label(self, text="Value", font=("Arial", 30))
+        valueInputLabel = tk.Label(self, text="Value", font=("Arial", 20))
         valueInput = tk.Text(self, height=2, width=10)
 
         self.jointSelector.bind("<<ComboboxSelected>>", self.newSelection)
@@ -92,7 +92,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         # Button to start trial
         updateTorqueButton = tk.Button(
             self,
-            text="Update Torque",
+            text="Update Settings",
             height=2,
             width=10,
             command=async_handler(
@@ -116,7 +116,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
             active_trial_frame.newSelection(self)
         
     async def on_update_button_clicked(
-        self, controllerInput, parameterInput, valueInput
+        self, controllerInput, parameterInput, valueInput,
     ):
         await self.UpdateButtonClicked(
             self.isBilateral,
@@ -127,7 +127,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         )
 
     async def UpdateButtonClicked(
-        self, isBilateral, joint, controllerInput, parameterInput, valueInput
+        self, isBilateral, joint, controllerInput, parameterInput, valueInput,
     ):
 
         controllerVal = float(controllerInput.get(1.0, "end-1c"))

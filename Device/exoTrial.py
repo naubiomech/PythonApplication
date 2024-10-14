@@ -93,7 +93,7 @@ class ExoTrial:
         await deviceManager.calibrateFSRs()  # Begins Exo calibration
         print("calibrate fsr\n")
         # Send FSR value to Exo FSR
-        await deviceManager.sendFsrValues([0.30, 0.30])
+        await deviceManager.sendPresetFsrValues()
 
     # -----------------------------------------------------------------------------
 
