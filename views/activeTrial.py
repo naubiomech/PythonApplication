@@ -18,6 +18,10 @@ class ActiveTrial(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+
+        # Set the disconnection callback
+        self.controller.deviceManager.on_disconnect = self.ActiveTrial_on_device_disconnected
+
         self.var = IntVar()
         self.chartVar = StringVar()
         self.chartVar.set("Controller")
@@ -205,6 +209,13 @@ class ActiveTrial(tk.Frame):
         for widget in self.winfo_children():
             if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
                 widget.config(state='disabled')
+
+    def ActiveTrial_on_device_disconnected(self):
+        tk.messagebox.showwarning("Disconnected", "The device has been disconnected, saving CSV. Trying to reconnect")
+        self.controller.trial.loadDataToCSV(
+            self.controller.deviceManager, True
+        )  # Load data from Exo into CSV
+
 
     def enable_interactions(self):
         # Enable all interactive elements

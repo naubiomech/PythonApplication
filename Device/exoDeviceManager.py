@@ -13,15 +13,19 @@ from Device import realTimeProcessor
 
 class ExoDeviceManager:
 
-    def __init__(self):
+    def __init__(self,on_disconnect=None):
         self._realTimeProcessor = realTimeProcessor.RealTimeProcessor()
+        self.on_disconnect = on_disconnect  # Store the callback
+
         self.device = None
         self.client = None
         self.services = None
         self.scanResults = None
+
         # Initialize FSR values
         self.curr_left_fsr_value = 0.25
         self.curr_right_fsr_value = 0.25
+
         # UUID characteristic
         # Nordic NUS characteristic for TX
         self.UART_TX_UUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
@@ -30,6 +34,7 @@ class ExoDeviceManager:
         self.UART_SERVICE_UUID = (
             "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"  # Nordic Service UUID
         )
+        
         # Joint dictionary to map menu selection to joint ID
         self.jointDictionary = {
             1: 33.0,
@@ -100,11 +105,12 @@ class ExoDeviceManager:
 
     # Callback function to disconnect exo from system
     def handleDisconnect(self, _: BleakClient):
-        self.isConnected = False
-        print("Device was disconnected")
-        # cancelling all tasks effectively ends the program
-        for task in asyncio.all_tasks():
-            task.cancel()
+        print("Disconnecting...")  # Check if this is reached
+        if self.on_disconnect:
+            print("Calling disconnect callback...")
+            self.on_disconnect()
+        else:
+            print("No disconnect callback assigned.")
 
     # -----------------------------------------------------------------------------
 

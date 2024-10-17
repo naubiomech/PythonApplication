@@ -21,6 +21,9 @@ class BioFeedback(tk.Frame):
         self.chartVar = StringVar()  # Variable for storing the selected leg
         self.chartVar.set("Left Leg")  # Default selection
 
+        # Set the disconnection callback
+        self.controller.deviceManager.on_disconnect = self.BioFeedback_on_device_disconnected
+
         # Counter variable to track the number of goals reached
         self.counter = 0
         self.counter_var = IntVar(value=self.counter)
@@ -206,3 +209,13 @@ class BioFeedback(tk.Frame):
     # Recalibrate FSRs
     async def recalibrateFSR(self):
         await self.controller.deviceManager.calibrateFSRs()
+
+    def BioFeedback_on_device_disconnected(self):
+
+        # You can also update the UI or show a message to the user
+        tk.messagebox.showwarning("Disconnected", "The device has been disconnected, saving CSV. Please start scan again")
+        self.controller.trial.loadDataToCSV(
+            self.controller.deviceManager, True
+        )  # Load data from Exo into CSV
+
+        # You might want to switch frames or disable certain buttons as needed

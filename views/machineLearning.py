@@ -15,6 +15,9 @@ class MachineLearning(tk.Frame):
         # Controller object to switch frames
         self.controller = controller
         
+        # Set the disconnection callback
+        self.controller.deviceManager.on_disconnect = self.MachineLearning_on_device_disconnected
+
         # Variables to manage states and UI elements
         self.var = IntVar()
         self.chartVar = StringVar()
@@ -369,3 +372,13 @@ class MachineLearning(tk.Frame):
         await self.controller.deviceManager.stopTrial()  # End trial
         # Load data from Exo into CSV
         self.controller.trial.loadDataToCSV(self.controller.deviceManager)
+
+    def MachineLearning_on_device_disconnected(self):
+
+        # You can also update the UI or show a message to the user
+        tk.messagebox.showwarning("Disconnected", "The device has been disconnected, saving CSV. Please start scan again")
+        self.controller.trial.loadDataToCSV(
+            self.controller.deviceManager, True
+        )  # Load data from Exo into CSV
+
+        # You might want to switch frames or disable certain buttons as needed

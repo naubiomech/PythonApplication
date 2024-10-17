@@ -9,10 +9,13 @@ class ScanWindow(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller  # Reference to the main application controller
+        # Set the disconnection callback
+        self.controller.deviceManager.on_disconnect = self.ScanWindow_on_device_disconnected
         self.deviceNameText = StringVar()  # Variable to hold device name text
         self.startTrialButton = None  # Button for starting the trial
         self.calTorqueButton = None
         self.startScanButton = None  # Store reference to Start Scan button
+        self.scanning_animation_running = False  # Flag for animation state
 
         self.create_widgets()  # Create UI elements
 
@@ -66,12 +69,21 @@ class ScanWindow(tk.Frame):
         )
         self.calTorqueButton.pack(expand=False, fill=None, side=BOTTOM, pady=0, padx=0)
 
+    def ScanWindow_on_device_disconnected(self):
+
+        self.deviceNameText.set("Disconnected After Scan Try Again")  # Update device name text
+        self.startTrialButton.config(state=DISABLED)  # Disable the Start Scan button
+        self.calTorqueButton.config(state=DISABLED)  # Disable the Start Scan button
+        self.stop_scanning_animation()  # Stop animation on disconnect
+
+
     # Async function to handle the start scan button click
     async def on_start_scan_button_clicked(self):
         self.deviceNameText.set("Scanning...")  # Update device name text
-        self.startScanButton.config(state=DISABLED)  # Disable the Start Scan button
+        self.start_scanning_animation()  # Start the animation        
         await self.startScanButtonClicked()  # Initiate the scanning process
         self.startScanButton.config(state="normal")  # Re-enable the Start Scan button after scanning
+        self.stop_scanning_animation()  # Stop the animation after scanning
 
     async def on_calibrate_torque_button_clicked(self):
         await self.controller.trial.calibrate(self.controller.deviceManager)
@@ -90,6 +102,23 @@ class ScanWindow(tk.Frame):
             self.calTorqueButton.config(state="normal")
         else:
             self.deviceNameText.set("Not Connected. Try Again.")  # Provide feedback if not connected
+
+    def start_scanning_animation(self):
+        self.scanning_animation_running = True
+        self.animate_scanning_dots(0)
+
+    def stop_scanning_animation(self):
+        self.scanning_animation_running = False
+
+    def animate_scanning_dots(self, count):
+        if not self.scanning_animation_running:
+            return
+
+        dots = "." * ((count % 3) + 1)  # Cycle through 1 to 3 dots
+        self.deviceNameText.set(f"Scanning{dots}")
+
+        # Schedule the next update
+        self.after(500, self.animate_scanning_dots, count + 1)
 
     # Handle the start trial button click
     async def on_start_trial_button_clicked(self):

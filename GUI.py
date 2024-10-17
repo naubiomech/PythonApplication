@@ -40,6 +40,14 @@ class ControllerApp(tk.Tk):
         if frame == "ActiveTrial":
             self.frame[frame].show()
 
+        # Used to fixed disconnect handler function from being overwritten
+        # Construct the disconnect handler name
+        disconnect_handler_name = f"{page_name}_on_device_disconnected"
+        
+        # Use getattr to set the disconnect handler, defaulting to a general handler if not found
+        self.deviceManager.on_disconnect = getattr(frame, disconnect_handler_name)
+
+
         # Stop plot updates when switching frames
         if hasattr(self.frames.get("ActiveTrial", None), "stop_plot_updates"):
             self.frames["ActiveTrial"].stop_plot_updates()

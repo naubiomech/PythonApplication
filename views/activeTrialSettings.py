@@ -23,6 +23,9 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         self.controller = controller  # Controller object to switch frames
         self.previous_frame = None  # Track the previous frame
 
+        # Set the disconnection callback
+        self.controller.deviceManager.on_disconnect = self.UpdateTorque_on_device_disconnected
+
         self.bilateralButtonVar = StringVar()
         self.bilateralButtonVar.set("Bilateral Mode On")
         self.jointVar = StringVar()
@@ -156,6 +159,16 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
 
     def newSelection(self, event):
         self.jointVar.set(self.jointSelector.get())
+
+    def UpdateTorque_on_device_disconnected(self):
+
+        # You can also update the UI or show a message to the user
+        tk.messagebox.showwarning("Disconnected", "The device has been disconnected, saving CSV. Please start scan again")
+        self.controller.trial.loadDataToCSV(
+            self.controller.deviceManager, True
+        )  # Load data from Exo into CSV
+
+        # You might want to switch frames or disable certain buttons as needed
 
     def toggleBilateral(self):
         if self.isBilateral is True:

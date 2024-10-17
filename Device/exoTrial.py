@@ -119,5 +119,5 @@ class ExoTrial:
     # -----------------------------------------------------------------------------
 
     # Loads exo data into csv
-    def loadDataToCSV(self, deviceManager):
-        self.csvWriter.writeToCsv(deviceManager._realTimeProcessor._exo_data)
+    def loadDataToCSV(self, deviceManager,disconnect = False):
+        self.csvWriter.writeToCsv(deviceManager._realTimeProcessor._exo_data,disconnect)
