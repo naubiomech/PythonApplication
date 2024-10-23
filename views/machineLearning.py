@@ -374,11 +374,9 @@ class MachineLearning(tk.Frame):
         self.controller.trial.loadDataToCSV(self.controller.deviceManager)
 
     def MachineLearning_on_device_disconnected(self):
-
-        # You can also update the UI or show a message to the user
-        tk.messagebox.showwarning("Disconnected", "The device has been disconnected, saving CSV. Please start scan again")
+        tk.messagebox.showwarning("Device Disconnected", "Please Reconnect")
         self.controller.trial.loadDataToCSV(
             self.controller.deviceManager, True
         )  # Load data from Exo into CSV
-
-        # You might want to switch frames or disable certain buttons as needed
+        self.controller.show_frame("ScanWindow")  # Navigate back to the scan page
+            

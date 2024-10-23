@@ -3,6 +3,7 @@ import tkinter as tk
 import cProfile
 import pstats
 import io
+import time
 
 from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, N, StringVar,
                      W, X, Y, ttk)
@@ -21,7 +22,7 @@ class ActiveTrial(tk.Frame):
 
         # Set the disconnection callback
         self.controller.deviceManager.on_disconnect = self.ActiveTrial_on_device_disconnected
-
+        
         self.var = IntVar()
         self.chartVar = StringVar()
         self.chartVar.set("Controller")
@@ -35,9 +36,23 @@ class ActiveTrial(tk.Frame):
                 "Sensor",
             ],
         )
+
+        # Create a frame for the title and end trial button
+        title_frame = tk.Frame(self)
+        title_frame.pack(side=TOP, pady=10, fill=X)
+
+        # End Trial Button
+        endTrialButton = tk.Button(
+            title_frame,
+            text="End Trial",
+            height=2,
+            command=async_handler(self.on_end_trial_button_clicked),
+        )
+        endTrialButton.pack(side=LEFT)  # Pack the button next to the title
+        
         # Active Trial title label
-        calibrationMenuLabel = tk.Label(self, text="Active Trial", font=("Arial", 40))
-        calibrationMenuLabel.pack(side=TOP, anchor=N, pady=10)
+        calibrationMenuLabel = tk.Label(title_frame, text="Active Trial", font=("Arial", 40))
+        calibrationMenuLabel.pack(side=TOP, anchor=N, fill=X)
 
         # For battery Label
         batteryPercentLabel = tk.Label(self, 
@@ -61,7 +76,7 @@ class ActiveTrial(tk.Frame):
     def create_widgets(self):
         # Update torque button
         button_frame = tk.Frame(self)
-        button_frame.pack(side=BOTTOM, pady=7)  # Pack the button frame at the bottom
+        button_frame.pack(side=BOTTOM, pady=7, fill=X)  # Pack the button frame at the bottom
 
         updateTorqueButton = tk.Button(
             self,
@@ -113,20 +128,10 @@ class ActiveTrial(tk.Frame):
             self,
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel,
             height=2,
-            width=20,
+            width=10,
             command=async_handler(self.on_mark_button_clicked),
         )
-        markButton.pack(side=LEFT, anchor=CENTER, padx=5)
-
-        # End Trial Button
-        endTrialButton = tk.Button(
-            self,
-            text="End Trial",
-            height=2,
-            width=20,
-            command=async_handler(self.on_end_trial_button_clicked),
-        )
-        endTrialButton.pack(side=RIGHT, padx=7)  # Pack the button to the left
+        markButton.pack(side=LEFT, padx=7)
 
     def create_fsr_input_dialog(self):
         # Create a new Toplevel window for input
@@ -211,12 +216,14 @@ class ActiveTrial(tk.Frame):
                 widget.config(state='disabled')
 
     def ActiveTrial_on_device_disconnected(self):
-        tk.messagebox.showwarning("Disconnected", "The device has been disconnected, saving CSV. Trying to reconnect")
+        tk.messagebox.showwarning("Device Disconnected", "Please Reconnect")
+        
         self.controller.trial.loadDataToCSV(
             self.controller.deviceManager, True
         )  # Load data from Exo into CSV
 
-
+        self.controller.show_frame("ScanWindow")  # Navigate back to the scan page
+            
     def enable_interactions(self):
         # Enable all interactive elements
         self.chartDropdown.config(state='normal')

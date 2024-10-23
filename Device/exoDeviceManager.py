@@ -21,10 +21,14 @@ class ExoDeviceManager:
         self.client = None
         self.services = None
         self.scanResults = None
+        self.disconnect_flag = False  # New disconnect flag
+        self.characteristics = ""
 
         # Initialize FSR values
         self.curr_left_fsr_value = 0.25
         self.curr_right_fsr_value = 0.25
+
+        self.device_mac_address = None
 
         # UUID characteristic
         # Nordic NUS characteristic for TX
@@ -54,6 +58,7 @@ class ExoDeviceManager:
 
     def set_device(self, deviceVal):
         self.device = deviceVal
+        #self.device_mac_address = deviceVal.address  # Save the MAC address for future use
 
     def set_client(self, clientVal):
         self.client = clientVal
@@ -112,7 +117,6 @@ class ExoDeviceManager:
         else:
             print("No disconnect callback assigned.")
 
-    # -----------------------------------------------------------------------------
 
     # Command to Exo to get motors on and ready to receive commands
     async def startExoMotors(self):
@@ -216,6 +220,7 @@ class ExoDeviceManager:
         # Filter devices for only Exos
         self.set_device(await BleakScanner.find_device_by_filter(self.filterExo))
         print(self.device)
+        
         # No devices found from filter
         if self.device is None:
             print("No matching device found.")
