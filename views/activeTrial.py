@@ -221,9 +221,9 @@ class ActiveTrial(tk.Frame):
         self.controller.trial.loadDataToCSV(
             self.controller.deviceManager, True
         )  # Load data from Exo into CSV
+        self.controller.show_frame("ScanWindow")# Navigate back to the scan page
+        self.controller.frames["ScanWindow"].show()  # Call show method to reset elements
 
-        self.controller.show_frame("ScanWindow")  # Navigate back to the scan page
-            
     def enable_interactions(self):
         # Enable all interactive elements
         self.chartDropdown.config(state='normal')
@@ -278,11 +278,13 @@ class ActiveTrial(tk.Frame):
     async def endTrialButtonClicked(self):
         await self.ShutdownExo()
         self.controller.show_frame("ScanWindow")
+        self.controller.frames["ScanWindow"].show()  # Call show method to reset elements
 
     async def ShutdownExo(self):
         # End trial
         await self.controller.deviceManager.motorOff()  # Turn off motors
         await self.controller.deviceManager.stopTrial()  # End trial
+        await self.controller.deviceManager.disconnect()
         # Disconnect from Exo
         self.controller.trial.loadDataToCSV(
             self.controller.deviceManager
