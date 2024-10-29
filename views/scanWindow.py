@@ -101,14 +101,32 @@ class ScanWindow(tk.Frame):
     # Save the selected device address to a file
     async def on_save_device_button_clicked(self):
         """Saves the currently selected device to a file."""
+        await self.controller.deviceManager.disconnect()# Diconnects from any devices
+
         if self.selected_device_address:
             with open("saved_device.txt", "w") as file:
                 file.write(self.selected_device_address)
             print(f"Saved device: {self.selected_device_name} - {self.selected_device_address}")
+            
+        connect_message = f"Connecting to: {self.selected_device_name} {self.selected_device_address}"
+        self.deviceNameText.set(connect_message)
+        self.controller.deviceManager.set_deviceAddress(self.selected_device_address)  # Set the device address
+
+        # Attempt to connect to the device
+        success = await self.controller.deviceManager.scanAndConnect()
+        
+        if success:
+            self.startTrialButton.config(state="normal")  # Enable Start Trial button
+            self.calTorqueButton.config(state="normal")   # Enable Calibrate Torque button
+            self.deviceNameText.set(f"Connected: {self.selected_device_name} {self.selected_device_address}")
+        else:
+            self.deviceNameText.set("Connection Failed, Please Restart Device")  # Update text if connection fails
 
     # Load saved device address from a file and connect to it
     async def on_load_device_button_clicked(self):
         """Loads the saved device from a file and connects to it."""
+        await self.controller.deviceManager.disconnect()#diconnects from any devices
+
         if os.path.exists("saved_device.txt"):
             with open("saved_device.txt", "r") as file:
                 saved_address = file.read().strip()
@@ -130,6 +148,7 @@ class ScanWindow(tk.Frame):
     # Async function to handle the start scan button click
     async def on_start_scan_button_clicked(self):
         """Starts scanning for devices when the button is clicked."""
+        await self.controller.deviceManager.disconnect() #diconnects from any devices
         self.deviceNameText.set("Scanning...")  # Update device name text
         self.start_scanning_animation()  # Start the animation        
         await self.startScanButtonClicked()  # Initiate the scanning process

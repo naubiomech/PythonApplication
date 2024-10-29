@@ -1,6 +1,6 @@
 import csv
 
-from datetime import datetime,timedelta
+from datetime import datetime
 
 
 class CsvWritter:
@@ -72,14 +72,8 @@ class CsvWritter:
         for tS in exoData.tStep:
             tStep.append(tS)
 
-        # Generate timestamps
-        start_time = datetime.now()
-        timestamps = ["Timestamp"]
-        for i in range(len(tStep) - 1):  # Assuming tStep has the same length as other data lists
-            timestamps.append((start_time + timedelta(seconds=i)).strftime("%H:%M:%S"))
 
         # add field array with data to output file
-        fileData.append(timestamps)
         fileData.append(tStep)
         fileData.append(rTorque)
         fileData.append(rSetP)

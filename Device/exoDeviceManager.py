@@ -217,7 +217,7 @@ class ExoDeviceManager:
             for address, name in self.available_devices.items():
                 print(f"{name} - {address}")
 
-            await asyncio.sleep(2)  # Adjust the scan interval as needed
+            await asyncio.sleep(1)  # Adjust the scan interval as needed
             i += 1
         return self.available_devices
     
