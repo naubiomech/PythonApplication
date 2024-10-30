@@ -17,9 +17,17 @@ Other libraries that are required include:
  - matplotlib
  - async_tkinter_loop
  - pygame
-and others
+ - async_tkinter_loop
+ - numpy
+ - bleak
+ - pandas
+ - scikit-learn
+ - micromlgen
+ - matplotlib
+ - pygame
 
-To install all of the libraries for this program simply run pip install <library name here> 
+
+To install all of the libraries for this program run the command in any terminal `python .\install_dependencies.py` where main() is found
 
 ## Operation of API
 ### Program control flow
