@@ -38,7 +38,94 @@ To start the program run the command in any terminal `python3 GUI.py` which is w
 
 ## Video Example
 
-
-
 https://github.com/user-attachments/assets/6269629e-252b-4e77-b327-0914770ae9e3
+
+## Adding a button
+
+To add a button to the application, follow these steps:
+
+Select a Frame: Choose a frame in the PythonApplication\views\ folder where you would like to add the button.
+
+Integrate the Button: Here’s an example of how to add a button in a specific frame:
+
+class YourFrame(tk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.create_widgets()
+
+    def create_widgets(self):
+        my_button = tk.Button(
+            self,
+            text="My New Button",
+            command=self.my_button_action
+        )
+        my_button.pack(pady=10)
+
+    def my_button_action(self):
+        print("My New Button was clicked!")
+
+Functionality: Define what the button will do in the my_button_action method.
+
+## Modifying the Graphing
+
+To modify the graphing functionality, you can adjust the BasePlot class and its subclasses. Here's how to do it:
+
+Limit Points Displayed: In the update_plot method, modify the max_points variable to control how many points are displayed in the graph:
+
+
+def update_plot(self, xValues, yValues, secondY, title):
+    max_points = -20  # Change this value to display more or fewer points
+    xValues = xValues[max_points:]
+    yValues = yValues[max_points:]
+    secondY = secondY[max_points:]
+
+Customize Axes and Titles: In the update_plot method, you can also adjust axis labels and titles:
+
+self.ax.set_title(title)
+self.ax.set_xlabel("Time")
+self.ax.set_ylabel("Value")
+
+Implement Animation: Each plot subclass (e.g., TopPlot, BottomPlot) has an animate method that gathers data and updates the plot. Modify this method to change how data is sourced and displayed.
+
+## Adding a New Frame
+To add a new frame to the application, follow these steps:
+
+### Step 1: Create the New Frame Class
+    Create a new Python file in the views folder (e.g., newFeature.py).
+
+    Use the following template to define your new frame:
+    
+import tkinter as tk
+
+class NewFeature(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+
+        label = tk.Label(self, text="New Feature Frame", font=("Arial", 24))
+        label.pack(pady=20)
+
+        button = tk.Button(self, text="Go to Scan Window",
+                           command=lambda: controller.show_frame("ScanWindow"))
+        button.pack(pady=10)
+
+### Step 2: Update the ControllerApp Class
+    Open your main application file.
+
+    Import the new frame at the top:
+
+from views.newFeature import NewFeature
+
+    Add the new frame to the frames dictionary in the ControllerApp class:
+
+
+for F in (ScanWindow, ActiveTrial, UpdateTorque, BioFeedback, MachineLearning, NewFeature):
+
+### Step 3: Navigate to the New Frame
+    You can add a button in any existing frame to navigate to the new feature:
+
+button = tk.Button(self, text="Go to New Feature",
+                   command=lambda: controller.show_frame("NewFeature"))
+button.pack(pady=10)
+
 

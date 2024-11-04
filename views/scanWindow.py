@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import (BOTH, BOTTOM, DISABLED, StringVar, X, Y)
+from tkinter import (BOTH, BOTTOM, DISABLED, StringVar, X, Y, ttk)
 from async_tkinter_loop import async_handler
 import os
 
@@ -19,76 +19,82 @@ class ScanWindow(tk.Frame):
         self.selected_device_address = None  # Selected device address
 
         # UI elements
-        self.startTrialButton = None  # Button for starting the trial
-        self.connectButton = None  # Connect button
-        self.calTorqueButton = None  # Calibrate Torque button
-        self.startScanButton = None  # Button for starting the scan
         self.scanning_animation_running = False  # Flag for animation state
 
         self.create_widgets()  # Create UI elements
 
     # Create all UI elements
     def create_widgets(self):
+        # Style configuration
+        style = ttk.Style()
+        style.configure('TButton', font=('Montserrat', 12), padding=10)
+        style.configure('TLabel', font=('Montserrat', 16))
+        style.configure('TListbox', font=('Montserrat', 14))
+
         # Title label
-        titleLabel = tk.Label(self, text="ExoSkeleton Controller", font=("Arial", 50))
-        titleLabel.pack(expand=False, fill=X, ipady=50)
+        titleLabel = ttk.Label(self, text="ExoSkeleton Controller", font=("Montserrat", 30))
+        titleLabel.grid(row=0, column=0, columnspan=2, pady=20)  # Center title
 
         # Instruction label for scanning
-        startScanLabel = tk.Label(self, text="Begin Scanning for Exoskeletons", font=("Arial", 30))
-        startScanLabel.pack(expand=False, fill=X, ipady=10)
+        startScanLabel = ttk.Label(self, text="Begin Scanning for Exoskeletons")
+        startScanLabel.grid(row=1, column=0, columnspan=2, pady=10)  # Center instructions
 
         # Initial device name display
-        deviceNameLabel = tk.Label(self, textvariable=self.deviceNameText, font=("Arial", 20))
-        deviceNameLabel.pack(expand=False, pady=10)
+        deviceNameLabel = ttk.Label(self, textvariable=self.deviceNameText)
+        deviceNameLabel.grid(row=2, column=0, columnspan=2, pady=10)  # Center device name
+
+        # Buttons container
+        button_frame = ttk.Frame(self)
+        button_frame.grid(row=3, column=0, columnspan=2, pady=10)  # Center button frame
 
         # Button to start scanning for devices
-        self.startScanButton = tk.Button(self, height=2, width=10, text="Start Scan",
-                                          command=async_handler(self.on_start_scan_button_clicked))
-        self.startScanButton.pack(expand=False, fill=Y, ipadx=10, pady=10)
+        self.startScanButton = ttk.Button(button_frame, text="Start Scan",
+                                           command=async_handler(self.on_start_scan_button_clicked))
+        self.startScanButton.grid(row=0, column=0, padx=5)
 
         # Button to load saved device info
-        self.loadDeviceButton = tk.Button(self, height=2, width=20, text="Start Scan with Saved Device",
-                                           command=async_handler(self.on_load_device_button_clicked))
-        self.loadDeviceButton.pack(expand=False, fill=Y, ipadx=10, pady=10)
+        self.loadDeviceButton = ttk.Button(button_frame, text="Load Saved Device",
+                                            command=async_handler(self.on_load_device_button_clicked))
+        self.loadDeviceButton.grid(row=0, column=1, padx=5)
 
         # Listbox to display scanned devices
-        self.deviceListbox = tk.Listbox(self, font=("Arial", 16), width=50, height=5)
-        self.deviceListbox.pack(expand=False, pady=0)
+        self.deviceListbox = tk.Listbox(self, font=("Montserrat", 14), width=50, height=5)
+        self.deviceListbox.grid(row=4, column=0, columnspan=2, pady=5)  # Center Listbox
         self.deviceListbox.bind("<<ListboxSelect>>", self.on_device_selected)  # Bind selection event
 
-        # Label for no devices found
-        self.noDevicesLabel = tk.Label(self, text="No Devices Found", font=("Arial", 20), fg="red")
-        self.noDevicesLabel.pack(expand=True, fill=BOTH, pady=0)
+        # Action buttons
+        action_button_frame = ttk.Frame(self)
+        action_button_frame.grid(row=6, column=0, columnspan=2, pady=10)  # Center action button frame
 
         # Button to start the trial (initially disabled)
-        self.startTrialButton = tk.Button(self, text="Start Trial", height=3,
-                                           command=async_handler(self.on_start_trial_button_clicked),
-                                           state=DISABLED)
-        self.startTrialButton.pack(expand=False, fill=BOTH, side=BOTTOM, pady=20, padx=20)
+        self.startTrialButton = ttk.Button(action_button_frame, text="Start Trial",
+                                            command=async_handler(self.on_start_trial_button_clicked),
+                                            state=DISABLED)
+        self.startTrialButton.grid(row=0, column=0, padx=5)
 
         # Calibrate Torque button
-        self.calTorqueButton = tk.Button(self, text="Calibrate Torque",
-                                          command=async_handler(self.on_calibrate_torque_button_clicked),
-                                          state=DISABLED)
-        self.calTorqueButton.pack(expand=False, fill=None, side=BOTTOM, pady=0, padx=0)
+        self.calTorqueButton = ttk.Button(action_button_frame, text="Calibrate Torque",
+                                           command=async_handler(self.on_calibrate_torque_button_clicked),
+                                           state=DISABLED)
+        self.calTorqueButton.grid(row=0, column=1, padx=5)
 
-        connect_button_frame = tk.Frame(self)
-        connect_button_frame.pack(expand=False, pady=5,side=tk.TOP)
         # Connect button
-        self.connectButton = tk.Button(connect_button_frame, text="Connect",
+        self.connectButton = ttk.Button(action_button_frame, text="Connect",
                                         command=async_handler(self.on_connect_button_clicked),
                                         state=DISABLED)  # Initially disabled
-        self.connectButton.pack(padx=5,side=tk.LEFT)
-
+        self.connectButton.grid(row=0, column=2, padx=5)
 
         # Button to save the selected device
-        self.saveDeviceButton = tk.Button(connect_button_frame, text="Save & Connect",
-                                           command=async_handler(self.on_save_device_button_clicked),
-                                           state=DISABLED)  # Initially disabled
-        self.saveDeviceButton.pack(padx=5,side=tk.LEFT)
+        self.saveDeviceButton = ttk.Button(action_button_frame, text="Save & Connect",
+                                            command=async_handler(self.on_save_device_button_clicked),
+                                            state=DISABLED)  # Initially disabled
+        self.saveDeviceButton.grid(row=0, column=3, padx=5)
 
-        # Initially hide the no devices label
-        self.noDevicesLabel.pack_forget()
+        # Configure grid weights for centering
+        for i in range(7):  # Assuming there are 7 rows
+            self.grid_rowconfigure(i, weight=1)
+        for j in range(2):  # Assuming 2 columns
+            self.grid_columnconfigure(j, weight=1)
 
     # Callback for device disconnection
     def ScanWindow_on_device_disconnected(self):
@@ -101,7 +107,7 @@ class ScanWindow(tk.Frame):
     # Save the selected device address to a file
     async def on_save_device_button_clicked(self):
         """Saves the currently selected device to a file."""
-        await self.controller.deviceManager.disconnect()# Diconnects from any devices
+        await self.controller.deviceManager.disconnect()  # Disconnects from any devices
 
         if self.selected_device_address:
             with open("saved_device.txt", "w") as file:
@@ -125,7 +131,7 @@ class ScanWindow(tk.Frame):
     # Load saved device address from a file and connect to it
     async def on_load_device_button_clicked(self):
         """Loads the saved device from a file and connects to it."""
-        await self.controller.deviceManager.disconnect()#diconnects from any devices
+        await self.controller.deviceManager.disconnect()  # Disconnects from any devices
 
         if os.path.exists("saved_device.txt"):
             with open("saved_device.txt", "r") as file:
@@ -145,10 +151,10 @@ class ScanWindow(tk.Frame):
                     self.deviceNameText.set("Saved device address is empty.")
         else:
             self.deviceNameText.set("No saved device found.")
-    # Async function to handle the start scan button click
+
     async def on_start_scan_button_clicked(self):
         """Starts scanning for devices when the button is clicked."""
-        await self.controller.deviceManager.disconnect() #diconnects from any devices
+        await self.controller.deviceManager.disconnect()  # Disconnects from any devices
         self.deviceNameText.set("Scanning...")  # Update device name text
         self.start_scanning_animation()  # Start the animation        
         await self.startScanButtonClicked()  # Initiate the scanning process
@@ -194,9 +200,6 @@ class ScanWindow(tk.Frame):
         # Check if there are available devices
         if not available_devices:
             self.deviceNameText.set("No Devices Found")
-            self.noDevicesLabel.pack(expand=False, pady=10)  # Show no devices label
-        else:
-            self.noDevicesLabel.pack_forget()  # Hide no devices label if devices are found
 
     # Handle device selection from the Listbox
     def on_device_selected(self, event):
@@ -211,7 +214,6 @@ class ScanWindow(tk.Frame):
         else:
             self.connectButton.config(state=DISABLED)  # Disable Connect button if no selection
             self.saveDeviceButton.config(state=DISABLED)  # Disable Save & Connect button if no selection
-
 
     def start_scanning_animation(self):
         """Starts the scanning animation."""
@@ -255,7 +257,6 @@ class ScanWindow(tk.Frame):
         self.startTrialButton.config(state=DISABLED)
         self.calTorqueButton.config(state=DISABLED)
         self.connectButton.config(state=DISABLED)
-        self.noDevicesLabel.pack_forget()
 
     def show(self):
         """Resets elements and shows the frame."""
