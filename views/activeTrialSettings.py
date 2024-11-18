@@ -21,6 +21,11 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         super().__init__(parent)  # Correctly initialize the tk.Frame part
         # Initialize variables
         self.controller = controller  # Controller object to switch frames
+        self.previous_frame = None  # Track the previous frame
+
+        # Set the disconnection callback
+        self.controller.deviceManager.on_disconnect = self.UpdateTorque_on_device_disconnected
+
         self.bilateralButtonVar = StringVar()
         self.bilateralButtonVar.set("Bilateral Mode On")
         self.jointVar = StringVar()
@@ -48,25 +53,23 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
 
     def create_widgets(self):  # Frame UI elements
         # Back button to go back to Scan Window
-        backButton = tk.Button(
-            self, text="Back", command=lambda: self.controller.show_frame("ActiveTrial")
-        )
-        backButton.pack(side=TOP, anchor=W, pady=20, padx=10)
+        backButton = tk.Button(self, text="Back", command=self.handle_back_button)
+        backButton.pack(side=TOP, anchor=W, pady=10, padx=10)
 
         # Calibrate Menu label
         calibrationMenuLabel = tk.Label(
-            self, text="Update Torque Settings", font=("Arial", 40)
+            self, text="Update Controller Settings", font=("Arial", 40)
         )
         calibrationMenuLabel.pack(anchor=CENTER, side=TOP, pady=15)
 
         # Controller label
-        controllerInputLabel = tk.Label(self, text="Controller", font=("Arial", 30))
+        controllerInputLabel = tk.Label(self, text="Controller", font=("Arial", 20))
         controllerInput = tk.Text(self, height=2, width=10)
         # Parameter Label
-        parameterInputLabel = tk.Label(self, text="Parameter", font=("Arial", 30))
+        parameterInputLabel = tk.Label(self, text="Parameter", font=("Arial", 20))
         parameterInput = tk.Text(self, height=2, width=10)
         # Value label
-        valueInputLabel = tk.Label(self, text="Value", font=("Arial", 30))
+        valueInputLabel = tk.Label(self, text="Value", font=("Arial", 20))
         valueInput = tk.Text(self, height=2, width=10)
 
         self.jointSelector.bind("<<ComboboxSelected>>", self.newSelection)
@@ -75,7 +78,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
             self,
             textvariable=self.bilateralButtonVar,
             height=2,
-            width=10,
+            width=15,
             command=self.toggleBilateral,
         )
 
@@ -92,7 +95,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         # Button to start trial
         updateTorqueButton = tk.Button(
             self,
-            text="Update Torque",
+            text="Update Settings",
             height=2,
             width=10,
             command=async_handler(
@@ -103,9 +106,20 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
             ),
         )
         updateTorqueButton.pack(side=BOTTOM, fill=X, padx=20, pady=20)
-
+        
+    def handle_back_button(self):
+        # Return to the previous frame
+        if self.previous_frame:
+            self.controller.show_frame(self.previous_frame)
+            active_trial_frame = self.controller.frames[self.previous_frame]
+            active_trial_frame.newSelection(self)
+        else:
+            self.controller.show_frame("ActiveTrial")
+            active_trial_frame = self.controller.frames["ActiveTrial"]
+            active_trial_frame.newSelection(self)
+        
     async def on_update_button_clicked(
-        self, controllerInput, parameterInput, valueInput
+        self, controllerInput, parameterInput, valueInput,
     ):
         await self.UpdateButtonClicked(
             self.isBilateral,
@@ -116,7 +130,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         )
 
     async def UpdateButtonClicked(
-        self, isBilateral, joint, controllerInput, parameterInput, valueInput
+        self, isBilateral, joint, controllerInput, parameterInput, valueInput,
     ):
 
         controllerVal = float(controllerInput.get(1.0, "end-1c"))
@@ -134,10 +148,27 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
             [isBilateral, joint, controllerVal, parameterVal, valueVal]
         )
 
-        self.controller.show_frame("ActiveTrial")
+        if self.previous_frame:
+            self.controller.show_frame(self.previous_frame)
+            active_trial_frame = self.controller.frames[self.previous_frame]
+            active_trial_frame.newSelection(self)
+        else:
+            self.controller.show_frame("ActiveTrial")
+            active_trial_frame = self.controller.frames["ActiveTrial"]
+            active_trial_frame.newSelection(self)
 
     def newSelection(self, event):
         self.jointVar.set(self.jointSelector.get())
+
+    def UpdateTorque_on_device_disconnected(self):
+        tk.messagebox.showwarning("Device Disconnected", "Please Reconnect")
+        
+        self.controller.trial.loadDataToCSV(
+            self.controller.deviceManager, True
+        )  # Load data from Exo into CSV
+        self.controller.show_frame("ScanWindow")# Navigate back to the scan page
+        self.controller.frames["ScanWindow"].show()  # Call show method to reset elements
+            
 
     def toggleBilateral(self):
         if self.isBilateral is True:
