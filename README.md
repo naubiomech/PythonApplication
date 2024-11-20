@@ -9,7 +9,9 @@ This project uses the MIT License.
 
 The purpose of this project is to provide an open source solution for controlling the OpenExo system that is accessible to anyone and free to modify for their needs.
 
-## Libraries Needed
+## Intallation Guide
+
+Video Guide: https://youtu.be/VnQeUM2K6Vg
 
 BLE (Bluetooth Low Energy) is the heart of this project which provides a connection from this API to the exoskeletons. Bleak, a python library is used to handle all BLE operations. To find out more about Bleak click [here](https://bleak.readthedocs.io/en/latest/).
 
