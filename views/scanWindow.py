@@ -9,7 +9,7 @@ class ScanWindow(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller  # Reference to the main application controller
-
+        self.saved_address = None
         # Set the disconnection callback
         self.controller.deviceManager.on_disconnect = self.ScanWindow_on_device_disconnected
 
@@ -22,6 +22,7 @@ class ScanWindow(tk.Frame):
         self.scanning_animation_running = False  # Flag for animation state
 
         self.create_widgets()  # Create UI elements
+        self.load_device_avalible() #Check if loaded devices availble
 
     # Create all UI elements
     def create_widgets(self):
@@ -100,14 +101,14 @@ class ScanWindow(tk.Frame):
     def ScanWindow_on_device_disconnected(self):
         """Handles disconnection of the device."""
         self.deviceNameText.set("Disconnected After Scan Try Again")  # Update device name text
-        self.startTrialButton.config(state=DISABLED)  # Disable Start Trial button
-        self.calTorqueButton.config(state=DISABLED)  # Disable Calibrate Torque button
         self.stop_scanning_animation()  # Stop animation on disconnect
+        self.reset_elements()
 
     # Save the selected device address to a file
     async def on_save_device_button_clicked(self):
         """Saves the currently selected device to a file."""
         await self.controller.deviceManager.disconnect()  # Disconnects from any devices
+        self.startScanButton.config(state=DISABLED)
 
         if self.selected_device_address:
             with open("saved_device.txt", "w") as file:
@@ -117,7 +118,7 @@ class ScanWindow(tk.Frame):
         connect_message = f"Connecting to: {self.selected_device_name} {self.selected_device_address}"
         self.deviceNameText.set(connect_message)
         self.controller.deviceManager.set_deviceAddress(self.selected_device_address)  # Set the device address
-
+        self.saved_address = self.selected_device_address
         # Attempt to connect to the device
         success = await self.controller.deviceManager.scanAndConnect()
         
@@ -127,39 +128,42 @@ class ScanWindow(tk.Frame):
             self.deviceNameText.set(f"Connected: {self.selected_device_name} {self.selected_device_address}")
         else:
             self.deviceNameText.set("Connection Failed, Please Restart Device")  # Update text if connection fails
+        self.startScanButton.config(state="normal")
 
+    def load_device_avalible(self):
+        if os.path.exists("saved_device.txt"):
+            with open("saved_device.txt", "r") as file:
+                self.saved_address = file.read().strip()
+                if self.saved_address:  # Check if the file is not empty
+                    self.deviceNameText.set(f"Loading saved device: {self.saved_address}")
+                    self.controller.deviceManager.set_deviceAddress(self.saved_address)
+                    self.loadDeviceButton.config(state="normal")
+        else:
+            self.loadDeviceButton.config(state=DISABLED)
+                    
     # Load saved device address from a file and connect to it
     async def on_load_device_button_clicked(self):
         """Loads the saved device from a file and connects to it."""
+        self.loadDeviceButton.config(state=DISABLED)
+        self.startScanButton.config(state=DISABLED)
+        self.startTrialButton.config(state=DISABLED)
+        self.calTorqueButton.config(state=DISABLED)
         await self.controller.deviceManager.disconnect()  # Disconnects from any devices
+        self.deviceListbox.delete(0, tk.END)
+        self.deviceNameText.set(f"Loading saved device: {self.saved_address}")
+        success = await self.controller.deviceManager.scanAndConnect()
 
-        if os.path.exists("saved_device.txt"):
-            with open("saved_device.txt", "r") as file:
-                saved_address = file.read().strip()
-                if saved_address:  # Check if the file is not empty
-                    self.deviceNameText.set(f"Loading saved device: {saved_address}")
-                    self.controller.deviceManager.set_deviceAddress(saved_address)
-                    success = await self.controller.deviceManager.scanAndConnect()
-                    
-                    if success:
-                        self.deviceNameText.set(f"Connected: {self.selected_device_name} {saved_address}")
-                        self.startTrialButton.config(state="normal")
-                        self.calTorqueButton.config(state="normal")
-                    else:
-                        self.deviceNameText.set("Connection Failed, Please Restart Device")
-                else:
-                    self.deviceNameText.set("Saved device address is empty.")
+        if success:
+            self.deviceNameText.set(f"Connected: {self.selected_device_name} {self.saved_address}")
+            self.startTrialButton.config(state="normal")
+            self.calTorqueButton.config(state="normal")
+            self.loadDeviceButton.config(state=DISABLED)
+            self.saveDeviceButton.config(state=DISABLED)
         else:
-            self.deviceNameText.set("No saved device found.")
-
-    async def on_start_scan_button_clicked(self):
-        """Starts scanning for devices when the button is clicked."""
-        await self.controller.deviceManager.disconnect()  # Disconnects from any devices
-        self.deviceNameText.set("Scanning...")  # Update device name text
-        self.start_scanning_animation()  # Start the animation        
-        await self.startScanButtonClicked()  # Initiate the scanning process
-        self.startScanButton.config(state="normal")  # Re-enable the Start Scan button after scanning
-        self.stop_scanning_animation()  # Stop the animation after scanning
+            self.deviceNameText.set("Connection Failed, Please Restart Device")
+            self.loadDeviceButton.config(state="normal")
+        
+        self.startScanButton.config(state="normal")
 
     async def on_calibrate_torque_button_clicked(self):
         """Handles the Calibrate Torque button click."""
@@ -167,6 +171,10 @@ class ScanWindow(tk.Frame):
 
     async def on_connect_button_clicked(self):
         """Handles the Connect button click."""
+        self.startScanButton.config(state=DISABLED)
+        self.connectButton.config(state=DISABLED)
+        self.saveDeviceButton.config(state=DISABLED)
+        self.loadDeviceButton.config(state=DISABLED)
         connect_message = f"Connecting to: {self.selected_device_name} {self.selected_device_address}"
         self.deviceNameText.set(connect_message)
         self.controller.deviceManager.set_deviceAddress(self.selected_device_address)  # Set the device address
@@ -180,17 +188,38 @@ class ScanWindow(tk.Frame):
             self.deviceNameText.set(f"Connected: {self.selected_device_name} {self.selected_device_address}")
         else:
             self.deviceNameText.set("Connection Failed, Please Restart Device")  # Update text if connection fails
+            self.connectButton(state="normal")
+
+        self.startScanButton.config(state="normal")
+
+        if self.saved_address is not None:
+            self.loadDeviceButton.config(state="normal")
 
     async def on_start_trial_button_clicked(self):
         """Handles the Start Trial button click."""
         await self.startTrialButtonClicked()  # Initiate the trial process
 
-    async def startScanButtonClicked(self):
+    async def on_start_scan_button_clicked(self):
+        """Starts scanning for devices when the button is clicked."""
+        self.startScanButton.config(state=DISABLED)
+        self.loadDeviceButton.config(state=DISABLED)
+        self.startTrialButton.config(state=DISABLED)
+        self.calTorqueButton.config(state=DISABLED)
+        self.deviceListbox.delete(0, tk.END)
+
+        await self.controller.deviceManager.disconnect()  # Disconnects from any devices
+        self.deviceNameText.set("Scanning...")  # Update device name text
+        self.start_scanning_animation()  # Start the animation        
+        await self.startScanButtonClickedHandler()  # Initiate the scanning process
+        self.startScanButton.config(state="normal")  # Re-enable the Start Scan button after scanning
+        self.stop_scanning_animation()  # Stop the animation after scanning
+
+    async def startScanButtonClickedHandler(self):
         """Starts scanning for devices and updates the UI accordingly."""
-        self.reset_elements()
 
         available_devices = await self.controller.deviceManager.searchDevices()
         self.deviceNameText.set("Scan Complete")
+        self.startScanButton.config(state="normal")
 
         # Update Listbox with the scanned devices
         self.deviceListbox.delete(0, tk.END)  # Clear the Listbox
@@ -201,6 +230,9 @@ class ScanWindow(tk.Frame):
         if not available_devices:
             self.deviceNameText.set("No Devices Found")
 
+        if self.saved_address is not None:
+            self.loadDeviceButton.config(state="normal")
+        
     # Handle device selection from the Listbox
     def on_device_selected(self, event):
         """Handles the selection of a device from the Listbox."""
@@ -239,7 +271,8 @@ class ScanWindow(tk.Frame):
         """Switches frame to ActiveTrial and begins the trial."""
         active_trial_frame = self.controller.frames["ActiveTrial"]
         active_trial_frame.disable_interactions()  # Disable buttons in ActiveTrial frame
-
+        self.loadDeviceButton.config(state="normal")
+        
         # Show ActiveTrial frame
         self.controller.show_frame("ActiveTrial")
         await self.controller.trial.calibrate(self.controller.deviceManager)  # Calibrate devices
@@ -254,10 +287,17 @@ class ScanWindow(tk.Frame):
         self.deviceListbox.delete(0, tk.END)
         self.selected_device_name = None
         self.selected_device_address = None
+        self.startScanButton.config(state="normal")
         self.startTrialButton.config(state=DISABLED)
         self.calTorqueButton.config(state=DISABLED)
         self.connectButton.config(state=DISABLED)
-
+        self.saveDeviceButton.config(state=DISABLED)
+        
+        if self.saved_address is not None:
+            self.loadDeviceButton.config(state="normal")
+        else:
+            self.loadDeviceButton.config(state=DISABLED)
+        
     def show(self):
         """Resets elements and shows the frame."""
         self.reset_elements()  # Reset elements when showing the frame

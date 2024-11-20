@@ -14,7 +14,8 @@ class MachineLearning(tk.Frame):
         super().__init__(parent)
         # Controller object to switch frames
         self.controller = controller
-        
+        self.is_plotting = False  # Flag to control if plotting should happen
+
         # Set the disconnection callback
         self.controller.deviceManager.on_disconnect = self.MachineLearning_on_device_disconnected
 
@@ -230,7 +231,13 @@ class MachineLearning(tk.Frame):
 
     # Show frame and update plots
     def show(self):
+        # Show the frame and update plots
+        self.is_plotting = True
         self.newSelection()
+
+    def hide(self):
+        # This method is called when switching away from this frame
+        self.stop_plot_updates()
 
     # Handle Level Trial Button click
     async def on_level_trial_button_clicked(self):
@@ -325,17 +332,24 @@ class MachineLearning(tk.Frame):
 
     # Update plots based on selection
     def update_plots(self, selection):
-        # Cancel previous update job if it exists
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
-
+            self.plot_update_job = None
+        # Only continue updating plots if the flag is set to True
+        if not self.is_plotting:
+            return
+        
         # Animate all current plots
         for plot in self.currentPlots:
             plot.animate(selection)
 
         # Schedule the next update
-        self.plot_update_job = self.after(20, self.update_plots, selection)  # Schedule with a delay
-        self.after(20, self.enable_interactions)  # Enable interactions after first update
+        self.plot_update_job = self.after(
+            20, self.update_plots, selection
+        )  # Schedule with a delay
+        
+        # Enable interactions after the first plot update is complete
+        self.after(20, self.enable_interactions)
 
     # Handle new selection in dropdown
     def newSelection(self, event=None):
@@ -365,6 +379,7 @@ class MachineLearning(tk.Frame):
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
             self.plot_update_job = None
+        self.is_plotting = False
 
     # Shutdown the exoskeleton
     async def ShutdownExo(self):

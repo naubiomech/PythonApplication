@@ -18,6 +18,8 @@ class BioFeedback(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller  # Reference to the main application controller
+        self.is_plotting = False  # Flag to control if plotting should happen
+
         self.chartVar = StringVar()  # Variable for storing the selected leg
         self.chartVar.set("Left Leg")  # Default selection
 
@@ -160,6 +162,8 @@ class BioFeedback(tk.Frame):
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
             self.plot_update_job = None
+        self.is_plotting = False
+
 
     def update_counter_label(self):
         # Update the counter variable and label when the goal is reached
@@ -172,19 +176,40 @@ class BioFeedback(tk.Frame):
         # Change background color to indicate success
         self.config(bg="lightgreen")  # Change to light green
         self.after(1000, self.reset_background)  # Reset after 1 second
-        
+
+    def enable_interactions(self):
+        try:
+            # Ensure the chartDropdown widget is present and properly initialized
+            if self.chartDropdown.winfo_exists():
+                self.chartDropdown.config(state='normal')
+
+            # Enable other widgets
+            for widget in self.winfo_children():
+                if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
+                    widget.config(state='normal')
+        except Exception as e:
+            print(f"Error in enable_interactions: {e}")
+
     def update_plots(self, selection):
         # Animate the current plot and schedule the next update
         # Cancel the previous update job if it exists
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
+            self.plot_update_job = None
 
+        # Only continue updating plots if the flag is set to True
+        if not self.is_plotting:
+            return
+        
         # Animate the current plot
         self.currentPlots.animate(selection)
 
         # Schedule the next update
         self.plot_update_job = self.after(20, self.update_plots, selection)
-
+        
+        # Enable interactions after the first plot update is complete
+        self.after(20, self.enable_interactions)
+        
     def update_target_label(self):
         # Update the target label with the current target value
         if self.target_value is not None:
@@ -194,8 +219,13 @@ class BioFeedback(tk.Frame):
 
     def show(self):
         # Show the current selection in the plots
+        self.is_plotting = True
         self.newSelection()  # Update the plots based on current selection
 
+    def hide(self):
+        # This method is called when switching away from this frame
+        self.stop_plot_updates()
+        
     async def on_mark_button_clicked(self):
         self.controller.deviceManager._realTimeProcessor._exo_data.MarkVal += 1
         self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel.set(

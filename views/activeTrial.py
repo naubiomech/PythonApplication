@@ -19,6 +19,7 @@ class ActiveTrial(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
+        self.is_plotting = False  # Flag to control if plotting should happen
 
         # Set the disconnection callback
         self.controller.deviceManager.on_disconnect = self.ActiveTrial_on_device_disconnected
@@ -225,11 +226,17 @@ class ActiveTrial(tk.Frame):
         self.controller.frames["ScanWindow"].show()  # Call show method to reset elements
 
     def enable_interactions(self):
-        # Enable all interactive elements
-        self.chartDropdown.config(state='normal')
-        for widget in self.winfo_children():
-            if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
-                widget.config(state='normal')
+        try:
+            # Ensure the chartDropdown widget is present and properly initialized
+            if self.chartDropdown.winfo_exists():
+                self.chartDropdown.config(state='normal')
+
+            # Enable other widgets
+            for widget in self.winfo_children():
+                if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
+                    widget.config(state='normal')
+        except Exception as e:
+            print(f"Error in enable_interactions: {e}")
 
     def go_to_update_torque(self):
         # Set the previous frame to this one
@@ -237,11 +244,15 @@ class ActiveTrial(tk.Frame):
         self.controller.show_frame("UpdateTorque")
 
     def update_plots(self, selection):
-
         # Cancel the previous update job if it exists
+        print("plotting 1")
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
-
+            self.plot_update_job = None
+        # Only continue updating plots if the flag is set to True
+        if not self.is_plotting:
+            return
+        
         # Animate all current plots
         for plot in self.currentPlots:
             plot.animate(selection)
@@ -258,11 +269,16 @@ class ActiveTrial(tk.Frame):
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
             self.plot_update_job = None
+        self.is_plotting = False
 
     def show(self):
         # Show the frame and update plots
+        self.is_plotting = True
         self.newSelection()
-        self.start_plotting()  # Start the animation loop
+
+    def hide(self):
+        # This method is called when switching away from this frame
+        self.stop_plot_updates()
 
     # Handle Recalibrate FSRs Button click
     async def on_recal_FSR_button_clicked(self):
