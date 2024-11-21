@@ -18,6 +18,13 @@ class BasePlot:
         self.yValues = []
         self.secondY = []
 
+        # Plot initialization
+        self.line1, = self.ax.plot([], [], label='Controller Value', color='blue')
+        self.line2, = self.ax.plot([], [], label='Measurement Value', color='red')
+
+        self.ax.set_xticks([])  # Hide x-ticks for simplicity
+        self.ax.set_title(title)
+
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.master)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack()
@@ -26,19 +33,22 @@ class BasePlot:
         raise NotImplementedError("Subclasses should implement this method")
 
     def update_plot(self, xValues, yValues, secondY, title):
-        max_points = -20
-        xValues = xValues[max_points:]
-        yValues = yValues[max_points:]
-        secondY = secondY[max_points:]
+        max_points = 20  # Keep only the last 20 points
+        if len(xValues) > max_points:
+            xValues = xValues[-max_points:]
+            yValues = yValues[-max_points:]
+            secondY = secondY[-max_points:]
+        # Update line data
+        self.line1.set_data(xValues, yValues)
+        self.line2.set_data(xValues, secondY)
 
-        self.ax.clear()
-        self.ax.plot(xValues, yValues)
-        self.ax.plot(xValues, secondY)
-        self.ax.set_ylim(auto=True)
-        self.ax.set_xticks([])
-        self.ax.set_title(title)
-        
-        self.canvas.draw()
+        # Efficiently redraw only the updated parts
+        self.ax.relim()  # Recalculate limits based on new data
+        self.ax.autoscale(enable=True, axis='both', tight=False)
+
+        # Draw without clearing axes
+        self.canvas.draw_idle()
+        self.canvas.flush_events()
 
 
 class TopPlot(BasePlot):
@@ -155,4 +165,3 @@ class FSRPlot(BasePlot):
                 self.above_goal = False  # Reset the flag when it goes below or equal to the goal
 
         self.update_plot(self.xValues, self.yValues, self.secondY, title)
-

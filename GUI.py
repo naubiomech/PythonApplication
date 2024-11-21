@@ -36,22 +36,25 @@ class ControllerApp(tk.Tk):
         self.show_frame("ScanWindow")  # Switch to Scan Window Frame
 
     def show_frame(self, page_name):  # Method to switch frames
+        # Stop plot updates for any frame that has ongoing plotting
+        for frame_name, frame in self.frames.items():
+            if hasattr(frame, "hide"):
+                frame.stop_plot_updates()
+                print(f"Stopped plot updates for {frame_name}")
+
+        # Get the frame to switch to
         frame = self.frames[page_name]
-        if frame == "ActiveTrial":
-            self.frame[frame].show()
 
-        # Used to fixed disconnect handler function from being overwritten
-        # Construct the disconnect handler name
-        disconnect_handler_name = f"{page_name}_on_device_disconnected"
-        
-        # Use getattr to set the disconnect handler, defaulting to a general handler if not found
-        self.deviceManager.on_disconnect = getattr(frame, disconnect_handler_name)
-
-        # Stop plot updates when switching frames
-        if hasattr(self.frames.get("ActiveTrial", None), "stop_plot_updates"):
-            self.frames["ActiveTrial"].stop_plot_updates()
-
+        # Set the new frame to be shown
         frame.tkraise()
+
+        # Additional logic for the ActiveTrial or similar frames that need specific handling
+        if hasattr(frame, "show"):
+            frame.show()
+
+        # Set the disconnect handler for the new frame
+        disconnect_handler_name = f"{page_name}_on_device_disconnected"
+        self.deviceManager.on_disconnect = getattr(frame, disconnect_handler_name, None)
 
 
 def exec():
