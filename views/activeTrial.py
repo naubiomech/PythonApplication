@@ -245,7 +245,6 @@ class ActiveTrial(tk.Frame):
 
     def update_plots(self, selection):
         # Cancel the previous update job if it exists
-        print("plotting 1")
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
             self.plot_update_job = None
