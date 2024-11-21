@@ -325,3 +325,17 @@ class ExoDeviceManager:
     async def newStiffness(self, stiffnessInput):
         stiffnessVal = float(stiffnessInput.get(1.0, "end-1c"))
         await self.sendStiffness(stiffnessVal)  # Send the new stiffness value
+
+    # Play
+    async def play(self):
+        command = bytearray(b"X")
+        char = self.get_char_handle(self.UART_TX_UUID)
+
+        await self.client.write_gatt_char(char, command, True)
+
+    # Pause
+    async def pause(self):
+        command = bytearray(b"W")
+        char = self.get_char_handle(self.UART_TX_UUID)
+
+        await self.client.write_gatt_char(char, command, True)

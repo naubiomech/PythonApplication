@@ -165,4 +165,3 @@ class FSRPlot(BasePlot):
                 self.above_goal = False  # Reset the flag when it goes below or equal to the goal
 
         self.update_plot(self.xValues, self.yValues, self.secondY, title)
-

@@ -39,7 +39,7 @@ class ControllerApp(tk.Tk):
         # Stop plot updates for any frame that has ongoing plotting
         for frame_name, frame in self.frames.items():
             if hasattr(frame, "hide"):
-                frame.hide()
+                frame.stop_plot_updates()
                 print(f"Stopped plot updates for {frame_name}")
 
         # Get the frame to switch to
