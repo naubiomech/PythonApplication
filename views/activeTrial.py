@@ -27,16 +27,29 @@ class ActiveTrial(tk.Frame):
         self.var = IntVar()
         self.chartVar = StringVar()
         self.chartVar.set("Controller")
+        self.graphVar = StringVar()
+        self.graphVar.set("Both Graphs")  # Default to "Both Graphs"
 
+        # Create a frame for the dropdowns
+        dropdown_frame = tk.Frame(self)
+
+        # Chart selection dropdown
         self.chartDropdown = ttk.Combobox(
-            self,
+            dropdown_frame,
             textvariable=self.chartVar,
             state="readonly",
-            values=[
-                "Controller",
-                "Sensor",
-            ],
+            values=["Controller", "Sensor"],
         )
+        self.chartDropdown.pack(side=LEFT, padx=5)
+
+        # Graph selection dropdown
+        self.graphDropdown = ttk.Combobox(
+            dropdown_frame,
+            textvariable=self.graphVar,
+            state="readonly",
+            values=["Both Graphs", "Top Graph", "Bottom Graph"],
+        )
+        self.graphDropdown.pack(side=LEFT, padx=5)
 
         # Create a frame for the title and end trial button
         title_frame = tk.Frame(self)
@@ -64,8 +77,11 @@ class ActiveTrial(tk.Frame):
         self.topPlot = TopPlot(self)
         self.bottomPlot = BottomPlot(self)
 
+        dropdown_frame.pack(side=TOP, pady=10, anchor=CENTER)
+        # Bind dropdown selections to their respective methods
         self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
-        self.chartDropdown.pack(pady=10, padx=10)
+        self.graphDropdown.bind("<<ComboboxSelected>>", self.newSelection)
+
 
         self.currentPlots = [self.topPlot, self.bottomPlot]
         self.plot_update_job = None  # Store the job reference
@@ -248,12 +264,23 @@ class ActiveTrial(tk.Frame):
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
             self.plot_update_job = None
+
         # Only continue updating plots if the flag is set to True
         if not self.is_plotting:
             return
-        
-        # Animate all current plots
-        for plot in self.currentPlots:
+
+        # Determine which plots to animate based on the graph selection
+        graph_selection = self.graphVar.get()
+        plots_to_update = []
+        if graph_selection == "Both Graphs":
+            plots_to_update = [self.topPlot, self.bottomPlot]
+        elif graph_selection == "Top Graph":
+            plots_to_update = [self.topPlot]
+        elif graph_selection == "Bottom Graph":
+            plots_to_update = [self.bottomPlot]
+
+        # Animate the selected plots
+        for plot in plots_to_update:
             plot.animate(selection)
 
         # Schedule the next update
