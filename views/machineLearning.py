@@ -23,6 +23,8 @@ class MachineLearning(tk.Frame):
         self.var = IntVar()
         self.chartVar = StringVar()
         self.chartVar.set("Controller")
+        self.graphVar = StringVar()
+        self.graphVar.set("Both Graphs")  # Default to "Both Graphs"
 
         # Create StringVars for button names
         self.levelButtonName = StringVar()
@@ -45,17 +47,30 @@ class MachineLearning(tk.Frame):
         self.confirmation=0 #used as a flag to request second confirmation form user to delete model
         self.modelDataWriter = saveModelData.CsvWritter()
 
+        # Create a frame for the dropdowns
+        dropdown_frame = tk.Frame(self)
+
         # Dropdown for chart selection
         self.chartDropdown = ttk.Combobox(
-            self,
+            dropdown_frame,
             textvariable=self.chartVar,
             state="readonly",
             values=["Controller", "Sensor"],
         )
+        self.chartDropdown.pack(side=LEFT, padx=5)
 
+        # Graph selection dropdown
+        self.graphDropdown = ttk.Combobox(
+            dropdown_frame,
+            textvariable=self.graphVar,
+            state="readonly",
+            values=["Both Graphs", "Top Graph", "Bottom Graph"],
+        )
+        self.graphDropdown.pack(side=LEFT, padx=5)
         # Back button to return to the Active Trial frame
         backButton = tk.Button(self, text="Back", command=self.handle_back_button)
         backButton.pack(side=TOP, anchor=W, pady=10, padx=10)
+
 
         # Title label for the frame
         calibrationMenuLabel = tk.Label(self, text="Machine learning", font=("Arial", 40))
@@ -73,9 +88,12 @@ class MachineLearning(tk.Frame):
         self.topPlot = TopPlot(self)
         self.bottomPlot = BottomPlot(self)
 
-        # Bind dropdown selection to update function
+        dropdown_frame.pack(side=TOP, pady=10, anchor=CENTER)
+        # Bind dropdown selections to their respective methods
         self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
-        self.chartDropdown.pack(pady=10, padx=10)
+        self.graphDropdown.bind("<<ComboboxSelected>>", self.newSelection)
+
+
 
         # Store current plots for updating
         self.currentPlots = [self.topPlot, self.bottomPlot]
@@ -332,22 +350,34 @@ class MachineLearning(tk.Frame):
 
     # Update plots based on selection
     def update_plots(self, selection):
+        # Cancel the previous update job if it exists
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
             self.plot_update_job = None
+
         # Only continue updating plots if the flag is set to True
         if not self.is_plotting:
             return
-        
-        # Animate all current plots
-        for plot in self.currentPlots:
+
+        # Determine which plots to animate based on the graph selection
+        graph_selection = self.graphVar.get()
+        plots_to_update = []
+        if graph_selection == "Both Graphs":
+            plots_to_update = [self.topPlot, self.bottomPlot]
+        elif graph_selection == "Top Graph":
+            plots_to_update = [self.topPlot]
+        elif graph_selection == "Bottom Graph":
+            plots_to_update = [self.bottomPlot]
+
+        # Animate the selected plots
+        for plot in plots_to_update:
             plot.animate(selection)
 
         # Schedule the next update
         self.plot_update_job = self.after(
             20, self.update_plots, selection
         )  # Schedule with a delay
-        
+
         # Enable interactions after the first plot update is complete
         self.after(20, self.enable_interactions)
 
