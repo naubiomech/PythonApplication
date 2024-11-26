@@ -47,34 +47,37 @@ class MachineLearning(tk.Frame):
         self.confirmation=0 #used as a flag to request second confirmation form user to delete model
         self.modelDataWriter = saveModelData.CsvWritter()
 
-        # Create a frame for the dropdowns
-        dropdown_frame = tk.Frame(self)
+        # Create the UI elements
+        self.create_widgets()
+
+    # Frame UI elements
+    def create_widgets(self):
 
         # Dropdown for chart selection
         self.chartDropdown = ttk.Combobox(
-            dropdown_frame,
+            self,
             textvariable=self.chartVar,
             state="readonly",
             values=["Controller", "Sensor"],
         )
-        self.chartDropdown.pack(side=LEFT, padx=5)
+        self.chartDropdown.grid(row=4, column=1, columnspan=7, pady=5, padx=5)
 
-        # Graph selection dropdown
-        self.graphDropdown = ttk.Combobox(
-            dropdown_frame,
-            textvariable=self.graphVar,
-            state="readonly",
-            values=["Both Graphs", "Top Graph", "Bottom Graph"],
-        )
-        self.graphDropdown.pack(side=LEFT, padx=5)
+        # # Graph selection dropdown
+        # self.graphDropdown = ttk.Combobox(
+        #     dropdown_frame,
+        #     textvariable=self.graphVar,
+        #     state="readonly",
+        #     values=["Both Graphs", "Top Graph", "Bottom Graph"],
+        # )
+        #self.graphDropdown.pack(side=LEFT, padx=5)
         # Back button to return to the Active Trial frame
         backButton = tk.Button(self, text="Back", command=self.handle_back_button)
-        backButton.pack(side=TOP, anchor=W, pady=10, padx=10)
+        backButton.grid(row=0, column=0, pady=10)
 
 
         # Title label for the frame
         calibrationMenuLabel = tk.Label(self, text="Machine learning", font=("Arial", 40))
-        calibrationMenuLabel.pack(side=TOP, anchor=N, pady=10)
+        calibrationMenuLabel.grid(row=0, column=0, columnspan=8, pady=20)
 
         # Battery status label
         batteryPercentLabel = tk.Label(
@@ -82,28 +85,24 @@ class MachineLearning(tk.Frame):
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
             font=("Arial", 12)
         )
-        batteryPercentLabel.pack(side=TOP, anchor=E, pady=0, padx=0)
+        batteryPercentLabel.grid(row=0, column=7,sticky="E") 
 
-        # Initialize top and bottom plots
+        # Create and place the top plot
         self.topPlot = TopPlot(self)
-        self.bottomPlot = BottomPlot(self)
+        self.topPlot.canvas.get_tk_widget().grid(row=1, column=0, columnspan=1, sticky="NSEW", pady=5, padx=5)
 
-        dropdown_frame.pack(side=TOP, pady=10, anchor=CENTER)
+        # Create and place the bottom plot
+        self.bottomPlot = BottomPlot(self)
+        self.bottomPlot.canvas.get_tk_widget().grid(row=2, column=0, columnspan=1, sticky="NSEW", pady=5, padx=5)
+            
         # Bind dropdown selections to their respective methods
         self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
-        self.graphDropdown.bind("<<ComboboxSelected>>", self.newSelection)
-
-
+        #self.graphDropdown.bind("<<ComboboxSelected>>", self.newSelection)
 
         # Store current plots for updating
         self.currentPlots = [self.topPlot, self.bottomPlot]
         self.plot_update_job = None  # Store the job reference
 
-        # Create the UI elements
-        self.create_widgets()
-
-    # Frame UI elements
-    def create_widgets(self):
         # Model Status Label
         modelStatusLabel = tk.Label(
             self, 
@@ -234,6 +233,13 @@ class MachineLearning(tk.Frame):
             command=async_handler(self.on_toggle_control_button_clicked),
         )
         toggleControlButton.place(relx=0.9, rely=0.75)
+
+
+        # Configure grid weights for centering
+        for i in range(4):
+            self.grid_rowconfigure(i, weight=1)
+        for j in range(5):
+            self.grid_columnconfigure(j, weight=1)
 
     # Navigate to the Update Torque frame
     def go_to_update_torque(self):

@@ -27,7 +27,7 @@ class BasePlot:
 
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.master)
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack()
+        self.canvas.get_tk_widget().grid()
 
     def animate(self):
         raise NotImplementedError("Subclasses should implement this method")
@@ -135,7 +135,6 @@ class BottomPlot(BasePlot):
 
     def animate(self, chartSelection):
         topController = None
-        title = " "
         bottomLimit = -1
         topLimit = 1
         if chartSelection == "Controller":
@@ -213,4 +212,4 @@ class FSRPlot(BasePlot):
             elif topMeasure <= self.goal:
                 self.above_goal = False  # Reset the flag when it goes below or equal to the goal
 
-        self.update_plot(self.xValues, self.yValues, self.secondY, bottomLimit,topLimit,title)
+        self.update_plot(self.xValues, self.yValues, self.secondY, bottomLimit , topLimit, title)
