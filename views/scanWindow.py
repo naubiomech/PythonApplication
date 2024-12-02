@@ -10,6 +10,7 @@ class ScanWindow(tk.Frame):
         super().__init__(parent)
         self.controller = controller  # Reference to the main application controller
         self.saved_address = None
+
         # Set the disconnection callback
         self.controller.deviceManager.on_disconnect = self.ScanWindow_on_device_disconnected
 
@@ -22,7 +23,7 @@ class ScanWindow(tk.Frame):
         self.scanning_animation_running = False  # Flag for animation state
 
         self.create_widgets()  # Create UI elements
-        self.load_device_avalible() #Check if loaded devices availble
+        self.load_device_available() #Check if loaded devices avalible
 
     # Create all UI elements
     def create_widgets(self):
@@ -130,7 +131,7 @@ class ScanWindow(tk.Frame):
             self.deviceNameText.set("Connection Failed, Please Restart Device")  # Update text if connection fails
         self.startScanButton.config(state="normal")
 
-    def load_device_avalible(self):
+    def load_device_available(self):
         if os.path.exists("saved_device.txt"):
             with open("saved_device.txt", "r") as file:
                 self.saved_address = file.read().strip()
@@ -201,12 +202,9 @@ class ScanWindow(tk.Frame):
 
     async def on_start_scan_button_clicked(self):
         """Starts scanning for devices when the button is clicked."""
+        self.reset_elements()
         self.startScanButton.config(state=DISABLED)
         self.loadDeviceButton.config(state=DISABLED)
-        self.startTrialButton.config(state=DISABLED)
-        self.calTorqueButton.config(state=DISABLED)
-        self.deviceListbox.delete(0, tk.END)
-
         await self.controller.deviceManager.disconnect()  # Disconnects from any devices
         self.deviceNameText.set("Scanning...")  # Update device name text
         self.start_scanning_animation()  # Start the animation        
@@ -214,24 +212,32 @@ class ScanWindow(tk.Frame):
         self.startScanButton.config(state="normal")  # Re-enable the Start Scan button after scanning
         self.stop_scanning_animation()  # Stop the animation after scanning
 
+        if self.saved_address is not None:
+            self.loadDeviceButton.config(state="normal")
+
     async def startScanButtonClickedHandler(self):
         """Starts scanning for devices and updates the UI accordingly."""
 
         available_devices = await self.controller.deviceManager.searchDevices()
-        self.deviceNameText.set("Scan Complete")
-        self.startScanButton.config(state="normal")
 
-        # Update Listbox with the scanned devices
-        self.deviceListbox.delete(0, tk.END)  # Clear the Listbox
-        for address, name in available_devices.items():
-            self.deviceListbox.insert(tk.END, f"{name} - {address}")
+        if(available_devices != "false"):
+            self.deviceNameText.set("Scan Complete")
+            self.startScanButton.config(state="normal")
 
-        # Check if there are available devices
-        if not available_devices:
-            self.deviceNameText.set("No Devices Found")
+            # Update Listbox with the scanned devices
+            self.deviceListbox.delete(0, tk.END)  # Clear the Listbox
+            for address, name in available_devices.items():
+                self.deviceListbox.insert(tk.END, f"{name} - {address}")
 
-        if self.saved_address is not None:
-            self.loadDeviceButton.config(state="normal")
+            # Check if there are available devices
+            if not available_devices:
+                self.deviceNameText.set("No Devices Found")
+
+            if self.saved_address is not None:
+                self.loadDeviceButton.config(state="normal")
+        else:
+            self.deviceNameText.set("BlueTooth Error")
+            self.startScanButton.config(state="normal")
         
     # Handle device selection from the Listbox
     def on_device_selected(self, event):
