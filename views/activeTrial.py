@@ -102,6 +102,9 @@ class ActiveTrial(tk.Frame):
         """Launch the game in a subprocess."""
         game_path = os.path.join(os.getcwd(), "Games", "controller_demo_grape_stomp.py")
 
+        
+        self.controller.virtualController.stop()
+        # Create a virtual controller
         self.controller.virtualController.create()  # Start the virtual controller
         
         try:

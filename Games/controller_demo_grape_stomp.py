@@ -25,10 +25,10 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Grape Stomp!")
 
 # load the sprite sheet and define frame dimensions
-bg = pygame.image.load("Games/landscape.jpg")
+bg = pygame.image.load("Games/landscape.jpg")  #CHANGE BACK TO Games/landscape.jpg
 sprite_sheet = pygame.image.load("Games/Walk.png") 
-frame_width = 19  
-frame_height = 28  
+frame_width = 36  
+frame_height = 48  
 scale_factor = 15
 
 #set step variables
@@ -37,9 +37,9 @@ step_goal = 20
 
 
 #get frames from the sprite sheet
-man_left = sprite_sheet.subsurface((235, 0, frame_width, frame_height))
+man_left = sprite_sheet.subsurface((111, 0, frame_width, frame_height))
 scaled_left = pygame.transform.scale(man_left, (frame_width * scale_factor, frame_height * scale_factor))
-man_right = sprite_sheet.subsurface((95, 0, frame_width, frame_height))
+man_right = sprite_sheet.subsurface((16, 0, frame_width, frame_height))
 scaled_right = pygame.transform.scale(man_right, (frame_width * scale_factor, frame_height * scale_factor))
 
 
@@ -48,8 +48,8 @@ barrel = pygame.image.load("Games/Barrel-of-grapes.png")
 barrel = pygame.transform.scale(barrel, (500, 400))
 
 #player settings
-player_x = WIDTH // 2 - 350
-player_y = HEIGHT - 550
+player_x = WIDTH // 2 - 330
+player_y = HEIGHT - 645
 player_speed = 2
 font = pygame.font.SysFont(None, 36)
 
@@ -67,7 +67,7 @@ if num_controllers > 0:
     cont = pygame.joystick.Joystick(0)
     cont.init()
     #display contoller success
-    print("\nController Successfully Connected!! in Game\n")
+    print("\nGrape Stomper Starting...\n")
 
     #game loop
     running = True
@@ -109,11 +109,11 @@ if num_controllers > 0:
         #set window background
         screen.blit(bg, (0,0))
 
-        #draw the man stomping
-        screen.blit(man_sprite, (player_x, player_y))
-
         #draw the barrel og grapes
         screen.blit(barrel, (-55,225))
+
+        #draw the man stomping
+        screen.blit(man_sprite, (player_x, player_y))
 
         #display progress in text
         steps_text = font.render(f"Steps taken: {step_count}  Step Goal: {step_goal}", True, (0, 0, 0))
