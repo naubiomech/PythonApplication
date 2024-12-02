@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, N, StringVar,
                      W, X, Y, ttk)
-
 from async_tkinter_loop import async_handler
-
+import subprocess
+import os
 from Widgets.Charts.chart import BottomPlot, TopPlot
 
 
@@ -47,7 +47,6 @@ class ActiveTrial(tk.Frame):
 
         self.create_widgets()
 
-
     # Frame UI elements
     def create_widgets(self):
         # Update torque button
@@ -79,6 +78,16 @@ class ActiveTrial(tk.Frame):
             command=self.handle_MachineLearning_button)
         MachineLearningButton.pack(side=LEFT, padx=7)  # Pack the button to the left
         
+        # Launch Game Button
+        launchGameButton = tk.Button(
+            self,
+            text="Launch Game",
+            height=2,
+            width=20,
+            command=self.launch_game
+        )
+        launchGameButton.pack(side=LEFT, padx=7)  # Pack the button to the left
+
         # End Trial Button
         endTrialButton = tk.Button(
             self,
@@ -88,6 +97,18 @@ class ActiveTrial(tk.Frame):
             command=async_handler(self.on_end_trial_button_clicked),
         )
         endTrialButton.pack(side=RIGHT, padx=7)  # Pack the button to the left
+
+    def launch_game(self):
+        """Launch the game in a subprocess."""
+        game_path = os.path.join(os.getcwd(), "Games", "controller_demo_grape_stomp.py")
+
+        self.controller.virtualController.create()  # Start the virtual controller
+        
+        try:
+            subprocess.Popen(["python", game_path])  # Open the game as a new process
+            print(f"Game launched from {game_path}")
+        except Exception as e:
+            print(f"Error launching game: {e}")
 
     def handle_BioFeedbackButton_button(self):
         self.controller.show_frame("BioFeedback")
@@ -100,7 +121,7 @@ class ActiveTrial(tk.Frame):
         machineLearning_frame.newSelection(self)
 
     def newSelection(self, event=None):
-        # Disable buttons and dropdown untill proccess complete
+        # Disable buttons and dropdown until process complete
         self.disable_interactions()
 
         # Determine which plots to show

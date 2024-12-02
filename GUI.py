@@ -7,6 +7,7 @@ from views.activeTrial import ActiveTrial
 from views.activeTrialSettings import UpdateTorque
 from views.bioFeedback import BioFeedback
 from views.machineLearning import MachineLearning
+from Games.virtualController import VirtualController
 
 from views.scanWindow import ScanWindow
 
@@ -16,6 +17,10 @@ class ControllerApp(tk.Tk):
         super().__init__(*args, **kwargs)
         self.trial = exoTrial.ExoTrial(True, 1, True)
         self.deviceManager = exoDeviceManager.ExoDeviceManager()
+
+        # Initialize the virtual controller, giving it the real time processor and sensor ID
+        self.virtualController = VirtualController(self.deviceManager._realTimeProcessor, 1) 
+        
         self.title("NAU Lab of Biomechatronics")
         self.geometry("920x720")
         self.minsize(900, 700)

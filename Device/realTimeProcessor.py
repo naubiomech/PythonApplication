@@ -13,6 +13,7 @@ class RealTimeProcessor:
         self._num_count = 0
         self._buffer = []
         self._payload = []
+        self.controller_payload = []
         self._result = ""
         self._exo_data = exoData.ExoData()
         self._chart_data = chart_data.ChartData()
@@ -20,6 +21,10 @@ class RealTimeProcessor:
         self.x_time = 0
         self._predictor= MLModel.MLModel() #create the machine learning model object
         
+    def getPayloadData(self):
+        # Return the controller payload, this is a different payload variable because it does
+        # not get reset after each message, if it did the controller would only recieve [] as data
+        return self.controller_payload
 
     def processEvent(self, event):
         # Decode data from bytearry->String
@@ -69,6 +74,9 @@ class RealTimeProcessor:
                                 self.processMessage(
                                     self._command, self._payload, self._data_length
                                 )
+                                # send data to the controller payload
+                                self.controller_payload = self._payload.copy()
+
                                 self._reset()  # Reset message variables for a new message
                             else:
                                 continue  # Keep reading message
