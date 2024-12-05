@@ -33,7 +33,7 @@ scale_factor = 15
 
 #set step variables
 step_count = 0
-step_goal = 20
+step_goal = 3
 
 
 #get frames from the sprite sheet
