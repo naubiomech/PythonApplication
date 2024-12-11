@@ -34,72 +34,74 @@ class BioFeedback(tk.Frame):
         self.target_value = None
         self.target_var = StringVar(value="No target set")  # Display the target value
 
-        # Drop down menu for selecting left or right leg
-        self.chartDropdown = ttk.Combobox(
-            self,
-            textvariable=self.chartVar,
-            state="readonly",
-            values=["Left Leg", "Right Leg"],
-        )
-
-        # Back button to return to the Active Trial frame
-        backButton = tk.Button(self, text="Back", command=self.handle_back_button)
-        backButton.pack(side=TOP, anchor=W, pady=10, padx=10)
-
-        # Biofeedback title label
-        calibrationMenuLabel = tk.Label(self, text="Biofeedback", font=("Arial", 40))
-        calibrationMenuLabel.pack(side=TOP, anchor=N, pady=20)
-
-        # For battery Label
-        batteryPercentLabel = tk.Label(self, 
-            textvariable=self.controller.
-            deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
-                font=("Arial", 12))
-        batteryPercentLabel.pack(side=TOP, anchor=E, pady=0, padx=0)
-
-        # Initialize the FSR plot
-        self.FSRPlot = FSRPlot(self)
-        self.currentPlots = self.FSRPlot  # Current plot reference
-
-        # Bind dropdown selection change to update plots
-        self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
-        self.chartDropdown.pack()
-
-        self.plot_update_job = None  # Store the job reference for plot updates
-
-        # Label to display targets reached
-        self.targets_reached_label = tk.Label(self, text="Targets Reached: 0",
-                                               font=("Arial", 20))
-        self.targets_reached_label.pack(side=TOP, anchor=CENTER, pady=10)
-
         # Create the buttons and labels
         self.create_widgets()
 
     def create_widgets(self):
+        style = ttk.Style()
+        style.configure("Custom.TCombobox", font=("Arial", 16), padding=10)
+
+        # Back button to return to the Active Trial frame
+        backButton = ttk.Button(self, text="Back", command=self.handle_back_button)
+        backButton.grid(row=0, column=0, pady=10)
+
+        # Biofeedback title label
+        calibrationMenuLabel = ttk.Label(self, text="Biofeedback", font=("Arial", 40))
+        calibrationMenuLabel.grid(row=0, column=0, columnspan=8, pady=20)
+
+        # For battery Label
+        batteryPercentLabel = ttk.Label(self, 
+            textvariable=self.controller.
+            deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
+                font=("Arial", 12))
+        batteryPercentLabel.grid(row=0, column=7,sticky="E") 
+
+        # Initialize the FSR plot
+        self.FSRPlot = FSRPlot(self)
+        self.currentPlots = self.FSRPlot  # Current plot reference
+        self.FSRPlot.canvas.get_tk_widget().grid(row=1, column=0, columnspan=8, sticky="NSEW", pady=5, padx=5)
+
+        # Chart selection button
+        self.chartButton = ttk.Button(
+            self,
+            text="Left Leg",
+            command=self.toggle_chart,
+            style="Custom.TButton",
+        )
+        self.chartButton.grid(row=2, column=0, columnspan=8, pady=20)
+
+        self.plot_update_job = None  # Store the job reference for plot updates
+
+        # Label to display targets reached
+        self.targets_reached_label = ttk.Label(self, text="Targets Reached: 0",
+                                               font=("Arial", 17))
+        self.targets_reached_label.grid(row=3, column=0, columnspan=8, pady=20)
+
+
         # Frame for target value buttons
-        target_frame = tk.Frame(self)
-        target_frame.pack(side=TOP, anchor=CENTER, pady=10)
+        target_frame = ttk.Frame(self)
+        target_frame.grid(row=4, column=0, columnspan=8, pady=20)
 
         # Button to set target value
-        self.target_button = tk.Button(target_frame, text="Set Target Value", 
+        self.target_button = ttk.Button(target_frame, text="Set Target Value", 
             command=self.ask_target_value)
         self.target_button.pack(side=LEFT, padx=5)
 
         # Reset button for target value
-        self.reset_button = tk.Button(target_frame, 
+        self.reset_button = ttk.Button(target_frame, 
             text="Reset Target Value", command=self.reset_target, state="disabled")
-        self.reset_button.pack(side=LEFT, padx=5)
+        self.reset_button.pack(side=RIGHT, padx=5)
 
         # Label to display the target value
-        self.target_label = tk.Label(self, textvariable=self.target_var, font=("Arial", 20))
-        self.target_label.pack(side=TOP, anchor=CENTER, pady=10)
+        self.target_label = ttk.Label(self, textvariable=self.target_var, font=("Arial", 17))
+        self.target_label.grid(row=5, column=0, columnspan=8, pady=20,padx=20)
 
         # Frame for advanced buttons
-        advanced_frame = tk.Frame(self)
-        advanced_frame.pack(side=TOP, anchor=CENTER, pady=10)
+        advanced_frame = ttk.Frame(self)
+        advanced_frame.grid(row=6, column=0, columnspan=8, pady=20)
         
         # Mark Trial Button
-        markButton = tk.Button(
+        markButton = ttk.Button(
             advanced_frame,
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel,
             command=async_handler(self.on_mark_button_clicked),
@@ -107,12 +109,29 @@ class BioFeedback(tk.Frame):
         markButton.pack(side=LEFT, anchor=CENTER, padx=5)
 
         # Recalibrate FSRs Button
-        self.recalibrateFSRButton = tk.Button(
+        self.recalibrateFSRButton = ttk.Button(
             advanced_frame,
             text="Recalibrate FSRs",
             command=async_handler(self.on_recal_FSR_button_clicked),
         )
-        self.recalibrateFSRButton.pack(side=LEFT, anchor=CENTER, padx=5)
+        self.recalibrateFSRButton.pack(side=RIGHT, anchor=CENTER, padx=5)
+
+        # Configure grid weights for centering
+        for i in range(6):
+            self.grid_rowconfigure(i, weight=1)
+        for j in range(8):
+            self.grid_columnconfigure(j, weight=1)
+
+    def toggle_chart(self):
+        """Toggle between 'Left Leg' and 'Right Leg' for the chart."""
+        current = self.chartVar.get()
+        if current == "Left Leg":
+            self.chartVar.set("Right Leg")
+            self.chartButton.config(text="Right Leg")
+        else:
+            self.chartVar.set("Left Leg")
+            self.chartButton.config(text="Left Leg")
+        self.newSelection()
 
     def ask_target_value(self):
         # Prompt the user for a target value
@@ -179,10 +198,6 @@ class BioFeedback(tk.Frame):
 
     def enable_interactions(self):
         try:
-            # Ensure the chartDropdown widget is present and properly initialized
-            if self.chartDropdown.winfo_exists():
-                self.chartDropdown.config(state='normal')
-
             # Enable other widgets
             for widget in self.winfo_children():
                 if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):

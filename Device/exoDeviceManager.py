@@ -207,18 +207,21 @@ class ExoDeviceManager:
         i = 0
         self.available_devices.clear()
         while i < 3:
-            device = await BleakScanner.find_device_by_filter(self.filterExo)
+            try:
+                device = await BleakScanner.find_device_by_filter(self.filterExo)
+                if device:
+                    self.available_devices[device.address] = device.name  # Store name with address as key
 
-            if device:
-                self.available_devices[device.address] = device.name  # Store name with address as key
+                # Print all available devices every few seconds
+                print("Currently available devices:")
+                for address, name in self.available_devices.items():
+                    print(f"{name} - {address}")
 
-            # Print all available devices every few seconds
-            print("Currently available devices:")
-            for address, name in self.available_devices.items():
-                print(f"{name} - {address}")
-
-            await asyncio.sleep(1)  # Adjust the scan interval as needed
-            i += 1
+                await asyncio.sleep(1)  # Adjust the scan interval as needed
+                i += 1
+            except Exception as e:
+                print(f"Error during device scan: {e}")
+                return "false"  # Return false if an error occurs
         return self.available_devices
     
     # Scan for BLE devices and attempt to connect

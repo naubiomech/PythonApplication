@@ -30,125 +30,153 @@ class ActiveTrial(tk.Frame):
         self.graphVar = StringVar()
         self.graphVar.set("Both Graphs")  # Default to "Both Graphs"
 
-        # Create a frame for the dropdowns
-        dropdown_frame = tk.Frame(self)
+        self.create_widgets()
 
-        # Chart selection dropdown
-        self.chartDropdown = ttk.Combobox(
-            dropdown_frame,
-            textvariable=self.chartVar,
-            state="readonly",
-            values=["Controller", "Sensor"],
-        )
-        self.chartDropdown.pack(side=LEFT, padx=5)
+    # Frame UI elements
+    def create_widgets(self):
 
-        # Graph selection dropdown
-        self.graphDropdown = ttk.Combobox(
-            dropdown_frame,
-            textvariable=self.graphVar,
-            state="readonly",
-            values=["Both Graphs", "Top Graph", "Bottom Graph"],
-        )
-        self.graphDropdown.pack(side=LEFT, padx=5)
+        style = ttk.Style()
+        style.configure("Custom.TCombobox", font=("Arial", 16), padding=10)
 
-        # Create a frame for the title and end trial button
-        title_frame = tk.Frame(self)
-        title_frame.pack(side=TOP, pady=10, fill=X)
-
-        # End Trial Button
-        endTrialButton = tk.Button(
-            title_frame,
-            text="End Trial",
-            height=2,
-            command=async_handler(self.on_end_trial_button_clicked),
-        )
-        endTrialButton.pack(side=LEFT)  # Pack the button next to the title
-        
         # Active Trial title label
-        calibrationMenuLabel = tk.Label(title_frame, text="Active Trial", font=("Arial", 40))
-        calibrationMenuLabel.pack(side=TOP, anchor=N, fill=X)
+        calibrationMenuLabel = ttk.Label(self, text="Active Trial", font=("Arial", 40))
+        calibrationMenuLabel.grid(row=0, column=0, columnspan=8, pady=20)
 
         # For battery Label
-        batteryPercentLabel = tk.Label(self, 
+        batteryPercentLabel = ttk.Label(self, 
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
                 font=("Arial", 12))
-        batteryPercentLabel.pack(side=TOP, anchor=E, pady=0, padx=0)
+        # batteryPercentLabel.pack(side=TOP, anchor=E, pady=0, padx=0)
+        batteryPercentLabel.grid(row=0, column=7,sticky="E") 
 
+        # Create and place the top plot
         self.topPlot = TopPlot(self)
-        self.bottomPlot = BottomPlot(self)
+        self.topPlot.canvas.get_tk_widget().grid(row=1, column=1, columnspan=7, sticky="NSEW", pady=5, padx=5)
 
-        dropdown_frame.pack(side=TOP, pady=10, anchor=CENTER)
-        # Bind dropdown selections to their respective methods
-        self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
-        self.graphDropdown.bind("<<ComboboxSelected>>", self.newSelection)
+        # Create and place the bottom plot
+        self.bottomPlot = BottomPlot(self)
+        self.bottomPlot.canvas.get_tk_widget().grid(row=2, column=1, columnspan=7, sticky="NSEW", pady=5, padx=5)
+            
+        # Chart selection button
+        self.chartButton = ttk.Button(
+            self,
+            text="Controller",
+            command=self.toggle_chart,
+            style="Custom.TButton",
+        )
+        self.chartButton.grid(row=3, column=3, padx=10, pady=10, sticky="E")
+
+        # Buttons at the bottom
+        graph_button_frame = ttk.Frame(self)
+        graph_button_frame.grid(row=3, column=4)
+
+        self.bothGraphsButton = ttk.Button(
+            graph_button_frame,
+            text="Both Graphs",
+            command=lambda: self.set_graph("Both Graphs"),
+            style="Custom.TButton",
+        )
+        self.bothGraphsButton.pack(side = LEFT)
+
+        # Graph selection buttons
+        self.topGraphButton = ttk.Button(
+            graph_button_frame,
+            text="Top Graph",
+            command=lambda: self.set_graph("Top Graph"),
+            style="Custom.TButton",
+        )
+        self.topGraphButton.pack(side = LEFT)
+
+        self.bottomGraphButton = ttk.Button(
+            graph_button_frame,
+            text="Bottom Graph",
+            command=lambda: self.set_graph("Bottom Graph"),
+            style="Custom.TButton",
+        )
+        self.bottomGraphButton.pack(side = LEFT)
 
 
         self.currentPlots = [self.topPlot, self.bottomPlot]
         self.plot_update_job = None  # Store the job reference
 
-        self.create_widgets()
 
-
-    # Frame UI elements
-    def create_widgets(self):
-        # Update torque button
-        button_frame = tk.Frame(self)
-        button_frame.pack(side=BOTTOM, pady=7, fill=X)  # Pack the button frame at the bottom
-
-        updateTorqueButton = tk.Button(
+        # End Trial Button
+        endTrialButton = ttk.Button(
             self,
+            text="End Trial",
+            command=async_handler(self.on_end_trial_button_clicked),
+        )
+        #endTrialButton.pack(side=LEFT)  # Pack the button next to the title
+        endTrialButton.grid(row=0, column=0, pady=10)
+
+        # Buttons at the bottom
+        button_frame = ttk.Frame(self)
+        button_frame.grid(row=1, column=0, rowspan=5, pady=125, sticky="NS")
+
+        updateTorqueButton = ttk.Button(
+            button_frame,
             text="Update Controller",
-            height=2,
-            width=20,
             command=self.go_to_update_torque,
         )
-        updateTorqueButton.pack(side=LEFT, padx=7)  # Pack the button to the left
+        updateTorqueButton.pack(side=TOP, pady=5)
 
+        BioFeedbackButton = ttk.Button(
+            button_frame,
+            text="Bio Feedback",
+            command=self.handle_BioFeedbackButton_button)
+        BioFeedbackButton.pack(side=TOP, pady=5)
+
+        MachineLearningButton = ttk.Button(
+            button_frame,
+            text="Machine Learning",
+            command=self.handle_MachineLearning_button)
+        MachineLearningButton.pack(side=TOP, pady=5)
+        
         # Recalibrate FSRs Button
-        self.recalibrateFSRButton = tk.Button(
-            self,
+        self.recalibrateFSRButton = ttk.Button(
+            button_frame,
             text="Recalibrate FSRs",
-            height=2,
-            width=20,
             command=async_handler(self.on_recal_FSR_button_clicked),
         )
-        self.recalibrateFSRButton.pack(side=LEFT, padx=7)
+        self.recalibrateFSRButton.pack(side=TOP, pady=5)
 
-        BioFeedbackButton = tk.Button(
-            self,
-            text="Bio Feedback",
-            height=2,
-            width=20,
-            command=self.handle_BioFeedbackButton_button)
-        BioFeedbackButton.pack(side=LEFT, padx=7)  # Pack the button to the left
-
-        MachineLearningButton = tk.Button(
-            self,
-            text="Machine Learning",
-            height=2,
-            width=20,
-            command=self.handle_MachineLearning_button)
-        MachineLearningButton.pack(side=LEFT, padx=7)  # Pack the button to the left
-        
         # Button for sending preset FSR values
-        sendFsrValuesButton = tk.Button(
-            self,
+        sendFsrValuesButton = ttk.Button(
+            button_frame,
             text="Send Preset FSR Values",
-            height=2,
-            width=20,
             command=self.create_fsr_input_dialog,
         )
-        sendFsrValuesButton.pack(side=LEFT, padx=7)
+        sendFsrValuesButton.pack(side=TOP, pady=5)
 
         # Mark Trial Button
-        markButton = tk.Button(
-            self,
+        markButton = ttk.Button(
+            button_frame,
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel,
-            height=2,
-            width=10,
             command=async_handler(self.on_mark_button_clicked),
         )
-        markButton.pack(side=LEFT, padx=7)
+        markButton.pack(side=TOP, pady=5)
+
+        # Configure grid weights for centering
+        for i in range(5):
+            self.grid_rowconfigure(i, weight=1)
+        for j in range(8):
+            self.grid_columnconfigure(j, weight=1)
+            
+    def toggle_chart(self):
+        """Toggle between 'Controller' and 'Sensor' for the chart."""
+        current = self.chartVar.get()
+        if current == "Controller":
+            self.chartVar.set("Sensor")
+            self.chartButton.config(text="Sensor")
+        else:
+            self.chartVar.set("Controller")
+            self.chartButton.config(text="Controller")
+        self.newSelection()
+
+    def set_graph(self, selection):
+        """Set the graph display based on the button clicked."""
+        self.graphVar.set(selection)
+        self.newSelection()
 
     def create_fsr_input_dialog(self):
         # Create a new Toplevel window for input
@@ -205,7 +233,7 @@ class ActiveTrial(tk.Frame):
 
         except ValueError:
             # Handle invalid input
-            tk.messagebox.showerror("Invalid Input", "Please enter valid numbers for FSR values.")
+            ttk.messagebox.showerror("Invalid Input", "Please enter valid numbers for FSR values.")
 
     def handle_BioFeedbackButton_button(self):
         self.controller.show_frame("BioFeedback")
@@ -227,13 +255,12 @@ class ActiveTrial(tk.Frame):
 
     def disable_interactions(self):
         # Disable all interactive elements
-        self.chartDropdown.config(state='disabled')
         for widget in self.winfo_children():
-            if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
+            if isinstance(widget, ttk.Button) or isinstance(widget, ttk.Combobox):
                 widget.config(state='disabled')
 
     def ActiveTrial_on_device_disconnected(self):
-        tk.messagebox.showwarning("Device Disconnected", "Please Reconnect")
+        ttk.messagebox.showwarning("Device Disconnected", "Please Reconnect")
         
         self.controller.trial.loadDataToCSV(
             self.controller.deviceManager, True
@@ -243,13 +270,9 @@ class ActiveTrial(tk.Frame):
 
     def enable_interactions(self):
         try:
-            # Ensure the chartDropdown widget is present and properly initialized
-            if self.chartDropdown.winfo_exists():
-                self.chartDropdown.config(state='normal')
-
             # Enable other widgets
             for widget in self.winfo_children():
-                if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
+                if isinstance(widget, ttk.Button) or isinstance(widget, ttk.Combobox):
                     widget.config(state='normal')
         except Exception as e:
             print(f"Error in enable_interactions: {e}")

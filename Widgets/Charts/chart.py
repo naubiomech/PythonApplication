@@ -27,7 +27,7 @@ class BasePlot:
 
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.master)
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack()
+        self.canvas.get_tk_widget().grid()
 
     def animate(self):
         raise NotImplementedError("Subclasses should implement this method")
@@ -38,53 +38,13 @@ class BasePlot:
             xValues = xValues[-max_points:]
             yValues = yValues[-max_points:]
             secondY = secondY[-max_points:]
-        
         # Update line data
         self.line1.set_data(xValues, yValues)
         self.line2.set_data(xValues, secondY)
 
-        # Filter out None values from yValues and secondY
-        filtered_y_values = [val for val in yValues if val is not None]
-        filtered_second_y = [val for val in secondY if val is not None]
-
-        # Combine filtered values to calculate current data range
-        all_y_values = filtered_y_values + filtered_second_y
-
-        # Check if there's valid data to compute min and max
-        if all_y_values:
-            current_min = min(all_y_values)
-            current_max = max(all_y_values)
-        else:
-            current_min = 0
-            current_max = 0
-            
-        # Check if y-axis limits need to be adjusted
-        padding = 0.5  # Padding to add around limits
-        if not hasattr(self, 'y_limits'):
-            self.y_limits = [bottomLim, topLim]  # Initial fixed limits
-            self.reset_counter = 0  # Counter to track data within the initial range
-    
-        # Adjust limits if data exceeds current range
-        limits_updated = False
-        if current_min < self.y_limits[0]:
-            self.y_limits[0] = current_min - padding
-            limits_updated = True
-        if current_max > self.y_limits[1]:
-            self.y_limits[1] = current_max + padding
-            limits_updated = True
-
-        # Reset y_limits if data is within the initial range for consecutive updates
-        if not limits_updated and current_min >= -1 and current_max <= 1:
-            self.reset_counter += 1
-            if self.reset_counter >= 10:  # Number of consecutive updates to confirm reset
-                self.y_limits = [bottomLim,topLim]
-                self.reset_counter = 0
-        else:
-            self.reset_counter = 0  # Reset the counter if limits were updated
-
-        # Set x-axis to match the data range and y-axis with adjusted limits
-        self.ax.set_xlim([xValues[0], xValues[-1]])
-        self.ax.set_ylim(self.y_limits)
+        # Efficiently redraw only the updated parts
+        self.ax.relim()  # Recalculate limits based on new data
+        self.ax.autoscale(enable=True, axis='both', tight=False)
 
         # Draw without clearing axes
         self.canvas.draw_idle()
@@ -135,7 +95,6 @@ class BottomPlot(BasePlot):
 
     def animate(self, chartSelection):
         topController = None
-        title = " "
         bottomLimit = -1
         topLimit = 1
         if chartSelection == "Controller":
@@ -213,4 +172,4 @@ class FSRPlot(BasePlot):
             elif topMeasure <= self.goal:
                 self.above_goal = False  # Reset the flag when it goes below or equal to the goal
 
-        self.update_plot(self.xValues, self.yValues, self.secondY, bottomLimit,topLimit,title)
+        self.update_plot(self.xValues, self.yValues, self.secondY, bottomLimit , topLimit, title)
