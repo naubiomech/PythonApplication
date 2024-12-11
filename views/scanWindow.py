@@ -110,7 +110,9 @@ class ScanWindow(tk.Frame):
         """Saves the currently selected device to a file."""
         await self.controller.deviceManager.disconnect()  # Disconnects from any devices
         self.startScanButton.config(state=DISABLED)
-
+        self.connectButton.config(state=DISABLED)
+        self.saveDeviceButton.config(state=DISABLED)
+        self.loadDeviceButton.config(state=DISABLED)
         if self.selected_device_address:
             with open("saved_device.txt", "w") as file:
                 file.write(self.selected_device_address)
@@ -126,9 +128,13 @@ class ScanWindow(tk.Frame):
         if success:
             self.startTrialButton.config(state="normal")  # Enable Start Trial button
             self.calTorqueButton.config(state="normal")   # Enable Calibrate Torque button
+            self.connectButton.config(state=DISABLED)
+            self.saveDeviceButton.config(state=DISABLED)
+            self.loadDeviceButton.config(state=DISABLED)
             self.deviceNameText.set(f"Connected: {self.selected_device_name} {self.selected_device_address}")
         else:
             self.deviceNameText.set("Connection Failed, Please Restart Device")  # Update text if connection fails
+            self.reset_elements()
         self.startScanButton.config(state="normal")
 
     def load_device_available(self):
@@ -189,7 +195,7 @@ class ScanWindow(tk.Frame):
             self.deviceNameText.set(f"Connected: {self.selected_device_name} {self.selected_device_address}")
         else:
             self.deviceNameText.set("Connection Failed, Please Restart Device")  # Update text if connection fails
-            self.connectButton(state="normal")
+            self.connectButton.config(state="normal")
 
         self.startScanButton.config(state="normal")
 
