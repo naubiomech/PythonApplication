@@ -4,6 +4,7 @@ import cProfile
 import pstats
 import io
 import time
+import tkinter.messagebox as messagebox
 
 from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, N, StringVar,
                      W, X, Y, ttk)
@@ -20,6 +21,10 @@ class ActiveTrial(tk.Frame):
         super().__init__(parent)
         self.controller = controller
         self.is_plotting = False  # Flag to control if plotting should happen
+        self.start_time = None  # Store the start time
+        self.elapsed_time = 0  # Store the elapsed time
+        self.timer_label = None  # Label for displaying the time
+        self.timer_job = None  # Store the timer update job reference
 
         # Set the disconnection callback
         self.controller.deviceManager.on_disconnect = self.ActiveTrial_on_device_disconnected
@@ -41,6 +46,10 @@ class ActiveTrial(tk.Frame):
         # Active Trial title label
         calibrationMenuLabel = ttk.Label(self, text="Active Trial", font=("Arial", 40))
         calibrationMenuLabel.grid(row=0, column=0, columnspan=8, pady=20)
+
+        # Timer label
+        self.timer_label = ttk.Label(self, text="Time: 0:00", font=("Arial", 12))
+        self.timer_label.grid(row=0, column=6, sticky="E", padx=5)  # Placed above the battery label
 
         # For battery Label
         batteryPercentLabel = ttk.Label(self, 
@@ -233,7 +242,7 @@ class ActiveTrial(tk.Frame):
 
         except ValueError:
             # Handle invalid input
-            ttk.messagebox.showerror("Invalid Input", "Please enter valid numbers for FSR values.")
+            messagebox.showerror("Invalid Input", "Please enter valid numbers for FSR values.")
 
     def handle_BioFeedbackButton_button(self):
         self.controller.show_frame("BioFeedback")
@@ -260,7 +269,7 @@ class ActiveTrial(tk.Frame):
                 widget.config(state='disabled')
 
     def ActiveTrial_on_device_disconnected(self):
-        ttk.messagebox.showwarning("Device Disconnected", "Please Reconnect")
+        messagebox.showwarning("Device Disconnected", "Please Reconnect")
         
         self.controller.trial.loadDataToCSV(
             self.controller.deviceManager, True
@@ -324,6 +333,21 @@ class ActiveTrial(tk.Frame):
         # Show the frame and update plots
         self.is_plotting = True
         self.newSelection()
+
+    def startClock(self):
+        self.start_time = time.time()  # Record the start time
+        self.elapsed_time = 0  # Reset the elapsed time
+        self.update_timer()
+
+    def update_timer(self):
+        if self.start_time:
+            # Calculate the elapsed time
+            self.elapsed_time = time.time() - self.start_time
+            minutes, seconds = divmod(int(self.elapsed_time), 60)
+            self.timer_label.config(text=f"Time: {minutes:02}:{seconds:02}")
+            
+            # Update the timer every 1000 ms (1 second)
+            self.timer_job = self.after(1000, self.update_timer)
 
     def hide(self):
         # This method is called when switching away from this frame

@@ -292,6 +292,7 @@ class ScanWindow(tk.Frame):
 
         # Starts new selection once Active trial has started
         active_trial_frame.newSelection(self)
+        active_trial_frame.startClock()
 
     def reset_elements(self):
         """Resets the UI elements to their initial state."""

@@ -16,7 +16,6 @@ jointMap = {
     "Left elbow": 8,
 }
 
-
 class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
     def __init__(self, parent, controller):  # Constructor for Frame
         super().__init__(parent)  # Correctly initialize the tk.Frame part
