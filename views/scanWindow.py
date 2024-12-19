@@ -279,11 +279,18 @@ class ScanWindow(tk.Frame):
         # Schedule the next update
         self.after(500, self.animate_scanning_dots, count + 1)
 
+    def changeName(self):
+        """Handles the Start Trial button click."""
+        if self.selected_device_address:  # Ensure a device is selected
+            # Change the title to the selected MAC address
+            self.controller.change_title(f"Device: {self.selected_device_address}")
+
     async def startTrialButtonClicked(self):
+
+        self.changeName()
         """Switches frame to ActiveTrial and begins the trial."""
         active_trial_frame = self.controller.frames["ActiveTrial"]
         active_trial_frame.disable_interactions()  # Disable buttons in ActiveTrial frame
-        self.loadDeviceButton.config(state="normal")
         
         # Show ActiveTrial frame
         self.controller.show_frame("ActiveTrial")
@@ -294,6 +301,12 @@ class ScanWindow(tk.Frame):
         active_trial_frame.newSelection(self)
         active_trial_frame.startClock()
 
+    def loadDeviceAvailible(self):
+        if self.saved_address is not None:
+            self.loadDeviceButton.config(state="normal")
+        else:
+            self.loadDeviceButton.config(state=DISABLED)
+        
     def reset_elements(self):
         """Resets the UI elements to their initial state."""
         self.deviceNameText.set("Not Connected")
@@ -305,11 +318,7 @@ class ScanWindow(tk.Frame):
         self.calTorqueButton.config(state=DISABLED)
         self.connectButton.config(state=DISABLED)
         self.saveDeviceButton.config(state=DISABLED)
-        
-        if self.saved_address is not None:
-            self.loadDeviceButton.config(state="normal")
-        else:
-            self.loadDeviceButton.config(state=DISABLED)
+        self.loadDeviceAvailible()
         
     def show(self):
         """Resets elements and shows the frame."""
