@@ -10,7 +10,6 @@ from views.machineLearning import MachineLearning
 
 from views.scanWindow import ScanWindow
 
-
 class ControllerApp(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -55,6 +54,9 @@ class ControllerApp(tk.Tk):
         # Set the disconnect handler for the new frame
         disconnect_handler_name = f"{page_name}_on_device_disconnected"
         self.deviceManager.on_disconnect = getattr(frame, disconnect_handler_name, None)
+
+    def change_title(self, newName):
+        self.title(newName)
 
 
 def exec():
