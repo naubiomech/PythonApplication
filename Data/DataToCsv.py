@@ -8,7 +8,9 @@ class CsvWritter:
         print("Creating filedata")
         # initialize array for output file
         fileData = []
+
         # establish field arrays for output file
+        timestamps = ["EpochTimestamp"]  # New field for epoch time
         tStep = ["TStep"]
         rTorque = ["RTorque"]
         rSetP = ["RSetP"]
@@ -32,7 +34,7 @@ class CsvWritter:
         Task = ["Task"]
         mark = ["Mark"]
 
-        # append data to field array
+
         for xt in exoData.tStep:
             tStep.append(xt)
         for rT in exoData.rTorque:
@@ -71,9 +73,12 @@ class CsvWritter:
             swingtime.append(moment)
         for tS in exoData.tStep:
             tStep.append(tS)
-
+        # Add the epoch timestamps (current time in seconds) to the timestamps list
+        for _ in exoData.epochTime:
+            timestamps.append(_)
 
         # add field array with data to output file
+        fileData.append(timestamps)
         fileData.append(tStep)
         fileData.append(rTorque)
         fileData.append(rSetP)
