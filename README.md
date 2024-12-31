@@ -34,7 +34,7 @@ To install all of the libraries run the following command in your terminal from 
 ## Greneral WorkFlow
 ### Program control flow
 
-<img src="./programflow.png">
+<img src="./programflow.png" alt="Program Control Flow" width="500">
 
 ### Starting the Application
 1. Ensure Bluetooth is enabled on your device.
