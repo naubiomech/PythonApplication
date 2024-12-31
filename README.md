@@ -16,29 +16,56 @@ Video Guide: https://youtu.be/VnQeUM2K6Vg
 BLE (Bluetooth Low Energy) is the heart of this project which provides a connection from this API to the exoskeletons. Bleak, a python library is used to handle all BLE operations. To find out more about Bleak click [here](https://bleak.readthedocs.io/en/latest/).
 
 Other libraries that are required include:
- - matplotlib
- - async_tkinter_loop
- - pygame
- - async_tkinter_loop
- - numpy
- - bleak
- - pandas
- - scikit-learn
- - micromlgen
- - matplotlib
- - pygame
+ - `matplotlib`
+ - `async_tkinter_loop`
+ - `pygame`
+ - `async_tkinter_loop`
+ - `numpy`
+ - `bleak`
+ - `pandas`
+ - `scikit-learn`
+ - `micromlgen`
+ - `matplotlib`
+ - `pygame`
 
 
-To install all of the libraries for this program run the command in any terminal `python .\install_dependencies.py` where main() is found
+To install all of the libraries run the following command in your terminal from the project directory `python .\install_dependencies.py`
 
-## Operation of API
+## Greneral WorkFlow
 ### Program control flow
+
 <img src="./programflow.png">
-This program when starting up creates a window with tkinter. To start scanning for exo-skeletons make sure Bluetooth is enabled on your computer or device. If Bluetooth is not enabled, the program will throw an OS error.
 
-To start the program run the command in any terminal `python3 GUI.py` which is where main() is found and will initialize the windows and frames of the program.
+### Starting the Application
+1. Ensure Bluetooth is enabled on your device.
 
-## Video Example
+2. Navigate to the project directory in your terminal.
+
+3. Run the command:
+
+`python3 GUI.py`
+
+4. The GUI will launch, presenting various frames for interacting with the system
+
+### Scanning for Devices
+
+1. The application automatically scans for exoskeletons.
+
+2. If Bluetooth is disabled, an OS error will be displayed.
+
+### Navigating the Interface
+
+The GUI consists of several frames, each corresponding to specific functionalities:
+
+* Scan Window: Initiate scanning and connect to devices.
+
+* Active Trial: Monitor active trials and sessions.
+
+* Biofeedback: Access real-time feedback tools.
+
+* Machine Learning: Train and test models for personalized control.
+
+### Video Example
 
 https://github.com/user-attachments/assets/6269629e-252b-4e77-b327-0914770ae9e3
 
@@ -50,6 +77,7 @@ To add a button to the application, follow these steps:
 
 2. Integrate the Button: Here’s an example of how to add a button in a specific frame:
 
+```python
 class YourFrame(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -65,28 +93,30 @@ class YourFrame(tk.Frame):
 
     def my_button_action(self):
         print("My New Button was clicked!")
-
+```
 3. Functionality: Define what the button will do in the my_button_action method.
 
 ## Modifying the Graphing
 
 To modify the graphing functionality, you can adjust the BasePlot class and its subclasses. Here's how to do it:
 
-* Limit Points Displayed: In the update_plot method, modify the max_points variable to control how many points are displayed in the graph:
+* Limit Points Displayed: In the `update_plot` method, modify the `max_points` variable to control how many points are displayed in the graph:
 
+    ```python
     def update_plot(self, xValues, yValues, secondY, title):
         max_points = -20  # Change this value to display more or fewer points
         xValues = xValues[max_points:]
         yValues = yValues[max_points:]
         secondY = secondY[max_points:]
+    ```
+* Customize Axes and Titles: In the `update_plot` method, you can also adjust axis labels and titles:
 
-* Customize Axes and Titles: In the update_plot method, you can also adjust axis labels and titles:
-
+    ```python
     self.ax.set_title(title)
     self.ax.set_xlabel("Time")
     self.ax.set_ylabel("Value")
-
-* Implement Animation: Each plot subclass (e.g., TopPlot, BottomPlot) has an animate method that gathers data and updates the plot. Modify this method to change how data is sourced and displayed.
+    ```
+* Implement Animation: Each plot subclass (e.g., `TopPlot`, `BottomPlot`) has an animate method that gathers data and updates the plot. Modify this method to change how data is sourced and displayed.
 
 * For graph variable modification, refer to the Biofeedback graph description bellow.
 
@@ -99,7 +129,8 @@ To add a new frame to the application, follow these steps:
 Create a new Python file in the views folder (e.g., newFeature.py).
 
 Use the following template to define your new frame:
-    
+
+```python
     import tkinter as tk
 
         class NewFeature(tk.Frame):
@@ -113,27 +144,27 @@ Use the following template to define your new frame:
             button = tk.Button(self, text="Go to Scan Window",
                                 command=lambda: controller.show_frame("ScanWindow"))
             button.pack(pady=10)
-
+```
 ### Step 2: Update the ControllerApp Class
 
 Open your main application file.
 
 Import the new frame at the top:
 
-    from views.newFeature import NewFeature
+`    from views.newFeature import NewFeature`
 
 Add the new frame to the frames dictionary in the ControllerApp class:
-
+```python
     for F in (ScanWindow, ActiveTrial, UpdateTorque, BioFeedback, MachineLearning, NewFeature):
-
+```
 ### Step 3: Navigate to the New Frame
 
 You can add a button in any existing frame to navigate to the new feature:
-
+```python
     button = tk.Button(self, text="Go to New Feature",
                     command=lambda: controller.show_frame("NewFeature"))
     button.pack(pady=10)
-
+```
 ## Biofeedback Frame
 ### Purpose
 
@@ -145,20 +176,20 @@ The Biofeedback frame provides visual and auditory feedback to users during trai
 
 2. The FSR data signal is accessed via the variable:
 
-    self.master.controller.deviceManager._realTimeProcessor._chart_data
+    `self.master.controller.deviceManager._realTimeProcessor._chart_data`
 
 3. To switch between left and right leg signals, the variable updates dynamically based on the user’s selection 
-    ._chart_data.leftFsr OR ._chart_data.rightFsr
+    `._chart_data.leftFsr` or `._chart_data.rightFsr`
 
 ### Modifying the Signal
 
 To modify the signal used in the biofeedback game:
 
-1. Locate the FSRPlot class in the chart.py file.
+1. Locate the FSRPlot class in the `chart.py` file.
 
 2. Update the data source to the desired signal by modifying the variable:
     
-    self.master.controller.deviceManager._realTimeProcessor._chart_data 
+    `self.master.controller.deviceManager._realTimeProcessor._chart_data` 
     
 
 ### Features and Buttons
@@ -187,11 +218,11 @@ To modify the signal used in the biofeedback game:
 
 #### Notifications
 
-1. Auditory Feedback: Plays a notification sound (e.g., notification.wav) when the user achieves a target.
+1. Auditory Feedback: Plays a notification sound (e.g., `notification.wav`) when the user achieves a target.
 
 2. Visual Feedback: The background temporarily changes color to indicate a successful target hit.
 
 ### Customization
 
-To add or modify features in the Biofeedback frame, refer to the BioFeedback class in biofeedback.py.
+To add or modify features in the Biofeedback frame, refer to the BioFeedback class in `biofeedback.py`.
 
