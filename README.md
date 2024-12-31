@@ -90,44 +90,69 @@ self.ax.set_ylabel("Value")
 Implement Animation: Each plot subclass (e.g., TopPlot, BottomPlot) has an animate method that gathers data and updates the plot. Modify this method to change how data is sourced and displayed.
 
 ## Adding a New Frame
+
 To add a new frame to the application, follow these steps:
 
 ### Step 1: Create the New Frame Class
-    Create a new Python file in the views folder (e.g., newFeature.py).
 
-    Use the following template to define your new frame:
+Create a new Python file in the views folder (e.g., newFeature.py).
+
+Use the following template to define your new frame:
     
-import tkinter as tk
+    import tkinter as tk
 
-class NewFeature(tk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent)
-        self.controller = controller
+        class NewFeature(tk.Frame):
+        def __init__(self, parent, controller):
+            super().__init__(parent)
+            self.controller = controller
 
-        label = tk.Label(self, text="New Feature Frame", font=("Arial", 24))
-        label.pack(pady=20)
+            label = tk.Label(self, text="New Feature Frame", font=("Arial", 24))
+            label.pack(pady=20)
 
-        button = tk.Button(self, text="Go to Scan Window",
-                           command=lambda: controller.show_frame("ScanWindow"))
-        button.pack(pady=10)
+            button = tk.Button(self, text="Go to Scan Window",
+                                command=lambda: controller.show_frame("ScanWindow"))
+            button.pack(pady=10)
 
 ### Step 2: Update the ControllerApp Class
-    Open your main application file.
 
-    Import the new frame at the top:
+Open your main application file.
 
-from views.newFeature import NewFeature
+Import the new frame at the top:
 
-    Add the new frame to the frames dictionary in the ControllerApp class:
+    from views.newFeature import NewFeature
 
+Add the new frame to the frames dictionary in the ControllerApp class:
 
-for F in (ScanWindow, ActiveTrial, UpdateTorque, BioFeedback, MachineLearning, NewFeature):
+    for F in (ScanWindow, ActiveTrial, UpdateTorque, BioFeedback, MachineLearning, NewFeature):
 
 ### Step 3: Navigate to the New Frame
-    You can add a button in any existing frame to navigate to the new feature:
 
-button = tk.Button(self, text="Go to New Feature",
-                   command=lambda: controller.show_frame("NewFeature"))
-button.pack(pady=10)
+You can add a button in any existing frame to navigate to the new feature:
 
+    button = tk.Button(self, text="Go to New Feature",
+                    command=lambda: controller.show_frame("NewFeature"))
+    button.pack(pady=10)
 
+## Bio Feedback Frame
+
+The Bio Feedback frame is designed to give visual and auditory responses to participants during training and analysis sessions. Its primary function is to assist users in achieving specific performance goals by providing real-time feedback based on sensor data.
+
+### Key Features:
+
+* Visual Graphing: Displays live data plots of pressure sensors (FSRs) to monitor performance.
+
+* Auditory Cues: Plays notification sounds when goals are reached.
+
+* Target Value Setting: Allows users to set target values for training and tracks progress toward those goals.
+
+* Dynamic Plot Switching: Enables switching between data plots for the left and right legs.
+
+* Battery Monitoring: Displays the battery status of the connected device.
+
+* Marking Trials: Allows marking specific events during data collection.
+
+* Recalibration Tools: Provides buttons to recalibrate force sensors for improved accuracy.
+
+* User-Friendly Controls: Includes buttons for navigation, resetting targets, and toggling views.
+
+This frame is particularly useful in rehabilitation or biomechanical research settings, enabling participants and researchers to track performance metrics and respond to feedback in real time.
