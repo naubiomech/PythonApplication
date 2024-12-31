@@ -65,7 +65,7 @@ The GUI consists of several frames, each corresponding to specific functionaliti
 
 * Machine Learning: Train and test models for personalized control.
 
-* Update Toque: Change specific attributes of the exoskeleton
+* Update Torque: Change specific attributes of the exoskeleton
 
 ### Video Example
 
