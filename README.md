@@ -145,7 +145,6 @@ The Biofeedback frame provides visual and auditory feedback to users during trai
 
 2. The FSR data signal is accessed via the variable:
 
-
     self.master.controller.deviceManager._realTimeProcessor._chart_data
 
 3. To switch between left and right leg signals, the variable updates dynamically based on the user’s selection 
@@ -157,11 +156,10 @@ To modify the signal used in the biofeedback game:
 
 1. Locate the FSRPlot class in the chart.py file.
 
-2. Update the data source to the desired signal by modifying the 
+2. Update the data source to the desired signal by modifying the variable:
     
     self.master.controller.deviceManager._realTimeProcessor._chart_data 
     
-    variable.
 
 ### Features and Buttons
 
