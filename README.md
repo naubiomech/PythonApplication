@@ -1,7 +1,7 @@
 # OpenPythonAPI
 ## Overview
 
-This program can be ran via any computer/terminal with python 3.12 installed. Libraries needed can be installed via pip (python's module manager)
+This program can run on any computer/terminal with python 3.12 installed. Libraries needed can be installed via pip (python's module manager)
 
 Open source Application utilizing the OpenExo API to search, connect to, and controll NAU Biomecatronics Lab's OpenExo systems.
 
