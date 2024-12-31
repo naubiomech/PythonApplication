@@ -49,7 +49,7 @@ To install all of the libraries run the following command in your terminal from 
 
 ### Scanning for Devices
 
-1. The application automatically scans for exoskeletons.
+1. The application automatically scans for exoskeletons when the scan button is pressed.
 
 2. If Bluetooth is disabled, an OS error will be displayed.
 
@@ -64,6 +64,8 @@ The GUI consists of several frames, each corresponding to specific functionaliti
 * Biofeedback: Access real-time feedback tools.
 
 * Machine Learning: Train and test models for personalized control.
+
+* Update Torque: Change specific attributes of the exoskeleton
 
 ### Video Example
 
