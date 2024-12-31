@@ -33,7 +33,7 @@ To install all of the libraries for this program run the command in any terminal
 
 ## Operation of API
 ### Program control flow
-<img src="./prgramflow.png">
+<img src="./programflow.png">
 This program when starting up creates a window with tkinter. To start scanning for exo-skeletons make sure Bluetooth is enabled on your computer or device. If Bluetooth is not enabled, the program will throw an OS error.
 
 To start the program run the command in any terminal `python3 GUI.py` which is where main() is found and will initialize the windows and frames of the program.
