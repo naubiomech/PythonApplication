@@ -46,9 +46,9 @@ https://github.com/user-attachments/assets/6269629e-252b-4e77-b327-0914770ae9e3
 
 To add a button to the application, follow these steps:
 
-Select a Frame: Choose a frame in the PythonApplication\views\ folder where you would like to add the button.
+1. Select a Frame: Choose a frame in the PythonApplication\views\ folder where you would like to add the button.
 
-Integrate the Button: Here’s an example of how to add a button in a specific frame:
+2. Integrate the Button: Here’s an example of how to add a button in a specific frame:
 
 class YourFrame(tk.Frame):
     def __init__(self, parent):
@@ -66,28 +66,29 @@ class YourFrame(tk.Frame):
     def my_button_action(self):
         print("My New Button was clicked!")
 
-Functionality: Define what the button will do in the my_button_action method.
+3. Functionality: Define what the button will do in the my_button_action method.
 
 ## Modifying the Graphing
 
 To modify the graphing functionality, you can adjust the BasePlot class and its subclasses. Here's how to do it:
 
-Limit Points Displayed: In the update_plot method, modify the max_points variable to control how many points are displayed in the graph:
+* Limit Points Displayed: In the update_plot method, modify the max_points variable to control how many points are displayed in the graph:
 
+    def update_plot(self, xValues, yValues, secondY, title):
+        max_points = -20  # Change this value to display more or fewer points
+        xValues = xValues[max_points:]
+        yValues = yValues[max_points:]
+        secondY = secondY[max_points:]
 
-def update_plot(self, xValues, yValues, secondY, title):
-    max_points = -20  # Change this value to display more or fewer points
-    xValues = xValues[max_points:]
-    yValues = yValues[max_points:]
-    secondY = secondY[max_points:]
+* Customize Axes and Titles: In the update_plot method, you can also adjust axis labels and titles:
 
-Customize Axes and Titles: In the update_plot method, you can also adjust axis labels and titles:
+    self.ax.set_title(title)
+    self.ax.set_xlabel("Time")
+    self.ax.set_ylabel("Value")
 
-self.ax.set_title(title)
-self.ax.set_xlabel("Time")
-self.ax.set_ylabel("Value")
+* Implement Animation: Each plot subclass (e.g., TopPlot, BottomPlot) has an animate method that gathers data and updates the plot. Modify this method to change how data is sourced and displayed.
 
-Implement Animation: Each plot subclass (e.g., TopPlot, BottomPlot) has an animate method that gathers data and updates the plot. Modify this method to change how data is sourced and displayed.
+* For graph variable modification, refer to the Biofeedback graph description bellow.
 
 ## Adding a New Frame
 
@@ -133,26 +134,62 @@ You can add a button in any existing frame to navigate to the new feature:
                     command=lambda: controller.show_frame("NewFeature"))
     button.pack(pady=10)
 
-## Bio Feedback Frame
+## Biofeedback Frame
+### Purpose
 
-The Bio Feedback frame is designed to give visual and auditory responses to participants during training and analysis sessions. Its primary function is to assist users in achieving specific performance goals by providing real-time feedback based on sensor data.
+The Biofeedback frame provides visual and auditory feedback to users during training or analysis sessions. It aids participants in achieving specific performance goals by leveraging real-time sensor data.
 
-### Key Features:
+### Signal Used in Biofeedback
 
-* Visual Graphing: Displays live data plots of pressure sensors (FSRs) to monitor performance.
+1. Biofeedback primarily utilizes force-sensitive resistors (FSRs) to monitor pressure data from exoskeleton sensors.
 
-* Auditory Cues: Plays notification sounds when goals are reached.
+2. The FSR data signal is accessed via the variable:
 
-* Target Value Setting: Allows users to set target values for training and tracks progress toward those goals.
+    self.master.controller.deviceManager._realTimeProcessor._chart_data
 
-* Dynamic Plot Switching: Enables switching between data plots for the left and right legs.
+3. To switch between left and right leg signals, the variable updates dynamically based on the user’s selection 
+    ._chart_data.leftFsr OR ._chart_data.rightFsr
 
-* Battery Monitoring: Displays the battery status of the connected device.
+### Modifying the Signal
 
-* Marking Trials: Allows marking specific events during data collection.
+To modify the signal used in the biofeedback game:
 
-* Recalibration Tools: Provides buttons to recalibrate force sensors for improved accuracy.
+1. Locate the FSRPlot class in the chart.py file.
 
-* User-Friendly Controls: Includes buttons for navigation, resetting targets, and toggling views.
+2. Update the data source to the desired signal by modifying the 
+    self.master.controller.deviceManager._realTimeProcessor._chart_data variable.
 
-This frame is particularly useful in rehabilitation or biomechanical research settings, enabling participants and researchers to track performance metrics and respond to feedback in real time.
+### Features and Buttons
+
+#### Graphing
+
+1. Graph Display: Visualizes pressure sensor data for real-time monitoring.
+
+2. Target Lines: Displays a goal threshold on the graph when a target value is set.
+
+#### Buttons
+
+1. Back: Returns to the Active Trial frame.
+
+2. Left/Right Leg Toggle: Switches the graph display between left and right leg FSR data.
+
+3. Set Target Value: Opens a dialog box to input a target value for training.
+
+* Enables tracking progress toward specific performance goals.
+
+4. Reset Target Value: Clears the target value and removes the goal line from the graph.
+
+5. Mark Trial: Marks a specific event during data collection for later analysis.
+
+6. Recalibrate FSRs: Initiates recalibration of the force-sensitive resistors to improve accuracy.
+
+#### Notifications
+
+1. Auditory Feedback: Plays a notification sound (e.g., notification.wav) when the user achieves a target.
+
+2. Visual Feedback: The background temporarily changes color to indicate a successful target hit.
+
+### Customization
+
+To add or modify features in the Biofeedback frame, refer to the BioFeedback class in biofeedback.py.
+
