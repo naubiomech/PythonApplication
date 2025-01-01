@@ -40,7 +40,7 @@ Other libraries that are required include:
  - `micromlgen`
  - `matplotlib`
  - `pygame`
-
+ - `pillow`
 
 To install all of the libraries run the following command in your terminal from the project directory `python .\install_dependencies.py`
 
