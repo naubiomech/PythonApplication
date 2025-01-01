@@ -1,7 +1,7 @@
 # OpenPythonAPI
 ## Overview
 
-This program can be ran via any computer/terminal with python 3.12 installed. Libraries needed can be installed via pip (python's module manager)
+This program can run on any computer/terminal with python 3.12 installed. Libraries needed can be installed via pip (python's module manager)
 
 Open source Application utilizing the OpenExo API to search, connect to, and controll NAU Biomecatronics Lab's OpenExo systems.
 
@@ -174,7 +174,7 @@ The Biofeedback frame provides visual and auditory feedback to users during trai
 
 ### Signal Used in Biofeedback
 
-1. Biofeedback primarily utilizes force-sensitive resistors (FSRs) to monitor pressure data from exoskeleton sensors.
+1. Biofeedback currently utilizes force-sensitive resistors (FSRs) to monitor plantar pressure or estimated ankle power from exoskeleton sensors, but any sensor can be used.
 
 2. The FSR data signal is accessed via the variable:
 
