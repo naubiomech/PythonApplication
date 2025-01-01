@@ -28,6 +28,9 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         # Set the disconnection callback
         self.controller.deviceManager.on_disconnect = self.UpdateTorque_on_device_disconnected
 
+        #UI Styling
+        self.fontstyle = 'Segoe UI'
+
         self.bilateralButtonVar = StringVar()
         self.bilateralButtonVar.set("Bilateral Mode On")
         self.jointVar = StringVar(value="Select Joint")
@@ -42,7 +45,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         
         # Calibrate Menu label
         calibrationMenuLabel = ttk.Label(
-            self, text="Update Controller Settings", font=("Arial", 40)
+            self, text="Update Controller Settings", font=(self.fontstyle, 40)
         )
         calibrationMenuLabel.pack(anchor=CENTER, side=TOP, pady=15)
 
@@ -59,22 +62,22 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         ]
         self.jointVar.set(joint_options[0])  # Default value
         jointSelector = tk.OptionMenu(self, self.jointVar, *joint_options)
-        jointSelector.config(font=("Arial", 26), width=20)
+        jointSelector.config(font=(self.fontstyle, 26), width=20)
         menu = self.nametowidget(jointSelector.menuname)  # Access the menu part of OptionMenu
-        menu.config(font=("Arial", 26))  # Larger font for options in the dropdown menu
+        menu.config(font=(self.fontstyle, 26))  # Larger font for options in the dropdown menu
         jointSelector.pack(pady=5)
 
         # Controller label
-        controllerInputLabel = tk.Label(self, text="Controller", font=("Arial", 20))
-        self.controllerInput = tk.Entry(self, font=("Arial", 16))  # Use Entry instead of Text for simpler input
+        controllerInputLabel = tk.Label(self, text="Controller", font=(self.fontstyle, 15))
+        self.controllerInput = tk.Entry(self, font=(self.fontstyle, 16))  # Use Entry instead of Text for simpler input
         
         # Parameter Label
-        parameterInputLabel = tk.Label(self, text="Parameter", font=("Arial", 20))
-        self.parameterInput = tk.Entry(self, font=("Arial", 16)) 
+        parameterInputLabel = tk.Label(self, text="Parameter", font=(self.fontstyle, 15))
+        self.parameterInput = tk.Entry(self, font=(self.fontstyle, 16)) 
 
         # Value label
-        valueInputLabel = tk.Label(self, text="Value", font=("Arial", 20))
-        self.valueInput = tk.Entry(self, font=("Arial", 16)) 
+        valueInputLabel = tk.Label(self, text="Value", font=(self.fontstyle, 15))
+        self.valueInput = tk.Entry(self, font=(self.fontstyle, 16)) 
 
         self.inputs = [self.controllerInput, self.parameterInput, self.valueInput]  # Store input fields
 
