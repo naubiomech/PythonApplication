@@ -3,6 +3,8 @@ from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, N, S, IntVar, StringVa
                      X, Y, ttk, simpledialog)
 import pygame  # Import pygame for sound
 from async_tkinter_loop import async_handler
+from PIL import ImageTk, Image, ImageEnhance
+
 from Widgets.Charts.chart import FSRPlot
 
 # Initialize Pygame for sound
@@ -49,12 +51,22 @@ class BioFeedback(tk.Frame):
         calibrationMenuLabel = ttk.Label(self, text="Biofeedback", font=("Arial", 40))
         calibrationMenuLabel.grid(row=0, column=0, columnspan=8, pady=20)
 
+        # Load and place the smaller image behind the timer and battery
+        small_image = Image.open("./Resources/Images/OpenExo.png").convert("RGBA")
+        small_image = small_image.resize((80, 40))  # Resize the image to a smaller size
+        self.small_bg_image = ImageTk.PhotoImage(small_image)
+
+        # Create a Canvas for the smaller image
+        small_canvas = tk.Canvas(self, width=80, height=50, highlightthickness=0)
+        small_canvas.create_image(0, 0, image=self.small_bg_image, anchor="nw")
+        small_canvas.grid(row=0, column=6, columnspan=2, sticky="N", padx=5, pady=10)  # Top-right corner
+
         # For battery Label
         batteryPercentLabel = ttk.Label(self, 
             textvariable=self.controller.
             deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
                 font=("Arial", 12))
-        batteryPercentLabel.grid(row=0, column=7,sticky="E") 
+        batteryPercentLabel.grid(row=0, column=7,sticky="E", padx=5, pady=(20, 0)) 
 
         # Initialize the FSR plot
         self.FSRPlot = FSRPlot(self)

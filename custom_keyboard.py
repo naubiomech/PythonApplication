@@ -15,6 +15,9 @@ class CustomKeyboard(tk.Frame):
             ['Submit']
         ]
 
+        # Set default geometry for the keyboard window
+        parent.geometry("300x400")  # Original size: 300x400 pixels
+        
         # Label to show current value
         self.value_label = tk.Label(self, text=self.target_widget.get(), font=("Arial", 16))
         self.value_label.pack(side=tk.TOP, fill=tk.BOTH, pady=10)  # Add some padding for better spacing
@@ -39,7 +42,12 @@ class CustomKeyboard(tk.Frame):
         else:
             self.target_widget.insert(tk.END, key)  # Add key value to the widget
 
-        # Check if the value_label is still a valid widget
+        # Update the label to show the current value in the target widget
         if self.value_label.winfo_exists():
-            # Update the label to show the current value in the target widget
+            self.value_label.config(text=self.target_widget.get())
+
+    def set_target(self, target_widget):
+        """Update the target widget the keyboard interacts with."""
+        self.target_widget = target_widget
+        if self.value_label.winfo_exists():
             self.value_label.config(text=self.target_widget.get())

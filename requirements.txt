@@ -6,3 +6,4 @@ scikit-learn
 micromlgen
 matplotlib
 pygame
+pillow
