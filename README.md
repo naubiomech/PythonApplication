@@ -9,8 +9,21 @@ This project uses the MIT License.
 
 The purpose of this project is to provide an open source solution for controlling the OpenExo system that is accessible to anyone and free to modify for their needs.
 
-## Intallation Guide
+## Minimum System Requirements
+**Operating System:**
+* Windows 7 or newer
+* macOS 10.9 or newer
 
+**Python Version:**
+* Python 3.2 or newer
+
+**Hardware:**
+* Processor: Dual-core (e.g., Intel Core i3 or AMD equivalent)
+* Memory (RAM): 2 GB minimum (4 GB recommended)
+* Storage: 100 MB free space (1 GB recommended for large datasets)
+* Display: 768x1024 resolution minimum
+
+## Intallation Guide
 Video Guide: https://youtu.be/VnQeUM2K6Vg
 
 BLE (Bluetooth Low Energy) is the heart of this project which provides a connection from this API to the exoskeletons. Bleak, a python library is used to handle all BLE operations. To find out more about Bleak click [here](https://bleak.readthedocs.io/en/latest/).
