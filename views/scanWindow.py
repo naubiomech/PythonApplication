@@ -1,6 +1,8 @@
 import tkinter as tk
-from tkinter import (BOTH, BOTTOM, DISABLED, StringVar, X, Y, ttk)
+from tkinter import (BOTH, BOTTOM, DISABLED, StringVar, X, Y, ttk, font)
 from async_tkinter_loop import async_handler
+from PIL import ImageTk, Image, ImageEnhance
+
 import os
 
 # Frame to scan for exoskeleton devices
@@ -21,29 +23,41 @@ class ScanWindow(tk.Frame):
 
         # UI elements
         self.scanning_animation_running = False  # Flag for animation state
-
+        self.fontstyle = 'Segoe UI'
         self.create_widgets()  # Create UI elements
         self.load_device_available() #Check if loaded devices avalible
 
     # Create all UI elements
     def create_widgets(self):
+
+        # Load the background image
+        background_image = Image.open("./Resources/Images/LabLogo.png").convert("RGBA")
+        background_image = background_image.resize((800, 150))  # Resize the image (adjust dimensions)
+        
+        # Add an overlay to simulate opacity
+        overlay = Image.new("RGBA", background_image.size, (240, 240, 240, 200))
+        background_image = Image.alpha_composite(background_image, overlay)
+        
+        self.bg_image = ImageTk.PhotoImage(background_image)
+
+        # Create a Canvas to hold the image
+        canvas = tk.Canvas(self, width=800, height=200)
+        canvas.create_image(0, 0, image=self.bg_image, anchor="nw")
+        canvas.grid(row=0, column=0, columnspan=2, pady=(30,0))  # Place canvas at the top
+
         # Style configuration
         style = ttk.Style()
-        style.configure('TButton', font=('Montserrat', 12), padding=10)
-        style.configure('TLabel', font=('Montserrat', 16))
-        style.configure('TListbox', font=('Montserrat', 14))
+        style.configure('TButton', font=(self.fontstyle, 12), padding=10)
+        style.configure('TLabel', font=(self.fontstyle, 16))
+        style.configure('TListbox', font=(self.fontstyle, 14))
 
-        # Title label
-        titleLabel = ttk.Label(self, text="ExoSkeleton Controller", font=("Montserrat", 30))
-        titleLabel.grid(row=0, column=0, columnspan=2, pady=20)  # Center title
-
-        # Instruction label for scanning
-        startScanLabel = ttk.Label(self, text="Begin Scanning for Exoskeletons")
-        startScanLabel.grid(row=1, column=0, columnspan=2, pady=10)  # Center instructions
-
+        # Title label on top of the image
+        titleLabel = ttk.Label(self, text="ExoSkeleton Controller", font=(self.fontstyle, 30))
+        titleLabel.grid(row=1, column=0, columnspan=2, pady=0, sticky="n")  # Center instructions
+        
         # Initial device name display
         deviceNameLabel = ttk.Label(self, textvariable=self.deviceNameText)
-        deviceNameLabel.grid(row=2, column=0, columnspan=2, pady=10)  # Center device name
+        deviceNameLabel.grid(row=2, column=0, columnspan=2, pady=0, sticky="n")  # Center device name
 
         # Buttons container
         button_frame = ttk.Frame(self)
@@ -60,13 +74,13 @@ class ScanWindow(tk.Frame):
         self.loadDeviceButton.grid(row=0, column=1, padx=5)
 
         # Listbox to display scanned devices
-        self.deviceListbox = tk.Listbox(self, font=("Montserrat", 14), width=50, height=5)
+        self.deviceListbox = tk.Listbox(self, font=(self.fontstyle, 14), width=50, height=5)
         self.deviceListbox.grid(row=4, column=0, columnspan=2, pady=5)  # Center Listbox
         self.deviceListbox.bind("<<ListboxSelect>>", self.on_device_selected)  # Bind selection event
 
         # Action buttons
         action_button_frame = ttk.Frame(self)
-        action_button_frame.grid(row=6, column=0, columnspan=2, pady=10)  # Center action button frame
+        action_button_frame.grid(row=6, column=0, columnspan=2, pady=10, sticky="n")  # Center action button frame
 
         # Button to start the trial (initially disabled)
         self.startTrialButton = ttk.Button(action_button_frame, text="Start Trial",

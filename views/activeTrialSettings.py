@@ -22,9 +22,14 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         # Initialize variables
         self.controller = controller  # Controller object to switch frames
         self.previous_frame = None  # Track the previous frame
+        self.current_input_index = 0  # Track the current input field for keyboard
+        self.keyboard_window = None  # Single keyboard instance
 
         # Set the disconnection callback
         self.controller.deviceManager.on_disconnect = self.UpdateTorque_on_device_disconnected
+
+        #UI Styling
+        self.fontstyle = 'Segoe UI'
 
         self.bilateralButtonVar = StringVar()
         self.bilateralButtonVar.set("Bilateral Mode On")
@@ -35,12 +40,12 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
 
     def create_widgets(self):  # Frame UI elements
         # Back button to go back to Scan Window
-        backButton = tk.Button(self, text="Back", command=self.handle_back_button)
+        backButton = ttk.Button(self, text="Back", command=self.handle_back_button)
         backButton.pack(side=TOP, anchor=W, pady=10, padx=10)
         
         # Calibrate Menu label
-        calibrationMenuLabel = tk.Label(
-            self, text="Update Controller Settings", font=("Arial", 40)
+        calibrationMenuLabel = ttk.Label(
+            self, text="Update Controller Settings", font=(self.fontstyle, 40)
         )
         calibrationMenuLabel.pack(anchor=CENTER, side=TOP, pady=15)
 
@@ -57,58 +62,52 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         ]
         self.jointVar.set(joint_options[0])  # Default value
         jointSelector = tk.OptionMenu(self, self.jointVar, *joint_options)
-        jointSelector.config(font=("Arial", 26), width=20)
+        jointSelector.config(font=(self.fontstyle, 26), width=20)
         menu = self.nametowidget(jointSelector.menuname)  # Access the menu part of OptionMenu
-        menu.config(font=("Arial", 26))  # Larger font for options in the dropdown menu
+        menu.config(font=(self.fontstyle, 26))  # Larger font for options in the dropdown menu
         jointSelector.pack(pady=5)
 
         # Controller label
-        controllerInputLabel = tk.Label(self, text="Controller", font=("Arial", 20))
-        self.controllerInput = tk.Entry(self, font=("Arial", 16))  # Use Entry instead of Text for simpler input
-        controllerKeyboardButton = tk.Button(
-            self, text="Keyboard", command=lambda: self.open_keyboard(self.controllerInput)
-        )        
+        controllerInputLabel = tk.Label(self, text="Controller", font=(self.fontstyle, 15))
+        self.controllerInput = tk.Entry(self, font=(self.fontstyle, 16))  # Use Entry instead of Text for simpler input
         
         # Parameter Label
-        parameterInputLabel = tk.Label(self, text="Parameter", font=("Arial", 20))
-        self.parameterInput = tk.Entry(self, font=("Arial", 16)) 
-        parameterKeyboardButton = tk.Button(
-                self, text="Keyboard", command=lambda: self.open_keyboard(self.parameterInput)
-            )        
-        
-        # Value label
-        valueInputLabel = tk.Label(self, text="Value", font=("Arial", 20))
-        self.valueInput = tk.Entry(self, font=("Arial", 16)) 
-        valueKeyboardButton = tk.Button(
-            self, text="Keyboard", command=lambda: self.open_keyboard(self.valueInput)
-        )
+        parameterInputLabel = tk.Label(self, text="Parameter", font=(self.fontstyle, 15))
+        self.parameterInput = tk.Entry(self, font=(self.fontstyle, 16)) 
 
-        bilateralButton = tk.Button(
+        # Value label
+        valueInputLabel = tk.Label(self, text="Value", font=(self.fontstyle, 15))
+        self.valueInput = tk.Entry(self, font=(self.fontstyle, 16)) 
+
+        self.inputs = [self.controllerInput, self.parameterInput, self.valueInput]  # Store input fields
+
+        bilateralButton = ttk.Button(
             self,
             textvariable=self.bilateralButtonVar,
-            height=2,
             width=15,
             command=self.toggleBilateral,
         )
         bilateralButton.pack(pady=5)
 
+        # Single keyboard button
+        keyboardButton = ttk.Button(
+            self, text="Open Keyboard", command=self.start_keyboard_cycle
+        )
+        keyboardButton.pack(pady=10)
+
         controllerInputLabel.pack(pady=5)
         self.controllerInput.pack(padx=5)
-        controllerKeyboardButton.pack( padx=5)
         
         parameterInputLabel.pack(pady=5)
         self.parameterInput.pack(pady=5)
-        parameterKeyboardButton.pack(padx=5)
 
         valueInputLabel.pack(pady=5)
         self.valueInput.pack(pady=5)
-        valueKeyboardButton.pack(padx=5)
 
         # Button to start trial
-        updateTorqueButton = tk.Button(
+        updateTorqueButton = ttk.Button(
             self,
             text="Update Settings",
-            height=2,
             width=10,
             command=async_handler(
                 self.on_update_button_clicked,
@@ -119,34 +118,48 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         )
         updateTorqueButton.pack(side=BOTTOM, fill=X, padx=20, pady=20)
 
-    def open_keyboard(self, target_widget):
-        # Create a new Toplevel window for the keyboard
-        self.keyboard_window = tk.Toplevel(self)
-        self.keyboard_window.title("Custom Keyboard")
+    def start_keyboard_cycle(self):
+        """Start the keyboard cycle, focusing on the first input field."""
+        self.current_input_index = 0  # Start with the first input field
+        if not self.keyboard_window:  # Create the keyboard only if it doesn't already exist
+            self.keyboard_window = tk.Toplevel(self)
+            self.keyboard_window.title("Custom Keyboard")
+            self.keyboard_window.protocol("WM_DELETE_WINDOW", self.close_keyboard)  # Handle manual close
 
-        # Create a frame to hold the keyboard and center it
-        keyboard_frame = tk.Frame(self.keyboard_window)
-        keyboard_frame.pack(expand=True, fill=tk.BOTH, pady=20)
+            # Create the custom keyboard inside the Toplevel window
+            self.keyboard = CustomKeyboard(
+                self.keyboard_window, self.inputs[self.current_input_index], on_submit=self.keyboard_submit
+            )
+            self.keyboard.pack(fill=tk.BOTH, expand=True)
 
-        # Create and pack the custom keyboard inside the Toplevel window
-        keyboard = CustomKeyboard(self.keyboard_window, target_widget, on_submit=self.on_keyboard_submit)
-        keyboard.pack(fill=tk.BOTH, expand=True)
+        self.update_keyboard_target()
 
-        # Optionally, add some padding and set a fixed size for the keyboard window
-        self.keyboard_window.geometry("200x300")  # Adjust size if needed
+    def update_keyboard_target(self):
+        """Update the keyboard to target the current input field."""
+        target_input = self.inputs[self.current_input_index]
+        self.keyboard.set_target(target_input)
 
-    def on_keyboard_submit(self, value):
-        # Handle the submitted value when the user presses "Submit" on the virtual keyboard
-        print(f"Submitted value: {value}")
-        
-        # Update the target widget with the submitted value
-        if self.controllerInput:
-            self.controllerInput.delete(0, tk.END)  # Clear current content in the input field
-            self.controllerInput.insert(0, value)  # Insert the new value into the input field
-        # Destroy the keyboard window after submitting
-        if hasattr(self, 'keyboard_window'):
-            self.keyboard_window.destroy()  # Destroy the keyboard window
-            
+    def keyboard_submit(self, value):
+        """Handle the keyboard submission and move to the next input field."""
+        # Set the value for the current input field
+        current_input = self.inputs[self.current_input_index]
+        current_input.delete(0, tk.END)
+        current_input.insert(0, value)
+
+        # Move to the next input field
+        self.current_input_index += 1
+        if self.current_input_index < len(self.inputs):
+            self.update_keyboard_target()
+        else:
+            self.close_keyboard()  # Close the keyboard after the last field
+
+    def close_keyboard(self):
+        """Close the keyboard and reset the current input index."""
+        if self.keyboard_window:
+            self.keyboard_window.destroy()
+            self.keyboard_window = None
+        self.current_input_index = 0
+
     def handle_back_button(self):
         # Return to the previous frame
         if self.previous_frame:

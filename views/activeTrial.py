@@ -10,6 +10,7 @@ from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, N, StringVar,
                      W, X, Y, ttk)
 
 from async_tkinter_loop import async_handler
+from PIL import ImageTk, Image, ImageEnhance
 
 from Widgets.Charts.chart import BottomPlot, TopPlot
 
@@ -29,6 +30,9 @@ class ActiveTrial(tk.Frame):
         # Set the disconnection callback
         self.controller.deviceManager.on_disconnect = self.ActiveTrial_on_device_disconnected
         
+        # UI elements
+        self.fontstyle = 'Segoe UI'
+
         self.var = IntVar()
         self.chartVar = StringVar()
         self.chartVar.set("Controller")
@@ -41,22 +45,32 @@ class ActiveTrial(tk.Frame):
     def create_widgets(self):
 
         style = ttk.Style()
-        style.configure("Custom.TCombobox", font=("Arial", 16), padding=10)
+        style.configure("Custom.TCombobox", font=(self.fontstyle, 16), padding=10)
 
         # Active Trial title label
-        calibrationMenuLabel = ttk.Label(self, text="Active Trial", font=("Arial", 40))
+        calibrationMenuLabel = ttk.Label(self, text="Active Trial", font=(self.fontstyle, 40))
         calibrationMenuLabel.grid(row=0, column=0, columnspan=8, pady=20)
 
+        # Load and place the smaller image behind the timer and battery
+        small_image = Image.open("./Resources/Images/OpenExo.png").convert("RGBA")
+        small_image = small_image.resize((80, 40))  # Resize the image to a smaller size
+        self.small_bg_image = ImageTk.PhotoImage(small_image)
+
+        # Create a Canvas for the smaller image
+        small_canvas = tk.Canvas(self, width=80, height=50, highlightthickness=0)
+        small_canvas.create_image(0, 0, image=self.small_bg_image, anchor="nw")
+        small_canvas.grid(row=0, column=6, columnspan=2, sticky="N", padx=5, pady=10)  # Top-right corner
+
         # Timer label
-        self.timer_label = ttk.Label(self, text="Time: 0:00", font=("Arial", 12))
-        self.timer_label.grid(row=0, column=6, sticky="E", padx=5)  # Placed above the battery label
+        self.timer_label = ttk.Label(self, text="Time: 0:00", font=(self.fontstyle, 12))
+        self.timer_label.grid(row=0, column=6, sticky="E", padx=5, pady=(20, 0))  # Placed above the battery label
 
         # For battery Label
         batteryPercentLabel = ttk.Label(self, 
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
-                font=("Arial", 12))
+                font=(self.fontstyle, 12))
         # batteryPercentLabel.pack(side=TOP, anchor=E, pady=0, padx=0)
-        batteryPercentLabel.grid(row=0, column=7,sticky="E") 
+        batteryPercentLabel.grid(row=0, column=7,sticky="E", padx=5, pady=(20, 0))
 
         # Create and place the top plot
         self.topPlot = TopPlot(self)
@@ -197,13 +211,13 @@ class ActiveTrial(tk.Frame):
         right_fsr_value = self.controller.deviceManager.curr_right_fsr_value
 
         # Current values labels
-        current_values_label = tk.Label(dialog, text="Current FSR Values:", font=("Arial", 14))
+        current_values_label = tk.Label(dialog, text="Current FSR Values:", font=("self.fontstyle", 14))
         current_values_label.pack(pady=5)
 
-        current_left_label = tk.Label(dialog, text=f"Left FSR Value: {left_fsr_value}", font=("Arial", 12))
+        current_left_label = tk.Label(dialog, text=f"Left FSR Value: {left_fsr_value}", font=("self.fontstyle", 12))
         current_left_label.pack(pady=5)
 
-        current_right_label = tk.Label(dialog, text=f"Right FSR Value: {right_fsr_value}", font=("Arial", 12))
+        current_right_label = tk.Label(dialog, text=f"Right FSR Value: {right_fsr_value}", font=("self.fontstyle", 12))
         current_right_label.pack(pady=5)
 
         # Left FSR input
