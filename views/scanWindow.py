@@ -235,6 +235,19 @@ class ScanWindow(tk.Frame):
         if self.saved_address is not None:
             self.loadDeviceButton.config(state="normal")
 
+        """Uncomment for testing purposes to skip scanning"""
+        # active_trial_frame = self.controller.frames["ActiveTrial"]
+        # active_trial_frame.disable_interactions()  # Disable buttons in ActiveTrial frame
+        
+        # # Show ActiveTrial frame
+        # self.controller.show_frame("ActiveTrial")
+        # await self.controller.trial.calibrate(self.controller.deviceManager)  # Calibrate devices
+        # await self.controller.trial.beginTrial(self.controller.deviceManager)  # Begin the trial
+
+        # # Starts new selection once Active trial has started
+        # active_trial_frame.newSelection(self)
+        # active_trial_frame.startClock()
+
     async def startScanButtonClickedHandler(self):
         """Starts scanning for devices and updates the UI accordingly."""
 

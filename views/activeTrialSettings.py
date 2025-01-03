@@ -45,7 +45,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         
         # Calibrate Menu label
         calibrationMenuLabel = ttk.Label(
-            self, text="Update Controller Settings", font=(self.fontstyle, 40)
+            self, text="Update Controller Settings", font=(self.fontstyle, 30)
         )
         calibrationMenuLabel.pack(anchor=CENTER, side=TOP, pady=15)
 
@@ -62,7 +62,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         ]
         self.jointVar.set(joint_options[0])  # Default value
         jointSelector = tk.OptionMenu(self, self.jointVar, *joint_options)
-        jointSelector.config(font=(self.fontstyle, 26), width=20)
+        jointSelector.config(font=(self.fontstyle, 20), width=15)
         menu = self.nametowidget(jointSelector.menuname)  # Access the menu part of OptionMenu
         menu.config(font=(self.fontstyle, 26))  # Larger font for options in the dropdown menu
         jointSelector.pack(pady=5)

@@ -6,6 +6,7 @@ from async_tkinter_loop import async_handler
 from PIL import ImageTk, Image, ImageEnhance
 
 from Widgets.Charts.chart import FSRPlot
+from custom_keyboard import CustomKeyboard
 
 # Initialize Pygame for sound
 pygame.mixer.init()
@@ -32,6 +33,9 @@ class BioFeedback(tk.Frame):
         self.counter = 0
         self.counter_var = IntVar(value=self.counter)
 
+        #UI Styling
+        self.fontstyle = 'Segoe UI'
+        
         # Target value variable
         self.target_value = None
         self.target_var = StringVar(value="No target set")  # Display the target value
@@ -41,17 +45,17 @@ class BioFeedback(tk.Frame):
 
     def create_widgets(self):
         style = ttk.Style()
-        style.configure("Custom.TCombobox", font=("Arial", 16), padding=10)
+        style.configure("Custom.TCombobox", font=(self.fontstyle, 16), padding=10)
 
         # Back button to return to the Active Trial frame
         backButton = ttk.Button(self, text="Back", command=self.handle_back_button)
         backButton.grid(row=0, column=0, pady=10)
 
         # Biofeedback title label
-        calibrationMenuLabel = ttk.Label(self, text="Biofeedback", font=("Arial", 40))
+        calibrationMenuLabel = ttk.Label(self, text="Biofeedback", font=(self.fontstyle, 40))
         calibrationMenuLabel.grid(row=0, column=0, columnspan=8, pady=20)
 
-        # Load and place the smaller image behind the timer and battery
+        # Load and place the smaller image besides the timer and battery
         small_image = Image.open("./Resources/Images/OpenExo.png").convert("RGBA")
         small_image = small_image.resize((80, 40))  # Resize the image to a smaller size
         self.small_bg_image = ImageTk.PhotoImage(small_image)
@@ -59,40 +63,34 @@ class BioFeedback(tk.Frame):
         # Create a Canvas for the smaller image
         small_canvas = tk.Canvas(self, width=80, height=50, highlightthickness=0)
         small_canvas.create_image(0, 0, image=self.small_bg_image, anchor="nw")
-        small_canvas.grid(row=0, column=6, columnspan=2, sticky="N", padx=5, pady=10)  # Top-right corner
+        small_canvas.grid(row=0, column=7, sticky="N", padx=5, pady=10)  # Top-right corner
 
         # For battery Label
         batteryPercentLabel = ttk.Label(self, 
             textvariable=self.controller.
             deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
-                font=("Arial", 12))
+                font=(self.fontstyle, 12))
         batteryPercentLabel.grid(row=0, column=7,sticky="E", padx=5, pady=(20, 0)) 
 
         # Initialize the FSR plot
         self.FSRPlot = FSRPlot(self)
         self.currentPlots = self.FSRPlot  # Current plot reference
-        self.FSRPlot.canvas.get_tk_widget().grid(row=1, column=0, columnspan=8, sticky="NSEW", pady=5, padx=5)
-
-        # Chart selection button
-        self.chartButton = ttk.Button(
-            self,
-            text="Left Leg",
-            command=self.toggle_chart,
-            style="Custom.TButton",
-        )
-        self.chartButton.grid(row=2, column=0, columnspan=8, pady=20)
+        self.FSRPlot.canvas.get_tk_widget().grid(row=1, column=0, rowspan= 3, columnspan=8, sticky="NSEW", pady=5, padx=5)
 
         self.plot_update_job = None  # Store the job reference for plot updates
 
         # Label to display targets reached
         self.targets_reached_label = ttk.Label(self, text="Targets Reached: 0",
-                                               font=("Arial", 17))
-        self.targets_reached_label.grid(row=3, column=0, columnspan=8, pady=20)
+                                               font=(self.fontstyle, 17))
+        self.targets_reached_label.grid(row=4, column=0, columnspan=8, pady=(0,30), sticky="n")
 
+        # Label to display the target value
+        self.target_label = ttk.Label(self, textvariable=self.target_var, font=(self.fontstyle, 17))
+        self.target_label.grid(row=4, column=0, columnspan=8, pady=(50,0), sticky = "n")
 
         # Frame for target value buttons
         target_frame = ttk.Frame(self)
-        target_frame.grid(row=4, column=0, columnspan=8, pady=20)
+        target_frame.grid(row=4, column=0, columnspan=8, pady=(107,0),sticky = 'N')
 
         # Button to set target value
         self.target_button = ttk.Button(target_frame, text="Set Target Value", 
@@ -104,21 +102,26 @@ class BioFeedback(tk.Frame):
             text="Reset Target Value", command=self.reset_target, state="disabled")
         self.reset_button.pack(side=RIGHT, padx=5)
 
-        # Label to display the target value
-        self.target_label = ttk.Label(self, textvariable=self.target_var, font=("Arial", 17))
-        self.target_label.grid(row=5, column=0, columnspan=8, pady=20,padx=20)
-
         # Frame for advanced buttons
         advanced_frame = ttk.Frame(self)
-        advanced_frame.grid(row=6, column=0, columnspan=8, pady=20)
+        advanced_frame.grid(row=4, column=0, pady=20)
         
+        # Chart selection button
+        self.chartButton = ttk.Button(
+            advanced_frame,
+            text="Left Leg",
+            command=self.toggle_chart,
+            style="Custom.TButton",
+        )
+        self.chartButton.pack(side=TOP, padx=5, pady = 10)
+
         # Mark Trial Button
         markButton = ttk.Button(
             advanced_frame,
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel,
             command=async_handler(self.on_mark_button_clicked),
         )
-        markButton.pack(side=LEFT, anchor=CENTER, padx=5)
+        markButton.pack(side=TOP, padx=5, pady = 10)
 
         # Recalibrate FSRs Button
         self.recalibrateFSRButton = ttk.Button(
@@ -126,7 +129,7 @@ class BioFeedback(tk.Frame):
             text="Recalibrate FSRs",
             command=async_handler(self.on_recal_FSR_button_clicked),
         )
-        self.recalibrateFSRButton.pack(side=RIGHT, anchor=CENTER, padx=5)
+        self.recalibrateFSRButton.pack(side=TOP, padx=5, pady = 10)
 
         # Configure grid weights for centering
         for i in range(6):

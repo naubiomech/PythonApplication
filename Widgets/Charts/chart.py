@@ -9,10 +9,11 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class BasePlot:
+    figure_size = (7, 2.5)
     def __init__(self, master, title):
         self.master = master
         self.title = title
-        self.figure = plt.Figure(figsize=(7, 2.5))
+        self.figure = plt.Figure(figsize=BasePlot.figure_size)
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.xValues = []
         self.yValues = []
@@ -31,6 +32,11 @@ class BasePlot:
 
     def animate(self):
         raise NotImplementedError("Subclasses should implement this method")
+   
+    @classmethod
+    def set_figure_size(cls, size):
+        """Set the figure size for all plots."""
+        cls.figure_size = size
 
     def update_plot(self, xValues, yValues, secondY, bottomLim, topLim, title):
         max_points = 20  # Keep only the last 20 points
@@ -50,7 +56,11 @@ class BasePlot:
         self.canvas.draw_idle()
         self.canvas.flush_events()
 
-
+    def refresh_figure(self):
+        """Refresh the figure if the size is updated."""
+        self.figure.set_size_inches(BasePlot.figure_size)
+        self.canvas.draw()
+        
 class TopPlot(BasePlot):
     def __init__(self, master):
         super().__init__(master, "Left Torque")

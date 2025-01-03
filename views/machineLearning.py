@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import Data.SaveModelData as saveModelData
 from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, N, S, IntVar, StringVar, W, X, Y, ttk)
 from async_tkinter_loop import async_handler
-from Widgets.Charts.chart import BottomPlot, TopPlot
+from Widgets.Charts.chart import BasePlot,BottomPlot, TopPlot
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 # Biofeedback Frame
@@ -47,6 +47,9 @@ class MachineLearning(tk.Frame):
         self.confirmation=0 #used as a flag to request second confirmation form user to delete model
         self.modelDataWriter = saveModelData.CsvWritter()
 
+        #UI Styling
+        self.fontstyle = 'Segoe UI'
+        
         # Create the UI elements
         self.create_widgets()
 
@@ -60,7 +63,7 @@ class MachineLearning(tk.Frame):
             state="readonly",
             values=["Controller", "Sensor"],
         )
-        self.chartDropdown.grid(row=4, column=1, columnspan=7, pady=5, padx=5)
+        self.chartDropdown.grid(row=4,columnspan=5, sticky="NSEW", pady=5, padx=5)
 
         # # Graph selection dropdown
         # self.graphDropdown = ttk.Combobox(
@@ -71,29 +74,31 @@ class MachineLearning(tk.Frame):
         # )
         #self.graphDropdown.pack(side=LEFT, padx=5)
         # Back button to return to the Active Trial frame
-        backButton = tk.Button(self, text="Back", command=self.handle_back_button)
+        backButton = ttk.Button(self, text="Back", command=self.handle_back_button)
         backButton.grid(row=0, column=0, pady=10)
 
 
         # Title label for the frame
-        calibrationMenuLabel = tk.Label(self, text="Machine learning", font=("Arial", 40))
-        calibrationMenuLabel.grid(row=0, column=0, columnspan=8, pady=20)
+        calibrationMenuLabel = tk.Label(self, text="Machine learning", font=(self.fontstyle, 40))
+        calibrationMenuLabel.grid(row=0, column=0, columnspan=10, pady=20)
 
         # Battery status label
         batteryPercentLabel = tk.Label(
             self, 
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
-            font=("Arial", 12)
+            font=(self.fontstyle, 12)
         )
-        batteryPercentLabel.grid(row=0, column=7,sticky="E") 
+        batteryPercentLabel.grid(row=0, column=8,sticky="E") 
+
+        BasePlot.set_figure_size((3, 2)) 
 
         # Create and place the top plot
         self.topPlot = TopPlot(self)
-        self.topPlot.canvas.get_tk_widget().grid(row=1, column=0, columnspan=1, sticky="NSEW", pady=5, padx=5)
+        self.topPlot.canvas.get_tk_widget().grid(row=1, column=0, columnspan=5, sticky="NSEW", pady=5, padx=5)
 
         # Create and place the bottom plot
         self.bottomPlot = BottomPlot(self)
-        self.bottomPlot.canvas.get_tk_widget().grid(row=2, column=0, columnspan=1, sticky="NSEW", pady=5, padx=5)
+        self.bottomPlot.canvas.get_tk_widget().grid(row=2, column=0, columnspan=5, sticky="NSEW", pady=5, padx=5)
             
         # Bind dropdown selections to their respective methods
         self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
@@ -103,96 +108,96 @@ class MachineLearning(tk.Frame):
         self.currentPlots = [self.topPlot, self.bottomPlot]
         self.plot_update_job = None  # Store the job reference
 
-        # Model Status Label
-        modelStatusLabel = tk.Label(
-            self, 
-            textvariable=self.controller.deviceManager._realTimeProcessor._predictor.modelStatus, 
-            font=("Arial", 12)
-        )
-        modelStatusLabel.place(relx=0.75, rely=0.55)
-
-        # Update Torque Button
-        updateTorqueButton = tk.Button(
-            self,
-            text="Update Torque",
-            command=self.go_to_update_torque,
-        )
-        updateTorqueButton.place(relx=0.75, rely=0.35)
-
-        # Recalibrate FSRs Button
-        self.recalibrateFSRButton = tk.Button(
-            self,
-            text="Recalibrate FSRs",
-            command=async_handler(self.on_recal_FSR_button_clicked),
-        )
-        self.recalibrateFSRButton.place(relx=0.75, rely=0.40)
-
         # End Trial Button
-        endTrialButton = tk.Button(
+        endTrialButton = ttk.Button(
             self,
             text="End Trial",
             command=async_handler(self.on_end_trial_button_clicked),
         )
-        endTrialButton.place(relx=0.75, rely=0.8)
+        endTrialButton.grid(row=10, column=0, pady=20, sticky="w")
+
+        # Update Torque Button
+        updateTorqueButton = ttk.Button(
+            self,
+            text="Update Torque",
+            command=self.go_to_update_torque,
+        )
+        updateTorqueButton.grid(row=1, column=7, pady=10)
 
         # Mark Trial Button
-        markButton = tk.Button(
+        markButton = ttk.Button(
             self,
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.MarkLabel,
             command=async_handler(self.on_mark_button_clicked),
         )
-        markButton.place(relx=0.85, rely=0.35)
+        markButton.grid(row=1, column=8, pady=10)
+        
+        # Recalibrate FSRs Button
+        self.recalibrateFSRButton = ttk.Button(
+            self,
+            text="Recalibrate FSRs",
+            command=async_handler(self.on_recal_FSR_button_clicked),
+        )
+        self.recalibrateFSRButton.grid(row=1, column=7, pady=(110,0))
+
+        # Model Status Label
+        modelStatusLabel = tk.Label(
+            self, 
+            textvariable=self.controller.deviceManager._realTimeProcessor._predictor.modelStatus, 
+            font=(self.fontstyle, 12)
+        )
+        modelStatusLabel.grid(row=2, column=7, sticky="n")
         
         # Level Trial Button
         self.levelButtonName.set("Collect Level Data")
-        levelTrialButton = tk.Button(
+        levelTrialButton = ttk.Button(
             self,
             textvariable=self.levelButtonName,
             command=async_handler(self.on_level_trial_button_clicked),
         )
-        levelTrialButton.place(relx=0.75, rely=0.6)
+        levelTrialButton.grid(row=2, column=7, pady=(0,140))
         
         # Display Level Step Count
         lvlstepsLabel = tk.Label(
             self, 
             textvariable=self.controller.deviceManager._realTimeProcessor._predictor.levelStepsLabel, 
-            font=("Arial", 12)
+            font=(self.fontstyle, 12)
         )
-        lvlstepsLabel.place(relx=0.7, rely=0.6)
+        lvlstepsLabel.grid(row=2, column=7,pady=(0,140), padx=(0,220))
 
         # Descend Trial Button
         self.descendButtonName.set("Collect Descend Data")
-        descendTrialButton = tk.Button(
+        descendTrialButton = ttk.Button(
             self,
             textvariable=self.descendButtonName,
             command=async_handler(self.on_descend_trial_button_clicked),
         )
-        descendTrialButton.place(relx=0.75, rely=0.65)
+        descendTrialButton.grid(row=2, column=7, pady=(0,30))
 
         # Display Descend Step Count
         desstepsLabel = tk.Label(
             self, 
             textvariable=self.controller.deviceManager._realTimeProcessor._predictor.descendStepsLabel, 
-            font=("Arial", 12)
+            font=(self.fontstyle, 12)
         )
-        desstepsLabel.place(relx=0.7, rely=0.65)
+        desstepsLabel.grid(row=2, column=7, pady=(0,30), padx=(0,220))
 
         # Ascend Trial Button
         self.ascendButtonName.set("Collect Ascend Data")
-        ascendTrialButton = tk.Button(
+        ascendTrialButton = ttk.Button(
             self,
             textvariable=self.ascendButtonName,
             command=async_handler(self.on_ascend_trial_button_clicked),
         )
-        ascendTrialButton.place(relx=0.75, rely=0.7)
+        ascendTrialButton.grid(row=2, column=7, pady=(80,0))
 
         # Display Ascend Step Count
         ascstepsLabel = tk.Label(
             self, 
             textvariable=self.controller.deviceManager._realTimeProcessor._predictor.ascendStepsLabel, 
-            font=("Arial", 12)
+            font=(self.fontstyle, 12)
         )
-        ascstepsLabel.place(relx=0.7, rely=0.7)
+        ascstepsLabel.grid(row=2, column=7, pady=(80,0), padx=(0,220))
 
         # Create Model Button
         if self.controller.deviceManager._realTimeProcessor._predictor.modelExists:
@@ -200,45 +205,46 @@ class MachineLearning(tk.Frame):
         else:
             self.modelButtonName.set("Create Stair Model")
 
-        createModelButton = tk.Button(
+        createModelButton = ttk.Button(
             self,
             textvariable=self.modelButtonName,
             command=async_handler(self.on_model_button_clicked),
         )
-        createModelButton.place(relx=0.75, rely=0.75)
+        createModelButton.grid(row=2, column=7, pady=(190,0))
 
         # Delete Model Button
         self.deleteModelButtonName.set("Delete Model")
-        deleteModelButton = tk.Button(
+        deleteModelButton = ttk.Button(
             self,
             textvariable=self.deleteModelButtonName,
             command=async_handler(self.on_delete_model_button_clicked),
         )
-        deleteModelButton.place(relx=0.1, rely=0.9)
+        deleteModelButton.grid(row=10, column=0, pady=20, padx=(100,0), sticky="e")
 
         stiffnessInput = tk.Text(self, height=2, width=10)
-        stiffnessInput.place(relx=0.9, rely=0.65)
+        stiffnessInput.grid(row=2, column=8, pady=(80,0))
         
-        updateStiffnessButton = tk.Button(
+        updateStiffnessButton = ttk.Button(
             self,
             text="Update Stiffness",
             command=async_handler(self.controller.deviceManager.newStiffness,stiffnessInput),
         )
-        updateStiffnessButton.place(relx=0.9, rely=0.7)
+        updateStiffnessButton.grid(row=2, column=8, pady=(0,140))
 
         self.controller.deviceManager._realTimeProcessor._predictor.controlModeLabel.set("Control Mode: Manual")
-        toggleControlButton = tk.Button(
+        
+        toggleControlButton = ttk.Button(
             self,
             textvariable=self.controller.deviceManager._realTimeProcessor._predictor.controlModeLabel,
             command=async_handler(self.on_toggle_control_button_clicked),
         )
-        toggleControlButton.place(relx=0.9, rely=0.75)
+        toggleControlButton.grid(row=2, column=8, pady=(0,30))
 
 
         # Configure grid weights for centering
-        for i in range(4):
+        for i in range(10):
             self.grid_rowconfigure(i, weight=1)
-        for j in range(5):
+        for j in range(10):
             self.grid_columnconfigure(j, weight=1)
 
     # Navigate to the Update Torque frame
@@ -400,14 +406,14 @@ class MachineLearning(tk.Frame):
     def disable_interactions(self):
         self.chartDropdown.config(state='disabled')
         for widget in self.winfo_children():
-            if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
+            if isinstance(widget, ttk.Button) or isinstance(widget, ttk.Combobox):
                 widget.config(state='disabled')
 
     # Enable interactions for buttons and dropdown
     def enable_interactions(self):
         self.chartDropdown.config(state='normal')
         for widget in self.winfo_children():
-            if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
+            if isinstance(widget, ttk.Button) or isinstance(widget, ttk.Combobox):
                 widget.config(state='normal')
 
     # Stop plot updates

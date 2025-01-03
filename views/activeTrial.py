@@ -12,7 +12,7 @@ from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, N, StringVar,
 from async_tkinter_loop import async_handler
 from PIL import ImageTk, Image, ImageEnhance
 
-from Widgets.Charts.chart import BottomPlot, TopPlot
+from Widgets.Charts.chart import BasePlot,BottomPlot, TopPlot
 
 
 # Active Trial Frame
@@ -59,26 +59,26 @@ class ActiveTrial(tk.Frame):
         # Create a Canvas for the smaller image
         small_canvas = tk.Canvas(self, width=80, height=50, highlightthickness=0)
         small_canvas.create_image(0, 0, image=self.small_bg_image, anchor="nw")
-        small_canvas.grid(row=0, column=6, columnspan=2, sticky="N", padx=5, pady=10)  # Top-right corner
+        small_canvas.grid(row=0, column=5, columnspan=2, sticky="N", padx=5, pady=10)  # Top-right corner
 
         # Timer label
         self.timer_label = ttk.Label(self, text="Time: 0:00", font=(self.fontstyle, 12))
-        self.timer_label.grid(row=0, column=6, sticky="E", padx=5, pady=(20, 0))  # Placed above the battery label
+        self.timer_label.grid(row=0, column=4, pady=(40,0),padx=(0,0),sticky="e")  # Placed above the battery label
 
         # For battery Label
         batteryPercentLabel = ttk.Label(self, 
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
                 font=(self.fontstyle, 12))
         # batteryPercentLabel.pack(side=TOP, anchor=E, pady=0, padx=0)
-        batteryPercentLabel.grid(row=0, column=7,sticky="E", padx=5, pady=(20, 0))
+        batteryPercentLabel.grid(row=0, column=4,padx=(0,0), pady=(0,0),sticky ="e")
 
         # Create and place the top plot
         self.topPlot = TopPlot(self)
-        self.topPlot.canvas.get_tk_widget().grid(row=1, column=1, columnspan=7, sticky="NSEW", pady=5, padx=5)
+        self.topPlot.canvas.get_tk_widget().grid(row=1, column=1, columnspan=6, sticky="NSEW", pady=5, padx=5)
 
         # Create and place the bottom plot
         self.bottomPlot = BottomPlot(self)
-        self.bottomPlot.canvas.get_tk_widget().grid(row=2, column=1, columnspan=7, sticky="NSEW", pady=5, padx=5)
+        self.bottomPlot.canvas.get_tk_widget().grid(row=2, column=1, columnspan=6, sticky="NSEW", pady=5, padx=5)
             
         # Chart selection button
         self.chartButton = ttk.Button(
@@ -91,7 +91,7 @@ class ActiveTrial(tk.Frame):
 
         # Buttons at the bottom
         graph_button_frame = ttk.Frame(self)
-        graph_button_frame.grid(row=3, column=4)
+        graph_button_frame.grid(row=3, column=4, padx=(100,0))
 
         self.bothGraphsButton = ttk.Button(
             graph_button_frame,
@@ -113,11 +113,11 @@ class ActiveTrial(tk.Frame):
         self.bottomGraphButton = ttk.Button(
             graph_button_frame,
             text="Bottom Graph",
+            width = 15,
             command=lambda: self.set_graph("Bottom Graph"),
             style="Custom.TButton",
         )
         self.bottomGraphButton.pack(side = LEFT)
-
 
         self.currentPlots = [self.topPlot, self.bottomPlot]
         self.plot_update_job = None  # Store the job reference
@@ -180,9 +180,9 @@ class ActiveTrial(tk.Frame):
         markButton.pack(side=TOP, pady=5)
 
         # Configure grid weights for centering
-        for i in range(5):
+        for i in range(7):
             self.grid_rowconfigure(i, weight=1)
-        for j in range(8):
+        for j in range(9):
             self.grid_columnconfigure(j, weight=1)
             
     def toggle_chart(self):
