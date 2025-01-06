@@ -326,7 +326,7 @@ class ExoDeviceManager:
 
     # Helper function to send new stiffness values to Exo
     async def newStiffness(self, stiffnessInput):
-        stiffnessVal = float(stiffnessInput.get(1.0, "end-1c"))
+        stiffnessVal = float(stiffnessInput)
         await self.sendStiffness(stiffnessVal)  # Send the new stiffness value
 
     # Play
