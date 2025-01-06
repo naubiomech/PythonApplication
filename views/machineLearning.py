@@ -2,10 +2,11 @@ import tkinter as tk
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import Data.SaveModelData as saveModelData
-from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, N, S, IntVar, StringVar, W, X, Y, ttk)
+from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, N, S, IntVar, StringVar, W, X, Y, ttk, simpledialog)
 from async_tkinter_loop import async_handler
 from Widgets.Charts.chart import BasePlot,BottomPlot, TopPlot
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from PIL import ImageTk, Image, ImageEnhance
 
 # Biofeedback Frame
 class MachineLearning(tk.Frame):
@@ -46,6 +47,9 @@ class MachineLearning(tk.Frame):
         #self.controlMode=0
         self.confirmation=0 #used as a flag to request second confirmation form user to delete model
         self.modelDataWriter = saveModelData.CsvWritter()
+        
+        # Target stiffness variable
+        self.target_var = StringVar(value="Update Stiffness")  # Display the target value
 
         #UI Styling
         self.fontstyle = 'Segoe UI'
@@ -55,6 +59,16 @@ class MachineLearning(tk.Frame):
 
     # Frame UI elements
     def create_widgets(self):
+
+        # Load and place the smaller image behind the timer and battery
+        small_image = Image.open("./Resources/Images/OpenExo.png").convert("RGBA")
+        small_image = small_image.resize((80, 40))  # Resize the image to a smaller size
+        self.small_bg_image = ImageTk.PhotoImage(small_image)
+
+        # Create a Canvas for the smaller image
+        small_canvas = tk.Canvas(self, width=80, height=50, highlightthickness=0)
+        small_canvas.create_image(0, 0, image=self.small_bg_image, anchor="nw")
+        small_canvas.grid(row=0, column=8, sticky="ne", padx=5, pady=10)  # Top-right corner
 
         # Dropdown for chart selection
         self.chartDropdown = ttk.Combobox(
@@ -221,15 +235,13 @@ class MachineLearning(tk.Frame):
         )
         deleteModelButton.grid(row=10, column=0, pady=20, padx=(100,0), sticky="e")
 
-        stiffnessInput = tk.Text(self, height=2, width=10)
-        stiffnessInput.grid(row=2, column=8, pady=(80,0))
-        
-        updateStiffnessButton = ttk.Button(
-            self,
-            text="Update Stiffness",
-            command=async_handler(self.controller.deviceManager.newStiffness,stiffnessInput),
-        )
-        updateStiffnessButton.grid(row=2, column=8, pady=(0,140))
+
+        # Button to set target stiffness
+        self.target_button = ttk.Button(self, textvariable=self.target_var, 
+            command=async_handler(self.ask_target_value))
+        self.target_button.grid(row=2, column=8, pady=(0,140))
+
+
 
         self.controller.deviceManager._realTimeProcessor._predictor.controlModeLabel.set("Control Mode: Manual")
         
@@ -247,6 +259,21 @@ class MachineLearning(tk.Frame):
         for j in range(10):
             self.grid_columnconfigure(j, weight=1)
 
+    async def ask_target_value(self):
+        # Prompt the user for a target value
+        user_input = simpledialog.askstring("Input", "Please enter a target Stiffness:")
+        
+        if user_input is not None:
+            try:
+                # Attempt to convert the input to a float
+                stiffness_value  = float(user_input)
+                self.target_var.set(f"Stiffness: {stiffness_value}")  # Properly update the StringVar
+                # Call the async handler to update stiffness
+                await self.controller.deviceManager.newStiffness(stiffness_value)
+            except ValueError:
+                print("Invalid input. Please enter a numeric value.")
+
+        
     # Navigate to the Update Torque frame
     def go_to_update_torque(self):
         self.controller.frames["UpdateTorque"].previous_frame = "MachineLearning"

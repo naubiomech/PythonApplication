@@ -59,18 +59,18 @@ class ActiveTrial(tk.Frame):
         # Create a Canvas for the smaller image
         small_canvas = tk.Canvas(self, width=80, height=50, highlightthickness=0)
         small_canvas.create_image(0, 0, image=self.small_bg_image, anchor="nw")
-        small_canvas.grid(row=0, column=5, columnspan=2, sticky="N", padx=5, pady=10)  # Top-right corner
+        small_canvas.grid(row=0, column=4, sticky="ne", padx=5, pady=10)  # Top-right corner
 
         # Timer label
         self.timer_label = ttk.Label(self, text="Time: 0:00", font=(self.fontstyle, 12))
-        self.timer_label.grid(row=0, column=4, pady=(40,0),padx=(0,0),sticky="e")  # Placed above the battery label
+        self.timer_label.grid(row=0, column=4, pady=(50,0),padx=(0,0),sticky="e")  # Placed above the battery label
 
         # For battery Label
         batteryPercentLabel = ttk.Label(self, 
             textvariable=self.controller.deviceManager._realTimeProcessor._exo_data.BatteryPercent, 
                 font=(self.fontstyle, 12))
         # batteryPercentLabel.pack(side=TOP, anchor=E, pady=0, padx=0)
-        batteryPercentLabel.grid(row=0, column=4,padx=(0,0), pady=(0,0),sticky ="e")
+        batteryPercentLabel.grid(row=0, column=4,padx=(0,0), pady=(10,0),sticky ="e")
 
         # Create and place the top plot
         self.topPlot = TopPlot(self)
