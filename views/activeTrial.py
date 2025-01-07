@@ -53,11 +53,11 @@ class ActiveTrial(tk.Frame):
 
         # Load and place the smaller image behind the timer and battery
         small_image = Image.open("./Resources/Images/OpenExo.png").convert("RGBA")
-        small_image = small_image.resize((80, 40))  # Resize the image to a smaller size
+        small_image = small_image.resize((int(1736*.075), int(336*.075)))  # Resize the image to a smaller size
         self.small_bg_image = ImageTk.PhotoImage(small_image)
 
         # Create a Canvas for the smaller image
-        small_canvas = tk.Canvas(self, width=80, height=50, highlightthickness=0)
+        small_canvas = tk.Canvas(self, width=int(1736*.075), height=int(336*.075), highlightthickness=0)
         small_canvas.create_image(0, 0, image=self.small_bg_image, anchor="nw")
         small_canvas.grid(row=0, column=4, sticky="ne", padx=5, pady=10)  # Top-right corner
 
