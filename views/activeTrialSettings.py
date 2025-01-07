@@ -3,7 +3,7 @@ from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, N, S, StringVar, W,
                      X, Y, ttk)
 
 from async_tkinter_loop import async_handler
-from custom_keyboard import CustomKeyboard
+from Widgets.Keyboard.custom_keyboard import CustomKeyboard
 import json
 import os
 jointMap = {
