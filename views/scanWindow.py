@@ -116,14 +116,12 @@ class ScanWindow(tk.Frame):
 
     # Callback for device disconnection
     def ScanWindow_on_device_disconnected(self):
-        """Handles disconnection of the device."""
         self.deviceNameText.set("Disconnected After Scan Try Again")  # Update device name text
         self.stop_scanning_animation()  # Stop animation on disconnect
         self.reset_elements()
 
     # Save the selected device address to a file
     async def on_save_device_button_clicked(self):
-        """Saves the currently selected device to a file."""
         await self.controller.deviceManager.disconnect()  # Disconnects from any devices
         self.startScanButton.config(state=DISABLED)
         self.connectButton.config(state=DISABLED)
@@ -153,6 +151,7 @@ class ScanWindow(tk.Frame):
             self.reset_elements()
         self.startScanButton.config(state="normal")
 
+    # Load saved device address from a file
     def load_device_available(self):
         if os.path.exists(self.SETTINGS_FILE):
             with open(self.SETTINGS_FILE, "r") as file:
@@ -166,7 +165,6 @@ class ScanWindow(tk.Frame):
                     
     # Load saved device address from a file and connect to it
     async def on_load_device_button_clicked(self):
-        """Loads the saved device from a file and connects to it."""
         self.loadDeviceButton.config(state=DISABLED)
         self.startScanButton.config(state=DISABLED)
         self.startTrialButton.config(state=DISABLED)
@@ -188,12 +186,12 @@ class ScanWindow(tk.Frame):
         
         self.startScanButton.config(state="normal")
 
+    # Handles the Calibrate Torque button click.
     async def on_calibrate_torque_button_clicked(self):
-        """Handles the Calibrate Torque button click."""
         await self.controller.trial.calibrate(self.controller.deviceManager)
 
+    # Handles the Connect button click.
     async def on_connect_button_clicked(self):
-        """Handles the Connect button click."""
         self.startScanButton.config(state=DISABLED)
         self.connectButton.config(state=DISABLED)
         self.saveDeviceButton.config(state=DISABLED)
@@ -218,12 +216,12 @@ class ScanWindow(tk.Frame):
         if self.saved_address is not None:
             self.loadDeviceButton.config(state="normal")
 
+    # Handles the Start Trial button click.
     async def on_start_trial_button_clicked(self):
-        """Handles the Start Trial button click."""
         await self.startTrialButtonClicked()  # Initiate the trial process
 
+    #Starts scanning for devices when the button is clicked.
     async def on_start_scan_button_clicked(self):
-        """Starts scanning for devices when the button is clicked."""
         self.reset_elements()
         self.startScanButton.config(state=DISABLED)
         self.loadDeviceButton.config(state=DISABLED)
@@ -250,9 +248,8 @@ class ScanWindow(tk.Frame):
         # active_trial_frame.newSelection(self)
         # active_trial_frame.startClock()
 
+    # Start scanning for devices and update the UI
     async def startScanButtonClickedHandler(self):
-        """Starts scanning for devices and updates the UI accordingly."""
-
         available_devices = await self.controller.deviceManager.searchDevices()
 
         if(available_devices != "false"):
@@ -276,7 +273,6 @@ class ScanWindow(tk.Frame):
         
     # Handle device selection from the Listbox
     def on_device_selected(self, event):
-        """Handles the selection of a device from the Listbox."""
         selected_index = self.deviceListbox.curselection()
         if selected_index:  # Check if any item is selected
             selected_device_info = self.deviceListbox.get(selected_index)
@@ -288,17 +284,18 @@ class ScanWindow(tk.Frame):
             self.connectButton.config(state=DISABLED)  # Disable Connect button if no selection
             self.saveDeviceButton.config(state=DISABLED)  # Disable Save & Connect button if no selection
 
+    # Starts the scanning animation.
     def start_scanning_animation(self):
-        """Starts the scanning animation."""
         self.scanning_animation_running = True
         self.animate_scanning_dots(0)
 
+    # Stops the scanning animation.
     def stop_scanning_animation(self):
-        """Stops the scanning animation."""
         self.scanning_animation_running = False
 
+    #Animates the scanning dots to indicate scanning progress.
     def animate_scanning_dots(self, count):
-        """Animates the scanning dots to indicate scanning progress."""
+        #Animates the scanning dots to indicate scanning progress.
         if not self.scanning_animation_running:
             return
 
@@ -308,16 +305,15 @@ class ScanWindow(tk.Frame):
         # Schedule the next update
         self.after(500, self.animate_scanning_dots, count + 1)
 
+    #Handles the Start Trial button click
     def changeName(self):
-        """Handles the Start Trial button click."""
         if self.selected_device_address:  # Ensure a device is selected
             # Change the title to the selected MAC address
             self.controller.change_title(f"Device: {self.selected_device_address}")
 
+    #Switches frame to ActiveTrial and begins the trial.
     async def startTrialButtonClicked(self):
-
         self.changeName()
-        """Switches frame to ActiveTrial and begins the trial."""
         active_trial_frame = self.controller.frames["ActiveTrial"]
         active_trial_frame.disable_interactions()  # Disable buttons in ActiveTrial frame
         
@@ -335,9 +331,9 @@ class ScanWindow(tk.Frame):
             self.loadDeviceButton.config(state="normal")
         else:
             self.loadDeviceButton.config(state=DISABLED)
-        
+
+    #Resets the UI elements to their initial state. 
     def reset_elements(self):
-        """Resets the UI elements to their initial state."""
         self.deviceNameText.set("Not Connected")
         self.deviceListbox.delete(0, tk.END)
         self.selected_device_name = None
@@ -349,6 +345,6 @@ class ScanWindow(tk.Frame):
         self.saveDeviceButton.config(state=DISABLED)
         self.loadDeviceAvailible()
         
+    # Resets elements and shows the frame.
     def show(self):
-        """Resets elements and shows the frame."""
-        self.reset_elements()  # Reset elements when showing the frame
+        self.reset_elements()

@@ -124,8 +124,8 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         )
         updateTorqueButton.pack(side=BOTTOM, fill=X, padx=20, pady=20)
 
+    # Start the keyboard cycle, focusing on the first input field.
     def start_keyboard_cycle(self):
-        """Start the keyboard cycle, focusing on the first input field."""
         self.current_input_index = 0  # Start with the first input field
         if not self.keyboard_window:  # Create the keyboard only if it doesn't already exist
             self.keyboard_window = tk.Toplevel(self)
@@ -140,13 +140,13 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
 
         self.update_keyboard_target()
 
+    # Update the keyboard to target the current input field.
     def update_keyboard_target(self):
-        """Update the keyboard to target the current input field."""
         target_input = self.inputs[self.current_input_index]
         self.keyboard.set_target(target_input)
 
+    # Handle the keyboard submission and move to the next input field.
     def keyboard_submit(self, value):
-        """Handle the keyboard submission and move to the next input field."""
         # Set the value for the current input field
         current_input = self.inputs[self.current_input_index]
         current_input.delete(0, tk.END)
@@ -159,8 +159,8 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         else:
             self.close_keyboard()  # Close the keyboard after the last field
 
+    # Close the keyboard and reset the current input index.
     def close_keyboard(self):
-        """Close the keyboard and reset the current input index."""
         if self.keyboard_window:
             self.keyboard_window.destroy()
             self.keyboard_window = None
@@ -197,7 +197,7 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
     async def UpdateButtonClicked(
         self, isBilateral, joint, controllerInput, parameterInput, valueInput,
     ):
-        controllerVal = float(controllerInput.get())  # Corrected line for Entry widget
+        controllerVal = float(controllerInput.get()) 
         parameterVal = float(parameterInput.get())
         valueVal = float(valueInput.get())
 
@@ -221,8 +221,8 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
             active_trial_frame = self.controller.frames["ActiveTrial"]
             active_trial_frame.newSelection(self)
 
+    # Save the current settings to a file.
     def save_settings(self):
-        """Save the current settings to a file."""
         settings = {
             "joint": self.jointVar.get(),
             "controller": self.controllerInput.get(),
@@ -234,8 +234,8 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
             json.dump(settings, f, indent=4)
         print(f"Settings saved: {settings}")
 
+    # Load the last saved settings.
     def load_settings(self):
-        """Load the last saved settings."""
         if os.path.exists(self.SETTINGS_FILE):
             with open(self.SETTINGS_FILE, "r") as f:
                 settings = json.load(f)
