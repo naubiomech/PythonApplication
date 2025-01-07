@@ -52,6 +52,9 @@ class BasePlot:
         self.ax.relim()  # Recalculate limits based on new data
         self.ax.autoscale(enable=True, axis='both', tight=False)
 
+        # Update title dynamically
+        self.ax.set_title(title)
+
         # Draw without clearing axes
         self.canvas.draw_idle()
         self.canvas.flush_events()
