@@ -7,6 +7,8 @@ import os
 
 # Frame to scan for exoskeleton devices
 class ScanWindow(tk.Frame):
+    SETTINGS_FILE = "saved_data/saved_device.txt"  # File to save and load previous torque settings
+
     # Initialize class
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -128,7 +130,7 @@ class ScanWindow(tk.Frame):
         self.saveDeviceButton.config(state=DISABLED)
         self.loadDeviceButton.config(state=DISABLED)
         if self.selected_device_address:
-            with open("saved_device.txt", "w") as file:
+            with open(self.SETTINGS_FILE, "w") as file:
                 file.write(self.selected_device_address)
             print(f"Saved device: {self.selected_device_name} - {self.selected_device_address}")
             
@@ -152,8 +154,8 @@ class ScanWindow(tk.Frame):
         self.startScanButton.config(state="normal")
 
     def load_device_available(self):
-        if os.path.exists("saved_device.txt"):
-            with open("saved_device.txt", "r") as file:
+        if os.path.exists(self.SETTINGS_FILE):
+            with open(self.SETTINGS_FILE, "r") as file:
                 self.saved_address = file.read().strip()
                 if self.saved_address:  # Check if the file is not empty
                     self.deviceNameText.set(f"Loading saved device: {self.saved_address}")

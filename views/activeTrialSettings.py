@@ -4,7 +4,8 @@ from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, N, S, StringVar, W,
 
 from async_tkinter_loop import async_handler
 from custom_keyboard import CustomKeyboard
-
+import json
+import os
 jointMap = {
     "Right hip": 1,
     "Left hip": 2,
@@ -17,6 +18,8 @@ jointMap = {
 }
 
 class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
+    SETTINGS_FILE = "saved_data/last_torque_settings.json"  # File to save and load settings
+
     def __init__(self, parent, controller):  # Constructor for Frame
         super().__init__(parent)  # Correctly initialize the tk.Frame part
         # Initialize variables
@@ -36,7 +39,10 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
         self.jointVar = StringVar(value="Select Joint")
 
         self.isBilateral = True
+
         self.create_widgets()
+        # Load previous settings if available
+        self.load_settings()
 
     def create_widgets(self):  # Frame UI elements
         # Back button to go back to Scan Window
@@ -185,6 +191,9 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
             valueInput,
         )
 
+        # Save settings after updating
+        self.save_settings()
+
     async def UpdateButtonClicked(
         self, isBilateral, joint, controllerInput, parameterInput, valueInput,
     ):
@@ -211,6 +220,34 @@ class UpdateTorque(tk.Frame):  # Frame to start exo and calibrate
             self.controller.show_frame("ActiveTrial")
             active_trial_frame = self.controller.frames["ActiveTrial"]
             active_trial_frame.newSelection(self)
+
+    def save_settings(self):
+        """Save the current settings to a file."""
+        settings = {
+            "joint": self.jointVar.get(),
+            "controller": self.controllerInput.get(),
+            "parameter": self.parameterInput.get(),
+            "value": self.valueInput.get(),
+            "isBilateral": self.isBilateral,
+        }
+        with open(self.SETTINGS_FILE, "w") as f:
+            json.dump(settings, f, indent=4)
+        print(f"Settings saved: {settings}")
+
+    def load_settings(self):
+        """Load the last saved settings."""
+        if os.path.exists(self.SETTINGS_FILE):
+            with open(self.SETTINGS_FILE, "r") as f:
+                settings = json.load(f)
+                self.jointVar.set(settings.get("joint", "Left hip"))
+                self.controllerInput.insert(0, settings.get("controller", ""))
+                self.parameterInput.insert(0, settings.get("parameter", ""))
+                self.valueInput.insert(0, settings.get("value", ""))
+                self.isBilateral = settings.get("isBilateral", True)
+                self.bilateralButtonVar.set(
+                    "Bilateral Mode On" if self.isBilateral else "Bilateral Mode Off"
+                )
+            print(f"Loaded settings: {settings}")
 
     def newSelection(self, event):
         self.jointVar.set(self.jointSelector.get())
