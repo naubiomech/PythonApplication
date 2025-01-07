@@ -211,6 +211,9 @@ class ExoDeviceManager:
                 device = await BleakScanner.find_device_by_filter(self.filterExo)
                 if device:
                     self.available_devices[device.address] = device.name  # Store name with address as key
+                else:
+                    # Preserve the existing name if already stored, otherwise set a placeholder
+                    self.available_devices[device.address] = self.available_devices.get(device.address, "Unknown Device")
 
                 # Print all available devices every few seconds
                 print("Currently available devices:")
