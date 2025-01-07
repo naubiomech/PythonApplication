@@ -1,5 +1,5 @@
 import tkinter as tk
-
+from tkinter import messagebox 
 from async_tkinter_loop import async_handler, async_mainloop
 
 from Device import exoDeviceManager, exoTrial
@@ -15,9 +15,12 @@ class ControllerApp(tk.Tk):
         super().__init__(*args, **kwargs)
         self.trial = exoTrial.ExoTrial(True, 1, True)
         self.deviceManager = exoDeviceManager.ExoDeviceManager()
-        self.title("NAU Lab of Biomechatronics")
+        self.title("OpenExo GUI V1.01")
         self.geometry("920x720")
         self.minsize(900, 700)
+
+        # Set up a key binding for the Esc key
+        self.bind("<Escape>", async_handler(self.on_escape_pressed))
 
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -32,6 +35,7 @@ class ControllerApp(tk.Tk):
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
+        self.current_frame = "ScanWindow"  # Track the current frame
         self.show_frame("ScanWindow")  # Switch to Scan Window Frame
 
     def show_frame(self, page_name):  # Method to switch frames
@@ -43,6 +47,7 @@ class ControllerApp(tk.Tk):
 
         # Get the frame to switch to
         frame = self.frames[page_name]
+        self.current_frame = page_name  # Update the current frame
 
         # Set the new frame to be shown
         frame.tkraise()
@@ -57,8 +62,37 @@ class ControllerApp(tk.Tk):
 
     def change_title(self, newName):
         self.title(newName)
+    
+    async def on_escape_pressed(self, event):
+        """Handle Esc key press."""
+        if self.current_frame == "ScanWindow":
+            self.destroy()  # Close the program
+        else:
+            # Ask for confirmation
+            confirm = messagebox.askyesno(
+                "Confirmation",
+                "Do you want to navigate back to the Scan Window? The data will be saved."
+            )
+            if confirm:
+                await self.end_trial_and_shutdown()
+    
 
+    async def end_trial_and_shutdown(self):
+        """Shut down the exoskeleton and navigate to the ScanWindow."""
+        try:
+            # Shut down the exoskeleton
+            await self.deviceManager.motorOff()  # Turn off motors
+            await self.deviceManager.stopTrial()  # Stop the trial
 
+            # Save trial data to CSV
+            self.trial.loadDataToCSV(self.deviceManager)
+            print("Exoskeleton shut down and data saved.")
+        except Exception as e:
+            print(f"Error during shutdown: {e}")
+
+        # Navigate to ScanWindow
+        self.show_frame("ScanWindow")
+        
 def exec():
     controller = ControllerApp()
     async_mainloop(controller)
