@@ -6,7 +6,7 @@ from async_tkinter_loop import async_handler
 from PIL import ImageTk, Image, ImageEnhance
 
 from Widgets.Charts.chart import FSRPlot
-from custom_keyboard import CustomKeyboard
+from Widgets.Keyboard.custom_keyboard import CustomKeyboard
 
 # Initialize Pygame for sound
 pygame.mixer.init()
@@ -137,8 +137,8 @@ class BioFeedback(tk.Frame):
         for j in range(9):
             self.grid_columnconfigure(j, weight=1)
 
+    # Toggle between 'Left Leg' and 'Right Leg' for the chart.
     def toggle_chart(self):
-        """Toggle between 'Left Leg' and 'Right Leg' for the chart."""
         current = self.chartVar.get()
         if current == "Left Leg":
             self.chartVar.set("Right Leg")
@@ -169,38 +169,37 @@ class BioFeedback(tk.Frame):
             except ValueError:
                 print("Invalid input. Please enter a numeric value.")
 
+    # Stops plotting and goes back to Active Trial
     def handle_back_button(self):
-        # Stops plotting and goes back to Active Trial
         self.stop_plot_updates()  # Stop any ongoing plot updates
         self.controller.show_frame("ActiveTrial")  # Switch to ActiveTrial frame
         active_trial_frame = self.controller.frames["ActiveTrial"]
         active_trial_frame.newSelection(self)  # Start the plotting on active trial
 
+    # Determine which plots to show based on user selection
     def newSelection(self, event=None):
-        # Determine which plots to show based on user selection
         selection = self.chartVar.get()
         self.update_plots(selection)  # Update the plots based on selection
     
     def reset_background(self):
         self.config(bg="SystemButtonFace")  # Reset to default color
 
+    # Reset the target value to None and update the UI
     def reset_target(self):
-        # Reset the target value to None and update the UI
         self.target_value = None
         self.update_target_label()  # Update the target label
         self.reset_button.config(state="disabled")  # Disable the reset button
         self.currentPlots.set_goal(None)  # Reset the goal in the current plot
 
+    # Stop any ongoing plot updates
     def stop_plot_updates(self):
-        # Stop any ongoing plot updates
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
             self.plot_update_job = None
         self.is_plotting = False
 
-
+    # Update the counter variable and label when the goal is reached
     def update_counter_label(self):
-        # Update the counter variable and label when the goal is reached
         self.counter += 1  # Increment the counter
         self.counter_var.set(self.counter)  # Update the IntVar
         self.targets_reached_label.config(text=f"Targets Reached: {self.counter}")  # Update the label
@@ -211,17 +210,17 @@ class BioFeedback(tk.Frame):
         self.config(bg="lightgreen")  # Change to light green
         self.after(1000, self.reset_background)  # Reset after 1 second
 
+    # Enable other widgets
     def enable_interactions(self):
         try:
-            # Enable other widgets
             for widget in self.winfo_children():
                 if isinstance(widget, tk.Button) or isinstance(widget, ttk.Combobox):
                     widget.config(state='normal')
         except Exception as e:
             print(f"Error in enable_interactions: {e}")
 
+    # Animate the current plot and schedule the next update
     def update_plots(self, selection):
-        # Animate the current plot and schedule the next update
         # Cancel the previous update job if it exists
         if self.plot_update_job:
             self.after_cancel(self.plot_update_job)
@@ -240,20 +239,21 @@ class BioFeedback(tk.Frame):
         # Enable interactions after the first plot update is complete
         self.after(20, self.enable_interactions)
         
+    # Update the target label with the current target value
     def update_target_label(self):
-        # Update the target label with the current target value
         if self.target_value is not None:
             self.target_var.set(f"Target value: {self.target_value}")
         else:
             self.target_var.set("No target set")
 
+    # Show the current selection in the plots
     def show(self):
         # Show the current selection in the plots
         self.is_plotting = True
         self.newSelection()  # Update the plots based on current selection
 
+    # This method is called when switching away from this frame
     def hide(self):
-        # This method is called when switching away from this frame
         self.stop_plot_updates()
         
     async def on_mark_button_clicked(self):
