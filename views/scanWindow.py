@@ -252,7 +252,7 @@ class ScanWindow(tk.Frame):
     async def startScanButtonClickedHandler(self):
         available_devices = await self.controller.deviceManager.searchDevices()
 
-        if(available_devices != "false"):
+        if(available_devices != "false" and available_devices != "NoDevice"):
             self.deviceNameText.set("Scan Complete")
             self.startScanButton.config(state="normal")
 
@@ -267,6 +267,9 @@ class ScanWindow(tk.Frame):
 
             if self.saved_address is not None:
                 self.loadDeviceButton.config(state="normal")
+        elif available_devices == "NoDevice":
+            self.deviceNameText.set("No Devices Found")
+            self.startScanButton.config(state="normal")
         else:
             self.deviceNameText.set("BlueTooth Error")
             self.startScanButton.config(state="normal")

@@ -224,7 +224,10 @@ class ExoDeviceManager:
                 i += 1
             except Exception as e:
                 print(f"Error during device scan: {e}")
-                return "false"  # Return false if an error occurs
+                if str(e) == "'NoneType' object has no attribute 'address'":
+                    return "NoDevice"  # Return false if an error occurs
+                else:
+                    return "false"  # Return false if an error occurs
         return self.available_devices
     
     # Scan for BLE devices and attempt to connect
