@@ -67,9 +67,6 @@ if os.path.exists(bg_music_path):
 font = pygame.font.SysFont(None, 36)
 title_font = pygame.font.SysFont(None, 72)
 
-# Sound state
-sound_on = True
-
 # Button class
 class Button:
     def __init__(self, x, y, width, height, text, color, hover_color):
@@ -143,32 +140,8 @@ play_button = Button(WIDTH // 2 - button_width // 2, HEIGHT // 2 - 20,
 exit_button = Button(WIDTH // 2 - button_width // 2, HEIGHT // 2 + 60, 
                      button_width, button_height, "EXIT", (255, 100, 100), (255, 150, 150))
 
-# Create mute button
-mute_button = Button(WIDTH - 100, 20, 80, 40, "Sound: ON", WHITE, (200, 200, 200))
-
 # Clock
 clock = pygame.time.Clock()
-
-def toggle_sound():
-    global sound_on
-    sound_on = not sound_on
-    
-    # Update button text
-    mute_button.text = "Sound: ON" if sound_on else "Sound: OFF"
-    
-    # Set volume based on state
-    if sound_on:
-        if inflate_sound:
-            inflate_sound.set_volume(0.1)
-        if ding_sound:
-            ding_sound.set_volume(0.5)
-        pygame.mixer.music.set_volume(0.3)
-    else:
-        if inflate_sound:
-            inflate_sound.set_volume(0)
-        if ding_sound:
-            ding_sound.set_volume(0)
-        pygame.mixer.music.set_volume(0)
 
 def run_menu():
     global game_state
@@ -184,13 +157,11 @@ def run_menu():
     # Draw buttons
     play_button.draw(screen)
     exit_button.draw(screen)
-    mute_button.draw(screen)
     
     # Check button hover
     mouse_pos = pygame.mouse.get_pos()
     play_button.check_hover(mouse_pos)
     exit_button.check_hover(mouse_pos)
-    mute_button.check_hover(mouse_pos)
     
     # Handle button clicks
     mouse_click = pygame.mouse.get_pressed()[0]
@@ -201,8 +172,6 @@ def run_menu():
     elif exit_button.check_click(mouse_pos, mouse_click):
         pygame.quit()
         sys.exit()
-    elif mute_button.check_click(mouse_pos, mouse_click):
-        toggle_sound()
 
 def run_game():
     global frame_index, intensity, balloon_full, congrats_display_timer
@@ -228,7 +197,7 @@ def run_game():
             new_frame_index = min(int((intensity / 100) * max_frames), max_frames)
 
             # Play inflation sound
-            if new_frame_index > frame_index and inflate_sound and sound_on:
+            if new_frame_index > frame_index and inflate_sound:
                 inflate_sound.play()
 
             frame_index = new_frame_index
@@ -238,7 +207,7 @@ def run_game():
                 balloon_full = True
                 congrats_display_timer = pygame.time.get_ticks()
                 
-                if not balloon_fully_inflated and ding_sound and sound_on:
+                if not balloon_fully_inflated and ding_sound:
                     ding_sound.play()
                     balloon_fully_inflated = True
 
@@ -258,11 +227,11 @@ def run_game():
     if frames:
         screen.blit(frames[frame_index], (0, 0))
 
-    # Show balloon counter (left corner)
+    # Show balloon counter 
     counter_text = font.render(f"Balloons Blown: {balloon_count}", True, BLACK)
     screen.blit(counter_text, (20, 20))
 
-    # Draw Intensity Bar (moved to top right corner)
+    # Draw Intensity Bar 
     intensity_bar_x = WIDTH - intensity_bar_width - 20  # 20px padding from right edge
     intensity_bar_y = 20  # 20px padding from top edge
     
@@ -320,15 +289,10 @@ def run_game():
     back_button = Button(20, HEIGHT - 60, 100, 40, "Menu", WHITE, (200, 200, 200))
     back_button.draw(screen)
     
-    # Draw mute button
-    mute_button.draw(screen)
-    
-    # Check if buttons are clicked
+    # Check if back button is clicked
     mouse_pos = pygame.mouse.get_pos()
     back_button.check_hover(mouse_pos)
-    mute_button.check_hover(mouse_pos)
     mouse_click = pygame.mouse.get_pressed()[0]
-    
     if back_button.check_click(mouse_pos, mouse_click):
         # Reset game state and return to menu
         congrats_display_timer = 0
@@ -340,8 +304,6 @@ def run_game():
         expected_trigger = random.choice(["LEFT", "RIGHT"])
         pygame.mixer.music.stop()
         game_state = "menu"
-    elif mute_button.check_click(mouse_pos, mouse_click):
-        toggle_sound()
 
 # Game loop
 running = True
@@ -353,17 +315,6 @@ while running:
         elif event.type == pygame.JOYAXISMOTION:
             if event.axis in [4, 5]:
                 print(f"Axis {event.axis} moved to {event.value:.2f}")
-    
-    # Handle window resize
-    current_width, current_height = screen.get_size()
-    if current_width != WIDTH or current_height != HEIGHT:
-        WIDTH, HEIGHT = current_width, current_height
-        # Update button positions
-        play_button.rect.x = WIDTH // 2 - button_width // 2
-        play_button.rect.y = HEIGHT // 2 - 20
-        exit_button.rect.x = WIDTH // 2 - button_width // 2
-        exit_button.rect.y = HEIGHT // 2 + 60
-        mute_button.rect.x = WIDTH - 100
                 
     # Run the current game state
     if game_state == "menu":
