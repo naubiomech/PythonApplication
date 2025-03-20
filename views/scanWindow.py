@@ -51,7 +51,7 @@ class ScanWindow(tk.Frame):
             text="Start Trial",
             height=3,
             command=async_handler(self.on_start_trial_button_clicked),
-            state=DISABLED,
+            #DEBUGING state=DISABLED, # TURN BACK TO DISABLED AFTER TESTING
         )
         self.startTrialButton.pack(
             expand=False, fill=BOTH, side=BOTTOM, pady=20, padx=20

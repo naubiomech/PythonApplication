@@ -9,16 +9,46 @@ class VirtualController:
     A class to represent a virtual controller that maps biofeedback sensor data
     to game controller inputs.
     """
+    # used to give/remove user assistance from a researcher when needed, 1.0 is no change at all
+    user_assistance = 1.0
+    # the amount of assistance to give or remove
+    assistance_diference = 0.05
+
+    
 
     def __init__( self, realTimeProcessor, sensorID ):
         
         self._sensorID = sensorID
-        self._gamepad = vg.VX360Gamepad()  # Initialize the virtual gamepad
+        self._gamepad = None  # Initialize the virtual gamepad
         self._realTimeProcessor = realTimeProcessor
         self._isOn = False
         self.update_thread = None
+
+        # active sensor 
+        self.sensor_left = 6 
+        self.sensor_right = 7 # sensor 6 and 7 and the foot sensors and will be the default
+
         print("Virtual controller initialized.", self._realTimeProcessor.getPayloadData())
 
+    def addAssistance(self):
+        """Add assistance to the user."""
+        self.user_assistance += self.assistance_diference
+        print("User assistance added." + str(self.user_assistance))
+
+    def removeAssistance(self):
+        """Remove assistance from the user."""
+        self.user_assistance -= self.assistance_diference
+        print("User assistance removed." + str(self.user_assistance))
+
+    def setAssistanceLevel(self, level):
+        """Set the user assistance level."""
+        self.user_assistance = level
+        print("User assistance level set to: " + str(self.user_assistance))
+        
+    def getAssistanceLevel(self):
+        """Get the current user assistance level."""
+        return self.user_assistance
+    
     def stop(self):
         """Stop the virtual controller."""
         if self._isOn:
@@ -30,6 +60,7 @@ class VirtualController:
 
     def create(self):
         """Create and start the virtual controller."""
+        self._gamepad = vg.VX360Gamepad()  # Create a virtual gamepad
         # check if the virtual controller is already running
         if self._isOn:
             print("No new Virtual controller created.")
@@ -54,10 +85,16 @@ class VirtualController:
                 time.sleep(0.1)
                 continue
 
+            # the user's raw sensor data is normalized to 1.0, so...
             # Scale the sensor data to the controller trigger inputs (0-255) 
-            # NOTE: For demo purposes, we are using the right and left two foot sensor values
-            left_sensor = max(0, min(sensor_data[6] * 180, 255))
-            right_sensor = max(0, min(sensor_data[7] * 180, 255))
+            # NOTE : The scalling factor will change based on the user's set goals. 
+            #        Games will always require a trigger pull value of 180.
+            # NOTE : For demo purposes, we are using the right and left two foot sensor values
+
+            # Assistance can be added by the researcher to make the game easier/harder for the user
+
+            left_sensor = max(0, min(sensor_data[self.sensor_left] * 180 * self.user_assistance, 255))
+            right_sensor = max(0, min(sensor_data[self.sensor_right] * 180 * self.user_assistance, 255))
             
             # verbose for debugging
             if True:
