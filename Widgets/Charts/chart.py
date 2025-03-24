@@ -155,3 +155,18 @@ class FSRPlot(BasePlot):
 
         self.update_plot(self.xValues, self.yValues, self.secondY, title)
 
+class AssistanceAnimator(tk.Frame):
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        self.master = master
+
+        # set number to be the assistace level held by the master
+        # display the number with only 2 decimal places and as a label
+        self.label = tk.Label(master, text=str(self.master.getAssistanceLevel()), font=("Arial", 24))
+        self.label.pack(pady=20)
+
+        self.animate_number()  # Start the update loop
+
+    def animate_number(self):
+        self.label.config(text=str(self.master.getAssistanceLevel()))  # Update the label text
+        self.master.after(100, self.animate_number)  # Call the function every 1000 ms (1 sec)
