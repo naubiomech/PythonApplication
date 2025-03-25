@@ -214,10 +214,10 @@ class ActiveTrial(tk.Frame):
                     # add .py to the game path if the game is a python file
                     game_path = os.path.join(game_path, self.selected_game + ".py")
 
-                elif entry.name.endswith(".exe"):
+                elif entry.name.endswith(".exe") and entry.name.startswith(self.selected_game):
                     # add .exe to the game path if the game is an executable file
                     game_path = os.path.join(game_path, self.selected_game + ".exe")
-
+                    print(game_path)
         
         print(f"Launching game from {game_path}")
         self.controller.virtualController.stop()
