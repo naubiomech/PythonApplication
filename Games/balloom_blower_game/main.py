@@ -1,3 +1,4 @@
+# Note: Version with either or triggers working
 import pygame
 import os
 import random
