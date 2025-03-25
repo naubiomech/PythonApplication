@@ -210,7 +210,7 @@ class ActiveTrial(tk.Frame):
         with os.scandir(game_path) as entries:
             for entry in entries:
                 print(entry.name)
-                if entry.name.endswith(".py"):
+                if entry.name.endswith(".py") and entry.name.startswith(self.selected_game):
                     # add .py to the game path if the game is a python file
                     game_path = os.path.join(game_path, self.selected_game + ".py")
 
