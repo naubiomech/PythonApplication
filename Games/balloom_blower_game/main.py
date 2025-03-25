@@ -113,7 +113,7 @@ if joystick:
     joystick.init()
 LT_AXIS = 4
 RT_AXIS = 5
-expected_trigger = "LEFT"  # Start with LEFT
+expected_trigger = "RIGHT"  # Start with LEFT
 
 # Buttons
 play_button = Button(WIDTH // 2 - 100, HEIGHT // 2 - 20, 200, 60, "PLAY", GREEN, (100, 255, 100))
@@ -182,7 +182,7 @@ def run_game(just_clicked):
             confetti_particles.clear()
 
             # Alternate expected trigger between LEFT and RIGHT
-            expected_trigger = "LEFT" 
+            expected_trigger = "RIGHT" 
 
     # Fill background based on pause state
     screen.fill(DARK_PURPLE if is_paused else LIGHT_BLUE)
