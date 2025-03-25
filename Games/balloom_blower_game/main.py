@@ -182,7 +182,7 @@ def run_game(just_clicked):
             confetti_particles.clear()
 
             # Alternate expected trigger between LEFT and RIGHT
-            expected_trigger = "RIGHT" if expected_trigger == "LEFT" else "LEFT"
+            expected_trigger = "LEFT" 
 
     # Fill background based on pause state
     screen.fill(DARK_PURPLE if is_paused else LIGHT_BLUE)
@@ -220,8 +220,7 @@ def run_game(just_clicked):
         # Handle trigger input
         if joystick and congrats_display_timer == 0:
             lt = joystick.get_axis(LT_AXIS)
-            rt = joystick.get_axis(RT_AXIS)
-            current_trigger = lt if expected_trigger == "LEFT" else rt
+            current_trigger = lt if expected_trigger == "LEFT" else lt
 
             # Normalize trigger value (support 0–1 or -1–1 ranges)
             if current_trigger < 0:
@@ -302,4 +301,3 @@ while running:
     clock.tick(60)
 
 pygame.quit()
-
