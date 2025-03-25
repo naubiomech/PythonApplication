@@ -272,7 +272,7 @@ def run_game(just_clicked):
                                      intensity_bar_y + intensity_bar_height + 5))
         
         # Display instruction text at the bottom of the game screen
-        instruction_text = "Press a trigger to inflate the balloon!"
+        instruction_text = "Take a step to inflate the balloon!"
         outline_text = font.render(instruction_text, True, BLACK)
         main_text = font.render(instruction_text, True, PURPLE)
         text_x = WIDTH // 2 - outline_text.get_width() // 2
