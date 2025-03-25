@@ -123,7 +123,7 @@ def game():
     scale_factor = 15
 
     #load the audio file
-    step_sound = pygame.mixer.Sound(os.path.join(BASE_DIR, "one_beep.mp3"))
+    step_sound = pygame.mixer.Sound(os.path.join(BASE_DIR, "ding.wav"))
 
     #set step variables
     total_step_count = 0
@@ -347,7 +347,11 @@ def game():
             r_trig = cont.get_axis(5)
             exit_button = cont.get_button(2)
 
-            if l_trig > 0.1 and man_sprite != scaled_left and r_trig < 0.1:
+            #NOTE this line is commented out, swaping the below if statement will prevent
+            #repeated steps with the same foot, as is a player can spam one leg
+
+            #if l_trig > 0.1 and man_sprite != scaled_left and r_trig < 0.1:
+            if l_trig > 0.1:
                 #TEST LINE TO DISPLAY STEP VALUE
                 #print(str(l_trig))
                 #update step frame
@@ -362,8 +366,12 @@ def game():
                     step_sound.play()
                     #increment full step count
                     full_steps_count += 1
-
-            elif r_trig > 0.1 and man_sprite != scaled_right and l_trig < 0.1:
+                    
+            #NOTE this line is commented out, swaping the below if statement will prevent
+            #repeated steps with the same foot, as is a player can spam one leg
+            
+            #elif r_trig > 0.1 and man_sprite != scaled_right and l_trig < 0.1:
+            elif r_trig > 0.1:
                 #TEST LINE TO DISPLAY STEP VALUE
                 #print(str(r_trig))
                 #update step frame
