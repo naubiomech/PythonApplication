@@ -12,7 +12,7 @@ class BasePlot:
     def __init__(self, master, title):
         self.master = master
         self.title = title
-        self.figure = plt.Figure(figsize=(7, 2.5))
+        self.figure = plt.Figure(figsize=(6, 2))
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.xValues = []
         self.yValues = []
@@ -162,11 +162,26 @@ class AssistanceAnimator(tk.Frame):
 
         # set number to be the assistace level held by the master
         # display the number with only 2 decimal places and as a label
-        self.label = tk.Label(master, text=str(self.master.getAssistanceLevel()), font=("Arial", 24))
-        self.label.pack(pady=20)
+        self.label = tk.Label(master, text="Target = " + (str(self.master.getAssistanceLevel())), font=("Arial", 12))
+        self.label.pack()
+        # place at the middle right
+        self.label.place(relx=1, rely=0.20, anchor="se")
+        self.label.config(bg="white")
+        self.label.config(fg="black")
+        self.label.config(width=14)
+        self.label.config(height=1)
+        self.label.config(relief="flat")
+        self.label.config(borderwidth=2)
+        self.label.config(justify="center")
+        self.label.config(anchor="center")
+        self.label.config(pady=7)
+        self.label.config(padx=5)
+        self.label.config(borderwidth=2)
+        self.label.config(highlightbackground="white")
+        self.label.config(highlightcolor="white")
 
         self.animate_number()  # Start the update loop
 
     def animate_number(self):
-        self.label.config(text=str(self.master.getAssistanceLevel()))  # Update the label text
+        self.label.config(text="Target = " + (str(self.master.getAssistanceLevel())))  # Update the label text
         self.master.after(100, self.animate_number)  # Call the function every 1000 ms (1 sec)

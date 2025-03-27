@@ -3,6 +3,8 @@ import time
 import threading
 from Device import realTimeProcessor  # Ensure correct import path
 
+DEBUG = False  # Set to True for debugging output
+
 # Virtual Controller class
 class VirtualController:
     """
@@ -10,7 +12,7 @@ class VirtualController:
     to game controller inputs.
     """
     # used to give/remove user assistance from a researcher when needed, 1.0 is no change at all
-    user_assistance = 1.0
+    user_target = 1.0
     # the amount of assistance to give or remove
     assistance_diference = 0.05
 
@@ -24,30 +26,59 @@ class VirtualController:
         self._isOn = False
         self.update_thread = None
 
-        # active sensor 
-        self.sensor_left = 6 
-        self.sensor_right = 7 # sensor 6 and 7 and the foot sensors and will be the default
+        # active sensor
+        self.sensorIndex = 0 # used to change the active sensors
+        self.sensor_left = 6  # sensor 6 and 7 and the foot sensors 
+        self.sensor_right = 7 # and will be the default
+
+        # when the trigger is pulled to the value "target_trigger" 
+        # the game will register it as reaching a goal
+        self.target_trigger = 155 
 
         print("Virtual controller initialized.", self._realTimeProcessor.getPayloadData())
 
     def addAssistance(self):
         """Add assistance to the user."""
-        self.user_assistance += self.assistance_diference
-        print("User assistance added." + str(self.user_assistance))
+        self.user_target += self.assistance_diference
+        print("User assistance added." + str(self.user_target))
 
     def removeAssistance(self):
         """Remove assistance from the user."""
-        self.user_assistance -= self.assistance_diference
-        print("User assistance removed." + str(self.user_assistance))
+        self.user_target -= self.assistance_diference
+        print("User assistance removed." + str(self.user_target))
 
     def setAssistanceLevel(self, level):
         """Set the user assistance level."""
-        self.user_assistance = level
-        print("User assistance level set to: " + str(self.user_assistance))
+        self.user_target = level
+        print("User assistance level set to: " + str(self.user_target))
         
     def getAssistanceLevel(self):
         """Get the current user assistance level."""
-        return self.user_assistance
+        return self.user_target
+    
+    def setSensor(self, sensorIndex):
+        """Set the active sensor."""
+        self.sensorIndex = sensorIndex
+        
+        case = self.sensorIndex
+        if case == 0:
+            # Use the left foot sensor (Left foot)
+            self.sensor_left = 6
+            self.sensor_right = 6
+        elif case == 1:
+            # Use the right foot sensor (Right foot)
+            self.sensor_left = 7
+            self.sensor_right = 7
+        elif case == 2:
+            # Use the third two sensors (index 10 and 11)
+            self.sensor_left = 6
+            self.sensor_right = 7
+        else:
+            print("Invalid sensor index. Using default sensors.")
+            self.sensor_left = 6
+            self.sensor_right = 7
+        print("Sensor set to: " + str(self.sensorIndex))
+
     
     def stop(self):
         """Stop the virtual controller."""
@@ -89,15 +120,14 @@ class VirtualController:
             # Scale the sensor data to the controller trigger inputs (0-255) 
             # NOTE : The scalling factor will change based on the user's set goals. 
             #        Games will always require a trigger pull value of 180.
-            # NOTE : For demo purposes, we are using the right and left two foot sensor values
 
-            # Assistance can be added by the researcher to make the game easier/harder for the user
 
-            left_sensor = max(0, min(sensor_data[self.sensor_left] * 180 * self.user_assistance, 255))
-            right_sensor = max(0, min(sensor_data[self.sensor_right] * 180 * self.user_assistance, 255))
+            # Set target can be added by the researcher to make the game easier/harder for the user
+            left_sensor = max(0, min((sensor_data[self.sensor_left] / self.user_target ) * self.target_trigger, 255))
+            right_sensor = max(0, min((sensor_data[self.sensor_right] / self.user_target ) * self.target_trigger, 255))
             
             # verbose for debugging
-            if True:
+            if DEBUG:
                 print(f"Left trigger: {left_sensor}, Right trigger: {right_sensor}")
                 print(f"left Sensor: {sensor_data[6]}, right sensor: {sensor_data[7]}")
 
@@ -109,7 +139,7 @@ class VirtualController:
             self._gamepad.update()
 
             # Wait for 100ms before the next update
-            time.sleep(0.5)
+            time.sleep(0.01)
 
     
     
