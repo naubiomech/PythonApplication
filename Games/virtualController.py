@@ -109,7 +109,7 @@ class VirtualController:
             self._gamepad.update()
 
             # Wait for 100ms before the next update
-            time.sleep(0.5)
+            time.sleep(0.001)
 
     
     
