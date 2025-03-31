@@ -27,7 +27,7 @@ class VirtualController:
         self.update_thread = None
 
         # active sensor
-        self.sensorIndex = 0 # used to change the active sensors
+        self.sensor = "none"          # used to change the active sensors
         self.sensor_left = 6  # sensor 6 and 7 and the foot sensors 
         self.sensor_right = 7 # and will be the default
 
@@ -56,28 +56,32 @@ class VirtualController:
         """Get the current user assistance level."""
         return self.user_target
     
-    def setSensor(self, sensorIndex):
+    def setSensor(self, sensor):
         """Set the active sensor."""
-        self.sensorIndex = sensorIndex
+        self.sensor = sensor
         
-        case = self.sensorIndex
-        if case == 0:
+        case = self.sensor
+        if case == "Left":
             # Use the left foot sensor (Left foot)
             self.sensor_left = 6
             self.sensor_right = 6
-        elif case == 1:
+
+        elif case == "Right":
             # Use the right foot sensor (Right foot)
             self.sensor_left = 7
             self.sensor_right = 7
-        elif case == 2:
+
+        elif case == "Left & Right":
             # Use the third two sensors (index 10 and 11)
             self.sensor_left = 6
             self.sensor_right = 7
+            
         else:
             print("Invalid sensor index. Using default sensors.")
             self.sensor_left = 6
             self.sensor_right = 7
-        print("Sensor set to: " + str(self.sensorIndex))
+            print("No Sensor Changed.")
+        print("Sensor set to: " + str(self.sensor))
 
     
     def stop(self):
@@ -112,7 +116,6 @@ class VirtualController:
             # Get the sensor data
             sensor_data = self._realTimeProcessor.getPayloadData()  # Use sensor instance method
             if not isinstance(sensor_data, (list, tuple)) or len(sensor_data) < 9:
-                print("Invalid sensor data received:", sensor_data)
                 time.sleep(0.1)
                 continue
 

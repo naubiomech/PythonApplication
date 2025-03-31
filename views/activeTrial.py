@@ -24,6 +24,8 @@ class ActiveTrial(tk.Frame):
         self.stopGameButton = None
         self.selected_game = None
         self.game_process = None
+        self.sensor_var = tk.StringVar()
+        self.sensor_var.set("Left & Right")  # Default selection
 
         self.chartDropdown = ttk.Combobox(
             self,
@@ -34,6 +36,18 @@ class ActiveTrial(tk.Frame):
                 "Sensor",
             ],
         )
+
+        self.sensorChartDropdown = ttk.Combobox(
+            self,
+            textvariable=self.sensor_var,
+            state="ENABLED",
+            values=[
+                "Left",
+                "Right",
+                "Left & Right",
+            ],
+        )
+
         # Set window size
         self.controller.geometry("920x820")
 
@@ -54,6 +68,12 @@ class ActiveTrial(tk.Frame):
 
         self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
         self.chartDropdown.pack(pady=5, padx=5)
+
+        self.sensorChartDropdown.bind("<<ComboboxSelected>>", self.on_sensor_selection)
+        # Pack the sensor chart dropdown
+        self.sensorChartDropdown.set("Left & Right")  # Set default value
+        # Pack the sensor chart dropdown
+        self.sensorChartDropdown.pack(pady=5, padx=5)
 
         self.currentPlots = [self.topPlot, self.bottomPlot]
         self.plot_update_job = None  # Store the job reference
@@ -359,6 +379,15 @@ class ActiveTrial(tk.Frame):
         # Determine which plots to show
         selection = self.chartVar.get()
         self.update_plots(selection)
+    
+    def on_sensor_selection(self, event=None):
+        # Get the selected sensor from the dropdown
+        selected_sensor = self.sensor_var.get()
+
+        # Update the virtual controller with the selected sensor
+        self.controller.virtualController.setSensor(selected_sensor)
+
+
 
     def disable_interactions(self):
         # Disable all interactive elements
