@@ -53,7 +53,7 @@ class ActiveTrial(tk.Frame):
         self.create_game_widgets()
 
         self.chartDropdown.bind("<<ComboboxSelected>>", self.newSelection)
-        self.chartDropdown.pack(pady=10, padx=10)
+        self.chartDropdown.pack(pady=5, padx=5)
 
         self.currentPlots = [self.topPlot, self.bottomPlot]
         self.plot_update_job = None  # Store the job reference
@@ -73,7 +73,7 @@ class ActiveTrial(tk.Frame):
 
         # Game Label
         gameLabel = tk.Label(game_frame, text="Game Controls", font=("Arial", 20))
-        gameLabel.pack(side=TOP, anchor=N, pady=10)
+        gameLabel.pack(side=TOP, anchor=N, pady=6)
 
         # Select Game Button
         self.selectGameButton = tk.Button(
@@ -118,12 +118,13 @@ class ActiveTrial(tk.Frame):
                 height = 1, 
                 width = 10) 
         
-        self.assistanceText.pack(side=RIGHT, padx=3, pady=2) 
+        self.assistanceText.pack(side=RIGHT, padx=3) 
+        self.assistanceText.insert("1.0", "1.0")  # Insert default text
 
         # Create a button that then sets the assistance level to the value input into the assistanceText
         self.setAssistanceButton = tk.Button(
             game_frame,
-            text="Set Assistance",
+            text="Set Target",
             height=2,
             width=10,
             command=self.setAssistanceButtonClicked
@@ -134,6 +135,7 @@ class ActiveTrial(tk.Frame):
         removeAssistanceGameButton = tk.Button(
             game_frame,
             text="-",
+            font=("Arial", 10),
             height=2,
             width=5,
             command=self.remove_assistance
@@ -144,18 +146,13 @@ class ActiveTrial(tk.Frame):
         addAssistanceGameButton = tk.Button(
             game_frame,
             text="+",
+            font=("Arial", 10),
             height=2,
             width=5,
             command=self.add_assistance
         )
         addAssistanceGameButton.pack(side=RIGHT, padx=3) 
 
-       
-        
-
-        
-
-    
 
         
 
