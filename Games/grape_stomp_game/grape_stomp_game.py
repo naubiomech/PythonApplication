@@ -128,6 +128,7 @@ def game():
     #set step variables
     total_step_count = 0
     full_steps_count = 0
+    prev_total_steps = total_step_count
 
     #get frames from the sprite sheet
     man_left = sprite_sheet.subsurface((235, 0, frame_width, frame_height))
@@ -171,6 +172,11 @@ def game():
         #initialize display settings
         total_steps_toggle = False
         full_steps_toggle = False 
+        #initialize prev steps for left and right
+        prev_left = 0.0
+        prev_right = 0.0
+        #initialize the current step
+        curr_step = 0
 
 
         #main game loop
@@ -347,35 +353,30 @@ def game():
             r_trig = cont.get_axis(5)
             exit_button = cont.get_button(2)
 
-            #NOTE this line is commented out, swaping the below if statement will prevent
-            #repeated steps with the same foot, as is a player can spam one leg
-
-            #if l_trig > 0.1 and man_sprite != scaled_left and r_trig < 0.1:
-            if l_trig > 0.1:
+            #check for any controller input
+            if (prev_left <= 0.1 and l_trig > 0.1):
+                #set the current step
+                curr_step = l_trig
                 #TEST LINE TO DISPLAY STEP VALUE
                 #print(str(l_trig))
-                #update step frame
-                man_sprite = scaled_left
                 #increment total step count
                 total_step_count += 1
                 #update juice level
                 juice_lvl = l_trig
+
                 #check if step exceeded the step threshold
                 if l_trig >= step_thresh:
                     #play step sound
                     step_sound.play()
                     #increment full step count
                     full_steps_count += 1
-                    
-            #NOTE this line is commented out, swaping the below if statement will prevent
-            #repeated steps with the same foot, as is a player can spam one leg
-            
-            #elif r_trig > 0.1 and man_sprite != scaled_right and l_trig < 0.1:
-            elif r_trig > 0.1:
+
+            #check for any controller input
+            if (prev_right <= 0.1 and r_trig > 0.1):
+                #set the current step
+                curr_step = r_trig
                 #TEST LINE TO DISPLAY STEP VALUE
-                #print(str(r_trig))
-                #update step frame
-                man_sprite = scaled_right
+                #print(str(l_trig))
                 #increment total step count
                 total_step_count += 1
                 #update juice level
@@ -385,11 +386,31 @@ def game():
                     #play step sound
                     step_sound.play()
                     #increment full step count
-                    full_steps_count += 1
+                    full_steps_count += 1                  
+
+            #check for increase in step count
+            if(total_step_count > prev_total_steps):
+                #check for sprite left
+                if(man_sprite == scaled_left):
+                    #set new sprite
+                    man_sprite = scaled_right
+
+                #check for sprite right
+                elif(man_sprite == scaled_right):
+                    #set new sprite
+                    man_sprite = scaled_left
+                
+                #update the new prev_total_steps
+                prev_total_steps = total_step_count
+
 
             #condition to check for game exit
             elif exit_button:
                 running = False
+
+            #update the prev_steps
+            prev_left = l_trig
+            prev_right = r_trig
 
             #draw juice level in the bottle
             fill_height = juice_lvl * JUICE_HEIGHT
@@ -451,6 +472,13 @@ def game():
             #calculate the threshold y value
             threshold_y = juice_y + JUICE_HEIGHT - (step_thresh * JUICE_HEIGHT)
             pygame.draw.line(screen, BLACK, (juice_x, threshold_y), (juice_x + JUICE_WIDTH, threshold_y), 8)
+
+            #display the step progress percentage
+            step_perc_msg = pygame.font.Font(None, 40)
+            curr_step_int = int(round(curr_step * 100, 0))
+            step_perc = str(curr_step_int) + "%"
+            step_perc_text = step_perc_msg.render(step_perc, True, BLACK)
+            screen.blit(step_perc_text, (715, 60))  
 
             #update screen
             pygame.display.flip()
