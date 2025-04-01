@@ -168,15 +168,13 @@ def game():
         #initialize juice starting level
         juice_lvl = 0
         #initialize max step threshold
-        step_thresh = 0.9
+        step_thresh = 0.6
         #initialize display settings
         total_steps_toggle = False
         full_steps_toggle = False 
         #initialize prev steps for left and right
         prev_left = 0.0
         prev_right = 0.0
-        #initialize the current step
-        curr_step = 0
 
 
         #main game loop
@@ -355,15 +353,10 @@ def game():
 
             #check for any controller input
             if (prev_left <= 0.1 and l_trig > 0.1):
-                #set the current step
-                curr_step = l_trig
                 #TEST LINE TO DISPLAY STEP VALUE
                 #print(str(l_trig))
                 #increment total step count
                 total_step_count += 1
-                #update juice level
-                juice_lvl = l_trig
-
                 #check if step exceeded the step threshold
                 if l_trig >= step_thresh:
                     #play step sound
@@ -373,14 +366,10 @@ def game():
 
             #check for any controller input
             if (prev_right <= 0.1 and r_trig > 0.1):
-                #set the current step
-                curr_step = r_trig
                 #TEST LINE TO DISPLAY STEP VALUE
                 #print(str(l_trig))
                 #increment total step count
                 total_step_count += 1
-                #update juice level
-                juice_lvl = r_trig
                 #check if step exceeded the step threshold
                 if r_trig >= step_thresh:
                     #play step sound
@@ -407,6 +396,10 @@ def game():
             #condition to check for game exit
             elif exit_button:
                 running = False
+
+            #set the juice level to the step pressure value
+            step = max(l_trig, r_trig)
+            juice_lvl = step
 
             #update the prev_steps
             prev_left = l_trig
@@ -473,9 +466,14 @@ def game():
             threshold_y = juice_y + JUICE_HEIGHT - (step_thresh * JUICE_HEIGHT)
             pygame.draw.line(screen, BLACK, (juice_x, threshold_y), (juice_x + JUICE_WIDTH, threshold_y), 8)
 
+            #check for negative step value
+            if(step < 0):
+                #set the step value to zero for proper display
+                step = 0
+
             #display the step progress percentage
             step_perc_msg = pygame.font.Font(None, 40)
-            curr_step_int = int(round(curr_step * 100, 0))
+            curr_step_int = int(round(step * 100, 0))
             step_perc = str(curr_step_int) + "%"
             step_perc_text = step_perc_msg.render(step_perc, True, BLACK)
             screen.blit(step_perc_text, (715, 60))  
