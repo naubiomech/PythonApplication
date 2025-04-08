@@ -237,7 +237,7 @@ def run_game(just_clicked):
                 if new_frame_index > frame_index and inflate_sound and not is_muted:
                     inflate_sound.play()
                 frame_index = new_frame_index
-                if intensity >= 99 and not balloon_full:
+                if intensity >= 60 and not balloon_full:
                     balloon_full = True
                     congrats_display_timer = pygame.time.get_ticks()
                     if not balloon_fully_inflated and ding_sound:
@@ -266,6 +266,11 @@ def run_game(just_clicked):
         intensity_bar_y = 20
         pygame.draw.rect(screen, BLACK, (intensity_bar_x, intensity_bar_y, intensity_bar_width, intensity_bar_height), 2)
         pygame.draw.rect(screen, PURPLE, (intensity_bar_x, intensity_bar_y, (intensity / 100) * intensity_bar_width, intensity_bar_height))
+        
+
+         # Draw line at 60% threshold
+        threshold_x = intensity_bar_x + 0.6 * intensity_bar_width
+        pygame.draw.line(screen, GREEN, (threshold_x, intensity_bar_y), (threshold_x, intensity_bar_y + intensity_bar_height), 2)
         intensity_text = font.render(f"Intensity: {int(intensity)}%", True, BLACK)
         screen.blit(intensity_text, (intensity_bar_x + (intensity_bar_width - intensity_text.get_width()) // 2,
                                      intensity_bar_y + intensity_bar_height + 5))
