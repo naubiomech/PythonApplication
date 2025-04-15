@@ -11,6 +11,9 @@ os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 pygame.init()
 pygame.joystick.init()
 
+# set sensor
+active_trigger = "both"
+
 # Screen setup
 DEFAULT_WIDTH, DEFAULT_HEIGHT = 800, 600
 screen = pygame.display.set_mode((DEFAULT_WIDTH, DEFAULT_HEIGHT), pygame.RESIZABLE)
@@ -302,19 +305,24 @@ def run_game(just_clicked):
         if joystick and congrats_display_timer == 0:
             lt = joystick.get_axis(LT_AXIS)
             rt = joystick.get_axis(RT_AXIS)
+
+            # Check which trigger to use based on selected mode
             current_value = None
 
-            # Choose trigger with greater if value if two sensors pressed at same time
-            if lt > min_threshold and rt > min_threshold:
-                current_value = lt if lt > rt else rt
-            
-            # Choose left trigger if pressed
-            elif lt > min_threshold:
+            if active_trigger == "left" and lt > min_threshold:
                 current_value = lt
-            
-            # Choose right trigger if pressed
-            elif rt > min_threshold:
+            elif active_trigger == "right" and rt > min_threshold:
                 current_value = rt
+            elif active_trigger == "both":
+                
+                # Use the stronger trigger if both pressed
+                if lt > min_threshold and rt > min_threshold:
+                    current_value = lt if lt > rt else rt
+                elif lt > min_threshold:
+                    current_value = lt
+                elif rt > min_threshold:
+                    current_value = rt
+
 
             if current_value is not None:
                 normalized_intensity = ((current_value + 1) / 2) * 100
