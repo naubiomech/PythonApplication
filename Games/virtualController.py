@@ -1,4 +1,6 @@
-import vgamepad as vg
+import platform
+if (platform.system() != "Darwin"): # check if a macOS system
+    import vgamepad as vg
 import time
 import threading
 from Device import realTimeProcessor  # Ensure correct import path
