@@ -1,5 +1,4 @@
 import tkinter as tk
-import platform
 
 from async_tkinter_loop import async_handler, async_mainloop
 
@@ -20,11 +19,7 @@ class ControllerApp(tk.Tk):
         self.deviceManager = exoDeviceManager.ExoDeviceManager()
 
         # Initialize the virtual controller, giving it the real time processor and sensor ID
-        if (platform.system() == "Darwin"):
-            from Games.MacVirtualController import MacVirtualController
-            self.virtualController = MacVirtualController(self.deviceManager._realTimeProcessor, 1)
-        else:
-            self.virtualController = VirtualController(self.deviceManager._realTimeProcessor, 1) 
+        self.virtualController = VirtualController(self.deviceManager._realTimeProcessor, 1) 
         
         self.title("NAU Lab of Biomechatronics")
         self.geometry("920x720")
