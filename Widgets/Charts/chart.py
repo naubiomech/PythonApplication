@@ -9,44 +9,69 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class BasePlot:
+    figure_size = (7, 2.5)
     def __init__(self, master, title):
         self.master = master
         self.title = title
-        self.figure = plt.Figure(figsize=(6, 2))
+        self.figure = plt.Figure(figsize=BasePlot.figure_size)
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.xValues = []
         self.yValues = []
         self.secondY = []
 
+        # Plot initialization
+        self.line1, = self.ax.plot([], [], label='Controller Value', color='blue')
+        self.line2, = self.ax.plot([], [], label='Measurement Value', color='red')
+
+        self.ax.set_xticks([])  # Hide x-ticks for simplicity
+        self.ax.set_title(title)
+
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.master)
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack()
+        self.canvas.get_tk_widget().grid()
 
     def animate(self):
         raise NotImplementedError("Subclasses should implement this method")
+   
+    @classmethod
+    def set_figure_size(cls, size):
+        """Set the figure size for all plots."""
+        cls.figure_size = size
 
-    def update_plot(self, xValues, yValues, secondY, title):
-        xValues = xValues[-20:]
-        yValues = yValues[-20:]
-        secondY = secondY[-20:]
+    def update_plot(self, xValues, yValues, secondY, bottomLim, topLim, title):
+        max_points = 20  # Keep only the last 20 points
+        if len(xValues) > max_points:
+            xValues = xValues[-max_points:]
+            yValues = yValues[-max_points:]
+            secondY = secondY[-max_points:]
+        # Update line data
+        self.line1.set_data(xValues, yValues)
+        self.line2.set_data(xValues, secondY)
 
-        self.ax.clear()
-        self.ax.plot(xValues, yValues)
-        self.ax.plot(xValues, secondY)
-        self.ax.set_ylim(auto=True)
-        self.ax.set_xticks([])
+        # Efficiently redraw only the updated parts
+        self.ax.relim()  # Recalculate limits based on new data
+        self.ax.autoscale(enable=True, axis='both', tight=False)
+
+        # Update title dynamically
         self.ax.set_title(title)
-        
+
+        # Draw without clearing axes
+        self.canvas.draw_idle()
+        self.canvas.flush_events()
+
+    def refresh_figure(self):
+        """Refresh the figure if the size is updated."""
+        self.figure.set_size_inches(BasePlot.figure_size)
         self.canvas.draw()
-
-
+        
 class TopPlot(BasePlot):
     def __init__(self, master):
         super().__init__(master, "Left Torque")
-
     def animate(self, chartSelection):
         topController = None
         title = " "
+        bottomLimit = -1
+        topLimit = 1
         if chartSelection == "Controller":
             topController = (
                 self.master.controller.deviceManager._realTimeProcessor._chart_data.leftTorque
@@ -63,6 +88,9 @@ class TopPlot(BasePlot):
                 self.master.controller.deviceManager._realTimeProcessor._chart_data.leftFsr
             )
             title = "Sensor"
+            bottomLimit = 0
+            topLimit = 1.1
+
         if topController is None or topMeasure is None:
             topController = 0
             topMeasure = 0
@@ -71,7 +99,7 @@ class TopPlot(BasePlot):
         self.yValues.append(topController)
         self.secondY.append(topMeasure)
 
-        self.update_plot(self.xValues, self.yValues, self.secondY, title)
+        self.update_plot(self.xValues, self.yValues, self.secondY, bottomLimit,topLimit,title)
 
 
 class BottomPlot(BasePlot):
@@ -80,7 +108,8 @@ class BottomPlot(BasePlot):
 
     def animate(self, chartSelection):
         topController = None
-        title = " "
+        bottomLimit = -1
+        topLimit = 1
         if chartSelection == "Controller":
             topController = (
                 self.master.controller.deviceManager._realTimeProcessor._chart_data.rightTorque
@@ -96,6 +125,8 @@ class BottomPlot(BasePlot):
             topMeasure = (
                 self.master.controller.deviceManager._realTimeProcessor._chart_data.rightFsr
             )
+            bottomLimit = 0
+            topLimit = 1.1
             title = "Sensor"
 
         if topController is None or topMeasure is None:
@@ -106,7 +137,7 @@ class BottomPlot(BasePlot):
         self.yValues.append(topController)
         self.secondY.append(topMeasure)
 
-        self.update_plot(self.xValues, self.yValues, self.secondY, title)
+        self.update_plot(self.xValues, self.yValues, self.secondY, bottomLimit,topLimit,title)
 
 class FSRPlot(BasePlot):
     def __init__(self, master, goal=None):
@@ -124,8 +155,9 @@ class FSRPlot(BasePlot):
 
     def animate(self, chartSelection):
         topMeasure  = None
-
         title = " "
+        bottomLimit = 0
+        topLimit = 1.1
         if chartSelection == "Left Leg":
             topMeasure = (
                 self.master.controller.deviceManager._realTimeProcessor._chart_data.leftFsr
@@ -153,35 +185,4 @@ class FSRPlot(BasePlot):
             elif topMeasure <= self.goal:
                 self.above_goal = False  # Reset the flag when it goes below or equal to the goal
 
-        self.update_plot(self.xValues, self.yValues, self.secondY, title)
-
-class AssistanceAnimator(tk.Frame):
-    def __init__(self, master):
-        tk.Frame.__init__(self, master)
-        self.master = master
-
-        # set number to be the assistace level held by the master
-        # display the number with only 2 decimal places and as a label
-        self.label = tk.Label(master, text="Target = " + (str(self.master.getAssistanceLevel())), font=("Arial", 12))
-        self.label.pack()
-        # place at the middle right
-        self.label.place(relx=1, rely=0.20, anchor="se")
-        self.label.config(bg="white")
-        self.label.config(fg="black")
-        self.label.config(width=14)
-        self.label.config(height=1)
-        self.label.config(relief="flat")
-        self.label.config(borderwidth=2)
-        self.label.config(justify="center")
-        self.label.config(anchor="center")
-        self.label.config(pady=7)
-        self.label.config(padx=5)
-        self.label.config(borderwidth=2)
-        self.label.config(highlightbackground="white")
-        self.label.config(highlightcolor="white")
-
-        self.animate_number()  # Start the update loop
-
-    def animate_number(self):
-        self.label.config(text="Target = " + (str(self.master.getAssistanceLevel())))  # Update the label text
-        self.master.after(100, self.animate_number)  # Call the function every 1000 ms (1 sec)
+        self.update_plot(self.xValues, self.yValues, self.secondY, bottomLimit , topLimit, title)

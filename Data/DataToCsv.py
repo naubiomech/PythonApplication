@@ -4,11 +4,13 @@ from datetime import datetime
 
 
 class CsvWritter:
-    def writeToCsv(self, exoData):
+    def writeToCsv(self, exoData, disconnected=False):
         print("Creating filedata")
         # initialize array for output file
         fileData = []
+
         # establish field arrays for output file
+        timestamps = ["EpochTimestamp"]  # New field for epoch time
         tStep = ["TStep"]
         rTorque = ["RTorque"]
         rSetP = ["RSetP"]
@@ -32,7 +34,7 @@ class CsvWritter:
         Task = ["Task"]
         mark = ["Mark"]
 
-        # append data to field array
+
         for xt in exoData.tStep:
             tStep.append(xt)
         for rT in exoData.rTorque:
@@ -71,8 +73,12 @@ class CsvWritter:
             swingtime.append(moment)
         for tS in exoData.tStep:
             tStep.append(tS)
+        # Add the epoch timestamps (current time in seconds) to the timestamps list
+        for _ in exoData.epochTime:
+            timestamps.append(_)
 
         # add field array with data to output file
+        fileData.append(timestamps)
         fileData.append(tStep)
         fileData.append(rTorque)
         fileData.append(rSetP)
@@ -97,12 +103,15 @@ class CsvWritter:
         fileDataTransposed = self.rotateArray(fileData)
         print("flipping array")
 
-        today = datetime.now()  # Pull system time and date
-        fileName = today.strftime(
-            "%Y-%b-%d-%H-%M-%S"
-        )  # Format file name based on YYYY-MM-DD-HH:MM:SS
-        fileName += ".csv"  # Add .csv to file name
-        print("file is: ", fileName)
+        today = datetime.now()
+        base_file_name = today.strftime("%Y-%b-%d-%H-%M-%S")
+        
+        # Append disconnection notice to filename if applicable
+        if disconnected:
+            fileName = f"{base_file_name}_disconnected.csv"
+        else:
+            fileName = f"{base_file_name}.csv"
+
 
         with open(fileName, "w") as csvFile:  # Open file with file name
             csvwriter = csv.writer(csvFile)  # Prep file for csv data

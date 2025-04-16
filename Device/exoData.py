@@ -1,8 +1,11 @@
 from tkinter import StringVar
+from datetime import datetime
+
 class ExoData:
     def __init__(self):
         self.tStep = []
         self.rTorque = []
+        self.epochTime = []  # New list to store epoch timestamps
         self.rSetP = []
         self.rState = []
         self.lTorque = []
@@ -48,6 +51,8 @@ class ExoData:
         Task,
         Battery, 
     ):
+        timestamp = int(datetime.now().timestamp())  # Current epoch time
+        self.epochTime.append(timestamp)  # New list for epoch time
         self.tStep.append(x_Time)
         self.rTorque.append(rightToque)
         self.rSetP.append(rightSet)
