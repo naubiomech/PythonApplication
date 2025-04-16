@@ -7,6 +7,7 @@ import time
 import tkinter.messagebox as messagebox
 import os
 import subprocess
+import asyncio
 
 
 from tkinter import (BOTTOM, CENTER, LEFT, RIGHT, TOP, E, IntVar, N, StringVar,

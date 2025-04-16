@@ -156,48 +156,67 @@ class VirtualController:
 
 class MacSocketController(VirtualController):
     """
-    A macOS-compatible virtual controller that sends data over a socket
-    instead of using vGamepad.
+    A macOS-compatible virtual controller that acts as a server and sends data
+    to connected clients over a socket.
     """
 
     def __init__(self, realTimeProcessor, sensorID, host="localhost", port=9999):
         super().__init__(realTimeProcessor, sensorID)
         self._host = host
         self._port = port
-        self._socket = None
+        self._server_socket = None
+        self._client_socket = None
+        self.server_thread = None  # Thread for running the server
 
     def create(self):
-        """Create and start the socket-based controller."""
+        """Start the server in a separate thread."""
         if self._isOn:
             print("No new Virtual controller created.")
             raise ValueError("The virtual controller is already running.")
-        
-        try:
-            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._socket.connect((self._host, self._port))
-            print(f"Socket connected to {self._host}:{self._port}")
-        except Exception as e:
-            print(f"Socket connection error: {e}")
-            return
 
         self._isOn = True
-        print("MacSocketController started.")
-        self.update_thread = threading.Thread(target=self.update_loop)
-        self.update_thread.daemon = True
-        self.update_thread.start()
+        self.server_thread = threading.Thread(target=self.run_server)
+        self.server_thread.daemon = True  # Ensure the thread exits when the main program exits
+        self.server_thread.start()
+        print("MacSocketController server thread started.")
+        
+    def run_server(self):
+        """Run the socket server to accept client connections."""
+        try:
+            # Create a server socket
+            self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._server_socket.bind((self._host, self._port))
+            self._server_socket.listen(1)  # Listen for one client
+            print(f"Server listening on {self._host}:{self._port}...")
+
+            # Accept a client connection
+            self._client_socket, client_address = self._server_socket.accept()
+            print(f"Connection established with {client_address}")
+
+            # Start the update loop to send data to the client
+            self.update_thread = threading.Thread(target=self.update_loop)
+            self.update_thread.daemon = True
+            self.update_thread.start()
+
+        except Exception as e:
+            print(f"Socket server error: {e}")
+            self.stop()
 
     def stop(self):
         """Stop the controller and close the socket."""
         if self._isOn:
             self._isOn = False
             self.update_thread.join()
-            if self._socket:
-                self._socket.close()
+            if self._client_socket:
+                self._client_socket.close()
+            if self._server_socket:
+                self._server_socket.close()
             print("MacSocketController stopped.")
         else:
             print("No existing MacSocketController to stop.")
 
     def update_loop(self):
+        """Send sensor data to the connected client."""
         while self._isOn:
             sensor_data = self._realTimeProcessor.getPayloadData()
             if not isinstance(sensor_data, (list, tuple)) or len(sensor_data) < 9:
@@ -210,13 +229,13 @@ class MacSocketController(VirtualController):
             if DEBUG:
                 print(f"Left trigger: {left_sensor}, Right trigger: {right_sensor}")
 
-            # Send the values over socket
+            # Send the values over the client socket
             try:
                 payload = json.dumps({
                     "left_trigger": int(left_sensor),
                     "right_trigger": int(right_sensor)
                 }).encode("utf-8")
-                self._socket.sendall(payload + b"\n")
+                self._client_socket.sendall(payload + b"\n")
             except Exception as e:
                 print(f"Socket send error: {e}")
                 self.stop()
