@@ -1,4 +1,12 @@
-import vgamepad as vg
+import socket
+import json
+import sys
+import os
+import platform
+# Add the parent directory to the system path
+if platform.system() != "Darwin":
+    # macOS
+    import vgamepad as vg
 import time
 import threading
 from Device import realTimeProcessor  # Ensure correct import path
@@ -145,7 +153,77 @@ class VirtualController:
             time.sleep(0.01)
 
     
-    
+
+class MacSocketController(VirtualController):
+    """
+    A macOS-compatible virtual controller that sends data over a socket
+    instead of using vGamepad.
+    """
+
+    def __init__(self, realTimeProcessor, sensorID, host="localhost", port=9999):
+        super().__init__(realTimeProcessor, sensorID)
+        self._host = host
+        self._port = port
+        self._socket = None
+
+    def create(self):
+        """Create and start the socket-based controller."""
+        if self._isOn:
+            print("No new Virtual controller created.")
+            raise ValueError("The virtual controller is already running.")
+        
+        try:
+            self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._socket.connect((self._host, self._port))
+            print(f"Socket connected to {self._host}:{self._port}")
+        except Exception as e:
+            print(f"Socket connection error: {e}")
+            return
+
+        self._isOn = True
+        print("MacSocketController started.")
+        self.update_thread = threading.Thread(target=self.update_loop)
+        self.update_thread.daemon = True
+        self.update_thread.start()
+
+    def stop(self):
+        """Stop the controller and close the socket."""
+        if self._isOn:
+            self._isOn = False
+            self.update_thread.join()
+            if self._socket:
+                self._socket.close()
+            print("MacSocketController stopped.")
+        else:
+            print("No existing MacSocketController to stop.")
+
+    def update_loop(self):
+        while self._isOn:
+            sensor_data = self._realTimeProcessor.getPayloadData()
+            if not isinstance(sensor_data, (list, tuple)) or len(sensor_data) < 9:
+                time.sleep(0.1)
+                continue
+
+            left_sensor = max(0, min((sensor_data[self.sensor_left] / self.user_target) * self.target_trigger, 255))
+            right_sensor = max(0, min((sensor_data[self.sensor_right] / self.user_target) * self.target_trigger, 255))
+
+            if DEBUG:
+                print(f"Left trigger: {left_sensor}, Right trigger: {right_sensor}")
+
+            # Send the values over socket
+            try:
+                payload = json.dumps({
+                    "left_trigger": int(left_sensor),
+                    "right_trigger": int(right_sensor)
+                }).encode("utf-8")
+                self._socket.sendall(payload + b"\n")
+            except Exception as e:
+                print(f"Socket send error: {e}")
+                self.stop()
+                break
+
+            time.sleep(0.01)
+
         
             
 

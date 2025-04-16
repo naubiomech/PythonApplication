@@ -1,4 +1,5 @@
 import tkinter as tk
+import platform
 from tkinter import messagebox 
 from async_tkinter_loop import async_handler, async_mainloop
 
@@ -7,7 +8,7 @@ from views.activeTrial import ActiveTrial
 from views.activeTrialSettings import UpdateTorque
 from views.bioFeedback import BioFeedback
 from views.machineLearning import MachineLearning
-from Games.virtualController import VirtualController
+from Games.virtualController import VirtualController, MacSocketController
 
 from views.scanWindow import ScanWindow
 
@@ -17,7 +18,12 @@ class ControllerApp(tk.Tk):
         self.trial = exoTrial.ExoTrial(True, 1, True)
         self.deviceManager = exoDeviceManager.ExoDeviceManager()
         # Initialize the virtual controller, giving it the real time processor and sensor ID
-        self.virtualController = VirtualController(self.deviceManager._realTimeProcessor, 1)
+        if platform.system() != "Darwin":
+            # Is a windows/linux system
+            self.virtualController = VirtualController(self.deviceManager._realTimeProcessor, 1)
+        else:
+            # Is a macOS system
+            self.virtualController = MacSocketController(self.deviceManager._realTimeProcessor, 1)
         self.title("OpenExo GUI V1.01")
         self.geometry("920x720")
         self.minsize(900, 700)
