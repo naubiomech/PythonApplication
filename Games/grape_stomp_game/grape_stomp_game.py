@@ -4,6 +4,7 @@ import sys
 import os
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
+#initialize pygame
 pygame.init()
 
 #controller initialization
@@ -14,7 +15,7 @@ num_controllers = pygame.joystick.get_count()
 clock = pygame.time.Clock()
 
 #constants
-WIDTH, HEIGHT = 800, 600
+INITIAL_WIDTH, INITIAL_HEIGHT = 800, 600
 FPS = 60
 
 # colors
@@ -24,102 +25,128 @@ PURPLE = (119,0,200)
 GREEN = (0,255,0)
 BLACK = (0,0,0)
 
-# Create the game window
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+#open the game window
+screen = pygame.display.set_mode((INITIAL_WIDTH, INITIAL_HEIGHT), pygame.RESIZABLE)
 pygame.display.set_caption("Grape Stomp!")
 
-# load the sprite sheet and define frame dimensions
 #initialize menu button locations
 start = pygame.Rect(150, 200, 200, 100)
 quit_button = pygame.Rect(450, 200, 200, 100)
 results = pygame.Rect(300, 350, 200, 100)
 
-#initialize the step counts for end game display
-global total_step_count, full_steps_count
-
 #main menu function, should be running for full duration of game behind game screen
 def main_menu():
+
+    #set the screen variables as global
+    global screen
     #initialize starting values
     game_running = True
+    #initialize the step counts for end game display
     total_step_count = 0
     full_steps_count = 0
+    
     #begin main menu loop
     while game_running:
+
+        #set the base surface for screen scaling
+        base_surface = pygame.Surface((INITIAL_WIDTH, INITIAL_HEIGHT))
+        #set base color
+        base_surface.fill(GREY)
+
         for event in pygame.event.get():
             #check for user close window
             if event.type == pygame.QUIT:
                 game_running = False
+
+            #check for user resizing
+            if event.type == pygame.VIDEORESIZE:
+                #collect the screen data when user resizes window
+                screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
             #check for mouse position
             if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse = event.pos
-                #check for which button clicked
-                if start.collidepoint(mouse):
+
+                #scale mouse positions
+                scale_x = screen.get_width() / INITIAL_WIDTH
+                scale_y = screen.get_height() / INITIAL_HEIGHT
+                #set mouse positions
+                mouse_x, mouse_y = event.pos[0] / scale_x, event.pos[1] / scale_y
+                #check for user select button
+                if start.collidepoint((mouse_x, mouse_y)):
+                    #run game
                     total_step_count, full_steps_count = game()
-                elif quit_button.collidepoint(mouse):
+                #otherwise assume user attempting to exit
+                elif quit_button.collidepoint((mouse_x, mouse_y)):
+                    #stop the game
                     game_running = False
+                    #close the window
                     pygame.quit()
                     sys.exit()
 
-        #display the screen as grey
-        screen.fill(GREY)
+        #display game title
         text = pygame.font.Font(None, 70)
         complete_text = text.render("Grape Stomp!", True, BLACK)
-        screen.blit(complete_text, (250, 100))
+        #write title to screen
+        base_surface.blit(complete_text, (INITIAL_WIDTH // 2 - complete_text.get_width() // 2, 100))
 
-        #create the buttons for the start menu
-        pygame.draw.rect(screen, PURPLE, start)
-        pygame.draw.rect(screen, PURPLE, quit_button)
+        #draw the menu buttons
+        pygame.draw.rect(base_surface, PURPLE, start)
+        pygame.draw.rect(base_surface, PURPLE, quit_button)
 
         #display game controls
         text = pygame.font.Font(None, 30)
-        contols_text = text.render("Move your legs to play and fill as many bottles as you can!", True, BLACK)
-        screen.blit(contols_text, (125, 350))
-        text = pygame.font.Font(None, 30)
-        contols_text = text.render('Press "esc" to exit and "p" to pause!', True, BLACK)
-        screen.blit(contols_text, (225, 380))
+        controls_text = text.render("Move your legs to play and fill as many bottles as you can!", True, BLACK)
+        base_surface.blit(controls_text, (125, 350))
+        controls_text = text.render('Press "esc" to exit and "p" to pause!', True, BLACK)
+        base_surface.blit(controls_text, (225, 380))
 
         #display the end game step counts
         if total_step_count > 0:
-            #display the results header
+            #display header
             text = pygame.font.Font(None, 40)
-            total_steps_results = text.render("Session Results:", True, (0, 0, 0))
-            screen.blit(total_steps_results, (125, 460))
-            #display the steps
+            total_steps_results = text.render("Session Results:", True, BLACK)
+            base_surface.blit(total_steps_results, (125, 460))
+            #display total steps
             text = pygame.font.Font(None, 30)
-            total_steps_results = text.render(f"Total Steps taken: {total_step_count}", True, (0, 0, 0))
-            screen.blit(total_steps_results, (125, 500))
-            full_steps_results = text.render(f"Full Steps taken: {full_steps_count}", True, (0, 0, 0))
-            screen.blit(full_steps_results, (125, 525))
-
+            total_steps_results = text.render(f"Total Steps taken: {total_step_count}", True, BLACK)
+            base_surface.blit(total_steps_results, (125, 500))
+            #display the full steps taken
+            full_steps_results = text.render(f"Full Steps taken: {full_steps_count}", True, BLACK)
+            base_surface.blit(full_steps_results, (125, 525))
 
         #create the start button
         button_text = pygame.font.Font(None, 50)
         start_button_text = button_text.render("Start Game", True, BLACK)
-        start_button = start_button_text.get_rect(center=start.center)
-        screen.blit(start_button_text, start_button)
-
-        #create the exit button
+        #scale button to screen
+        base_surface.blit(start_button_text, (start.x + start.width//2 - start_button_text.get_width()//2, 
+                                           start.y + start.height//2 - start_button_text.get_height()//2))
+        #create the quit button
         exit_button_text = button_text.render(" Exit Game", True, BLACK)
-        exit_button = exit_button_text.get_rect(center=quit_button.center)
-        screen.blit(exit_button_text, exit_button)
+        #scale button to screen
+        base_surface.blit(exit_button_text, (quit_button.x + quit_button.width//2 - exit_button_text.get_width()//2, 
+                                          quit_button.y + quit_button.height//2 - exit_button_text.get_height()//2))
 
-        #check for buttons clicked
-        if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse = event.pos
+        #collect the scaled screen data
+        stretched_screen = pygame.transform.scale(base_surface, (screen.get_width(), screen.get_height()))
+        #display screen
+        screen.blit(stretched_screen, (0, 0))
 
+        #update the screen
         pygame.display.flip()
         clock.tick(FPS)
 
 
 #game loop function
 def game():
+    #set screen as global
+    global screen
 
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
     # load the sprite sheet and define frame dimensions
     bg = pygame.image.load(os.path.join(BASE_DIR, "landscape.jpg"))
-    sprite_sheet = pygame.image.load(os.path.join(BASE_DIR, "Walk.png")) 
-    frame_width = 19  
-    frame_height = 28  
+    sprite_sheet = pygame.image.load(os.path.join(BASE_DIR, "Walk.png"))   
+    frame_width = 36  
+    frame_height = 48  
     scale_factor = 15
 
     #load the audio file
@@ -131,36 +158,44 @@ def game():
     prev_total_steps = total_step_count
 
     #get frames from the sprite sheet
-    man_left = sprite_sheet.subsurface((235, 0, frame_width, frame_height))
+    man_left = sprite_sheet.subsurface((111, 0, frame_width, frame_height))
     scaled_left = pygame.transform.scale(man_left, (frame_width * scale_factor, frame_height * scale_factor))
-    man_right = sprite_sheet.subsurface((95, 0, frame_width, frame_height))
+    man_right = sprite_sheet.subsurface((16, 0, frame_width, frame_height))
     scaled_right = pygame.transform.scale(man_right, (frame_width * scale_factor, frame_height * scale_factor))
 
 
     #load the barrel
     barrel = pygame.image.load(os.path.join(BASE_DIR, "Barrel-of-grapes.png") )
-    barrel = pygame.transform.scale(barrel, (500, 400))
+    barrel = pygame.transform.scale(barrel, (500, 300))
 
     #player settings
-    player_x = WIDTH // 2 - 350
-    player_y = HEIGHT - 550
+    player_x = INITIAL_WIDTH // 2 - 330
+    player_y = INITIAL_HEIGHT - 645
     player_speed = 2
     font = pygame.font.SysFont(None, 36)
 
     #jug (juice) progress settings
     JUICE_WIDTH = 75
     JUICE_HEIGHT = 400
-    juice_x = WIDTH // 2 + 300
-    juice_y = HEIGHT - 500
+    juice_x = INITIAL_WIDTH // 2 + 300
+    juice_y = INITIAL_HEIGHT - 500
+
+    #set flag to check if sound has played
+    soundFlag = False
+    #set a timer for simple display
+    timer = 0
+    #set a flag to check to skip a loop
+    passFlag = False
+    #set a flag to check for full step taken
+    full_step_flag = False
 
     #initialize player
     man_sprite = scaled_left
     #controller setup
     if num_controllers > 0:
+        #initialize the controller
         cont = pygame.joystick.Joystick(0)
         cont.init()
-        #display contoller success
-        print("\nController Successfully Connected!!\n")
 
         #game loop
         running = True
@@ -168,23 +203,29 @@ def game():
         #initialize juice starting level
         juice_lvl = 0
         #initialize max step threshold
-        step_thresh = 0.9
+        step_thresh = 0.6
         #initialize display settings
-        total_steps_toggle = False
-        full_steps_toggle = False 
+        total_steps_toggle = True
+        full_steps_toggle = True 
         #initialize prev steps for left and right
         prev_left = 0.0
         prev_right = 0.0
-        #initialize the current step
-        curr_step = 0
 
 
         #main game loop
         while running:
+            #collect the base data
+            base_surface = pygame.Surface((INITIAL_WIDTH, INITIAL_HEIGHT))
+            #listen for use actions
             for event in pygame.event.get():
                 #check for user close window
                 if event.type == pygame.QUIT:
                     running = False
+
+                #check for user resizing
+                if event.type == pygame.VIDEORESIZE:
+                    #collect screen data
+                    screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
 
                 #check for keyboard input
                 if event.type == pygame.KEYDOWN:
@@ -196,157 +237,184 @@ def game():
                     if event.key == pygame.K_ESCAPE:
                         running = False
 
-            #check for pause menu
-            if pause:
-                input_box = pygame.Rect(175, 250, 300, 40)
-                total_steps_box = pygame.Rect(175,315, 20, 20)
-                full_steps_box = pygame.Rect(175,350, 20, 20)
-                active_box = False
-                input_text = ""
-                #loop while paused
-                while pause:
-                    #get key events during pause
-                    for event in pygame.event.get():
-                        #handle OS exit button case
-                        if event.type == pygame.QUIT:
-                            pygame.quit()
-                            exit()
-                        
-                        #check for click on text box
-                        if event.type == pygame.MOUSEBUTTONDOWN:
-                            #check for active box
-                            if input_box.collidepoint(event.pos):
-                                active_box = True
-
-                            #check for total steps toggle
-                            elif total_steps_box.collidepoint(event.pos):
-                                total_steps_toggle = not total_steps_toggle
-
-                            #check for full step toggle
-                            elif full_steps_box.collidepoint(event.pos):
-                                full_steps_toggle = not full_steps_toggle
-
-                            #otherwise assume no edit
-                            else:
-                                active_box = False
-
-                        #handle key presses
-                        if event.type == pygame.KEYDOWN and active_box == False:
-                            #exit pause if p pressed
-                            if event.key == pygame.K_p:
-                                pause = False
-
-                        #handle input text for max threshold
-                        if event.type == pygame.KEYDOWN and active_box:
-                            #check for end pause
-                            if event.key == pygame.K_RETURN:
-                                #attempt to set the threshold
-                                try:
-                                    #set the threshold
-                                    step_thresh = float(input_text)
-                                    #check of the step threshold is an acceptable range
-                                    if 0.0 < step_thresh < 1.0:
-                                        #display new threshold to console and stop pause
-                                        print(f"Threshold set to: {input_text}")
-                                        pause = False
-                                    #otherwise display error
-                                    else:
-                                        print("ERROR: Please enter threshold between 0 and 1")
-                                        step_thresh = 0.9
-                                    
-                                #handle non float inputs
-                                except ValueError:
-                                    #display error
-                                    print("ERROR: Please enter threshold between 0 and 1")
-
-                            #handle erasing text in the box
-                            elif event.key == pygame.K_BACKSPACE:
-                                #remove the last character
-                                input_text = input_text[ :-1 ]
-                            #otherwise display current input text
-                            else:
-                                #display text
-                                input_text += event.unicode
-
-                    #keep background to not disorient user
-                    screen.blit(bg, (0, 0))
-                    #display pause message
-                    pause_msg = pygame.font.Font(None, 60)
-                    pause_text = pause_msg.render("PAUSED", True, BLACK)
-                    screen.blit(pause_text, (325, 100))
-                    pause_msg = pygame.font.Font(None, 60)
-                    pause_text = pause_msg.render('Press "P" to exit pause menu', True, BLACK)
-                    screen.blit(pause_text, (120, 150))
-
-                    #display area to edit step settings
-                    settings = pygame.Rect(155, 200, 550, 200)
-                    pygame.draw.rect(screen, GREY, settings)
-
-                    #display input box instructions
-                    instuction_msg = pygame.font.Font(None, 20)
-                    instruction_text = instuction_msg.render("Please enter desired step threshold as a decimal between 0 and 1, default is 0.9", True, BLACK)
-                    screen.blit(instruction_text, (175, 230))
-
-                    #display total steps instructions
-                    total_steps_instuction_msg = pygame.font.Font(None, 20)
-                    total_steps_instruction_text = total_steps_instuction_msg.render("Toggle to show total steps taken", True, BLACK)
-                    screen.blit(total_steps_instruction_text, (200, 320))
-
-                    #display full steps instructions
-                    full_steps_instuction_msg = pygame.font.Font(None, 20)
-                    full_steps_instruction_text = full_steps_instuction_msg.render("Toggle to show total full steps taken", True, BLACK)
-                    screen.blit(full_steps_instruction_text, (200, 355))                    
-
-                    #display total steps toggle
-                    pygame.draw.rect(screen, WHITE, total_steps_box, border_radius=4)
-                    #check if total steps is toggled
-                    if total_steps_toggle:
-                        pygame.draw.rect(screen, PURPLE, total_steps_box, 20, border_radius=4)
-                    #otherwise assume untoggled
-                    else:
-                        pygame.draw.rect(screen, WHITE, total_steps_box, 20, border_radius=4)
-
-
-                    #display full steps toggle
-                    pygame.draw.rect(screen, WHITE, full_steps_box, border_radius=4)
-                    #check if box is selected
-                    if full_steps_toggle:
-                        pygame.draw.rect(screen, PURPLE, full_steps_box, 20, border_radius=4)
-                    #otherwise assume untoggled
-                    else:
-                        pygame.draw.rect(screen, WHITE, full_steps_box, 20, border_radius=4)
-
-
-                    #create text box for full step threshold
-                    pygame.draw.rect(screen, WHITE, input_box, border_radius=4)
-                    #check if box is selected
-                    if active_box:
-                        #display activated input box
-                        pygame.draw.rect(screen, PURPLE, input_box, 2, border_radius=4)
-                        #otherwise assume not entering threshold
-                    else:
-                        pygame.draw.rect(screen, BLACK, input_box, 2, border_radius=4)
-
-
-                    #update display with current input box
-                    font = pygame.font.Font(None, 36)
-                    input_surface = font.render(input_text, True, BLACK)
-                    screen.blit(input_surface, (input_box.x + 5, input_box.y + 5))
-
-                    #update pause menu screen
-                    pygame.display.flip()
-                    clock.tick(FPS)
-                    #keep displaying pause menu until disabled
-                    continue
-
-            #set initial message
-            feedback = None
-
-            # step progress bar
-            pygame.draw.rect(screen, GREY, (juice_x, juice_y, JUICE_WIDTH, JUICE_HEIGHT),2)
+            #blit the background image
+            base_surface.blit(bg, (0, 0))
+            #blit the character sprite
+            base_surface.blit(man_sprite, (player_x, player_y))
+            #blit the barrel
+            base_surface.blit(barrel, (-55, 300))
+            #draw the bottle
+            pygame.draw.rect(base_surface, GREY, (juice_x, juice_y, JUICE_WIDTH, JUICE_HEIGHT), 2)
             fill_height = juice_lvl * JUICE_HEIGHT
             fill_y = juice_y + JUICE_HEIGHT - fill_height
-            pygame.draw.rect(screen, PURPLE, (juice_x + 2, fill_y, JUICE_WIDTH - 4, fill_height))
+            #draw the juice
+            pygame.draw.rect(base_surface, PURPLE, (juice_x + 2, fill_y, JUICE_WIDTH - 4, fill_height))
+
+            #calcualte the threshold for full step
+            threshold_y = juice_y + JUICE_HEIGHT - (step_thresh * JUICE_HEIGHT)
+            #draw the threshold
+            pygame.draw.line(base_surface, BLACK, (juice_x, threshold_y), 
+                           (juice_x + JUICE_WIDTH, threshold_y), 8)
+
+            #display total steps if toggled (automatically toggled)
+            if total_steps_toggle:
+                font = pygame.font.Font(None, 36)
+                total_steps_text = font.render(f"Total Steps: {total_step_count}", True, BLACK)
+                base_surface.blit(total_steps_text, (300, 10))
+            #display full steps if toggled (automatically toggled)
+            if full_steps_toggle:
+                font = pygame.font.Font(None, 36)
+                full_steps_text = font.render(f"Full Steps: {full_steps_count}", True, BLACK)
+                base_surface.blit(full_steps_text, (300, 35))
+
+            #check if full step conditions have been met
+            if(passFlag):
+                #check if timer is over
+                if timer > 0 and pygame.time.get_ticks() - timer > 1000:
+                    #reset threshold flags and timer
+                    soundFlag = False
+                    timer = 0
+                    passFlag = False
+                    full_step_flag = False
+                
+                #show congrats message
+                font = pygame.font.Font(None, 36)
+                congrats_text = font.render("Bottle Filled!", True, GREEN)
+                base_surface.blit(congrats_text, (INITIAL_WIDTH//2 - congrats_text.get_width()//2, 
+                                                INITIAL_HEIGHT//2))
+                
+                #stretch the game screen
+                stretched_screen = pygame.transform.scale(base_surface, (screen.get_width(), screen.get_height()))
+                screen.blit(stretched_screen, (0, 0))
+                #update the screen
+                pygame.display.flip()
+                clock.tick(FPS)
+                #loop again if timer not out
+                continue
+
+            #check for game paused
+            if pause:
+                #initialize input text
+                if 'input_text' not in locals():
+                    input_text = ""
+                    active_box = False
+    
+                #creat pause menu
+                pause_surface = pygame.Surface((INITIAL_WIDTH, INITIAL_HEIGHT), pygame.SRCALPHA)
+                pause_surface.fill((200, 200, 200, 128))
+    
+                #calculate stretch
+                scale_x = screen.get_width() / INITIAL_WIDTH
+                scale_y = screen.get_height() / INITIAL_HEIGHT
+    
+                #initialize pause menu items
+                input_box = pygame.Rect(175, 250, 300, 40)
+                total_steps_box = pygame.Rect(175, 315, 20, 20)
+                full_steps_box = pygame.Rect(175, 350, 20, 20)
+                settings_rect = pygame.Rect(155, 200, 550, 200)
+    
+                #listen for user events
+                for event in pygame.event.get():
+                    #check for user quit
+                    if event.type == pygame.QUIT:
+                        running = False
+                    #check for screen resize
+                    if event.type == pygame.VIDEORESIZE:
+                        screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                    #check for unpause toggle
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_p:
+                            pause = False
+                        #check for text box
+                        if active_box:
+                            #listen for user enter
+                            if event.key == pygame.K_RETURN:
+                                #attempt to reset step threshold
+                                try:
+                                    step_thresh = float(input_text)
+                                    if 0.0 < step_thresh < 1.0:
+                                        print(f"Threshold set to: {input_text}")
+                                        pause = False
+                                    else:
+                                        print("ERROR: Please enter threshold between 0 and 1")
+                                #otherwise displau error
+                                except ValueError:
+                                    print("ERROR: Please enter a valid number")
+                            #check for user delete text
+                            elif event.key == pygame.K_BACKSPACE:
+                                input_text = input_text[:-1]
+                            #check for user adding to input text
+                            else:
+                                input_text += event.unicode
+                    #check for user click
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        mouse_x, mouse_y = event.pos[0] / scale_x, event.pos[1] / scale_y
+                        #check for user select input box
+                        if input_box.collidepoint((mouse_x, mouse_y)):
+                            active_box = True
+                        else:
+                            active_box = False
+                        #check for total steps toggle
+                        if total_steps_box.collidepoint((mouse_x, mouse_y)):
+                            total_steps_toggle = not total_steps_toggle
+                        #check for full steps toggle
+                        elif full_steps_box.collidepoint((mouse_x, mouse_y)):
+                            full_steps_toggle = not full_steps_toggle
+    
+                #display the menu
+                pygame.draw.rect(pause_surface, GREY, settings_rect)
+                #display pause message
+                font_large = pygame.font.Font(None, 60)
+                pause_text = font_large.render("PAUSED", True, BLACK)
+                pause_surface.blit(pause_text, (INITIAL_WIDTH//2 - pause_text.get_width()//2, 100))
+                #display instructions
+                pause_instruction = font_large.render('Press "P" to resume', True, BLACK)
+                pause_surface.blit(pause_instruction, (INITIAL_WIDTH//2 - pause_instruction.get_width()//2, 150))
+                #display input instructuons
+                font_small = pygame.font.Font(None, 20)
+                instruction_text = font_small.render("Step Threshold (0-1):", True, BLACK)
+                pause_surface.blit(instruction_text, (180, 230))
+    
+                #check for user select the text box
+                pygame.draw.rect(pause_surface, WHITE, input_box, border_radius=4)
+                if active_box:
+                    #highlight the box if selected
+                    pygame.draw.rect(pause_surface, PURPLE, input_box, 2, border_radius=4)
+    
+                #display total steps toggle
+                pygame.draw.rect(pause_surface, WHITE, total_steps_box, border_radius=4)
+                if total_steps_toggle:
+                    #highlight the toggle if selected
+                    pygame.draw.rect(pause_surface, PURPLE, total_steps_box, border_radius=4)
+                #display total steps toggle
+                pygame.draw.rect(pause_surface, WHITE, full_steps_box, border_radius=4)
+                if full_steps_toggle:
+                    #highlight the toggle if selected
+                    pygame.draw.rect(pause_surface, PURPLE, full_steps_box, border_radius=4)
+    
+                #display total steps label
+                total_label = font_small.render("Show total steps", True, BLACK)
+                pause_surface.blit(total_label, (200, 315))
+                #display full steps label
+                full_label = font_small.render("Show full steps", True, BLACK)
+                pause_surface.blit(full_label, (200, 350))
+    
+                #display the user input text
+                if input_text:
+                    input_surface = pygame.font.Font(None, 36).render(input_text, True, BLACK)
+                    pause_surface.blit(input_surface, (input_box.x + 5, input_box.y + 5))
+    
+                #update the screen base screen
+                stretched_screen = pygame.transform.scale(base_surface, (screen.get_width(), screen.get_height()))
+                screen.blit(stretched_screen, (0, 0))
+                #update the screen with the fully drawn pause menu
+                stretched_pause = pygame.transform.scale(pause_surface, (screen.get_width(), screen.get_height()))
+                screen.blit(stretched_pause, (0, 0))
+                #update the window
+                pygame.display.flip()
+                clock.tick(FPS)
+                #continue looping unless pause untoggled
+                continue
 
             #check for controller input
             l_trig = cont.get_axis(4)
@@ -354,138 +422,68 @@ def game():
             exit_button = cont.get_button(2)
 
             #check for any controller input
-            if (prev_left <= 0.1 and l_trig > 0.1):
-                #set the current step
-                curr_step = l_trig
-                #TEST LINE TO DISPLAY STEP VALUE
-                #print(str(l_trig))
-                #increment total step count
-                total_step_count += 1
-                #update juice level
-                juice_lvl = l_trig
-
-                #check if step exceeded the step threshold
-                if l_trig >= step_thresh:
-                    #play step sound
-                    step_sound.play()
-                    #increment full step count
-                    full_steps_count += 1
-
-            #check for any controller input
-            if (prev_right <= 0.1 and r_trig > 0.1):
-                #set the current step
-                curr_step = r_trig
-                #TEST LINE TO DISPLAY STEP VALUE
-                #print(str(l_trig))
-                #increment total step count
-                total_step_count += 1
-                #update juice level
-                juice_lvl = r_trig
-                #check if step exceeded the step threshold
-                if r_trig >= step_thresh:
-                    #play step sound
-                    step_sound.play()
-                    #increment full step count
-                    full_steps_count += 1                  
+            if((prev_left <= 0.1 and l_trig > 0.1) or (prev_right <= 0.1 and r_trig > 0.1)):
+                #update steo count for user input
+                total_step_count += 1            
 
             #check for increase in step count
-            if(total_step_count > prev_total_steps):
-                #check for sprite left
-                if(man_sprite == scaled_left):
-                    #set new sprite
-                    man_sprite = scaled_right
-
-                #check for sprite right
-                elif(man_sprite == scaled_right):
-                    #set new sprite
-                    man_sprite = scaled_left
-                
-                #update the new prev_total_steps
+            if total_step_count > prev_total_steps:
+                #update the sprite if the stepcount goes up
+                man_sprite = scaled_right if man_sprite == scaled_left else scaled_left
+                #set the new previous steps
                 prev_total_steps = total_step_count
-
 
             #condition to check for game exit
             elif exit_button:
                 running = False
 
+            #set the juice level to the step pressure value
+            step = max(l_trig, r_trig)
+            juice_lvl = step
+
+            #check for step exceeding the step thresh and no sound played
+            if(step >= step_thresh and soundFlag == False):
+                #play sound
+                step_sound.play()
+                #set loop flags to delay game and prevent spammed steps
+                soundFlag = True
+                passFlag = True
+                #set the delay timer
+                timer = pygame.time.get_ticks()
+                #check for if full steps has been updated
+                if(not full_step_flag and full_steps_count + 1 <= total_step_count):
+                    #update full steps
+                    full_steps_count += 1
+                    full_step_flag = True
+
             #update the prev_steps
             prev_left = l_trig
             prev_right = r_trig
 
-            #draw juice level in the bottle
-            fill_height = juice_lvl * JUICE_HEIGHT
-            fill_y = juice_y + JUICE_HEIGHT - fill_height
-            pygame.draw.rect(screen, PURPLE, (juice_x + 2, fill_y, JUICE_WIDTH - 4, fill_height))
+            #display a congrats message if a full step is met
+            if timer > 0:
+                congrats_text = font.render("Bottle Filled!", True, GREEN)
+                #display the message
+                screen.blit(congrats_text, (INITIAL_WIDTH // 2 - congrats_text.get_width() // 2, INITIAL_HEIGHT // 2))
 
-            #set window background
-            screen.blit(bg, (0,0))
+            #check for negative step value
+            if(step < 0):
+                #set the step value to zero for proper display
+                step = 0
+                #reset the step flag
+                full_step_flag = False
 
-            #draw the man stomping
-            screen.blit(man_sprite, (player_x, player_y))
-
-            #draw the barrel og grapes
-            screen.blit(barrel, (-55,225))
-
-            #display total steps if toggled
-            if total_steps_toggle:
-                total_steps_text = font.render(f"Total Steps taken: {total_step_count}", True, (0, 0, 0))
-                screen.blit(total_steps_text, (300, 10))
-
-            #display full steps if toggled
-            if full_steps_toggle:
-                full_steps_text = font.render(f"Full Steps taken: {full_steps_count}", True, (0, 0, 0))
-                screen.blit(full_steps_text, (300, 35))
-
-
-            #check for one fourth complete
-            if 0.24 < juice_lvl < 0.26:
-                feedback = "Keep it up!"
-                feedback_time = pygame.time.get_ticks() + 3000
-
-
-            #check for one half complete
-            elif 0.49 < juice_lvl < 0.51:
-                feedback = "You're doing great!!"
-                feedback_time = pygame.time.get_ticks() + 3000
-
-
-            #check for three fourths complete
-            elif 0.74 < juice_lvl < 0.76:
-                feedback = "Almost There!!"
-                feedback_time = pygame.time.get_ticks() + 3000
-            
-            #check for message display settings
-            if feedback and pygame.time.get_ticks() < feedback_time:
-                text = pygame.font.Font(None, 60)
-                complete_text = text.render(feedback, True, GREEN)
-                screen.blit(complete_text, (325, 100))
-            #otherwise display no message
-            else:
-                feedback = None
-        
-            #display progress bar (juice)
-            pygame.draw.rect(screen, GREY, (juice_x, juice_y, JUICE_WIDTH, JUICE_HEIGHT),2)
-            fill_height = juice_lvl * JUICE_HEIGHT
-            fill_y = juice_y + JUICE_HEIGHT - fill_height
-            pygame.draw.rect(screen, PURPLE, (juice_x + 2, fill_y, JUICE_WIDTH - 4, fill_height))
-
-            #calculate the threshold y value
-            threshold_y = juice_y + JUICE_HEIGHT - (step_thresh * JUICE_HEIGHT)
-            pygame.draw.line(screen, BLACK, (juice_x, threshold_y), (juice_x + JUICE_WIDTH, threshold_y), 8)
-
-            #display the step progress percentage
-            step_perc_msg = pygame.font.Font(None, 40)
-            curr_step_int = int(round(curr_step * 100, 0))
-            step_perc = str(curr_step_int) + "%"
-            step_perc_text = step_perc_msg.render(step_perc, True, BLACK)
-            screen.blit(step_perc_text, (715, 60))  
+            #collect the stretched screen data
+            stretched_screen = pygame.transform.scale(base_surface, (screen.get_width(), screen.get_height()))
+            #display the screen
+            screen.blit(stretched_screen, (0, 0))
 
             #update screen
             pygame.display.flip()
 
             #set game clock
             clock.tick(FPS)
-
+    #return step counts for proper display
     return total_step_count, full_steps_count
 
 #call the start menu to start the game
