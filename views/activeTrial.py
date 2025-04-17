@@ -44,7 +44,7 @@ class ActiveTrial(tk.Frame):
 
         # Sensor dropdown variable
         self.sensor_var = tk.StringVar()
-        self.sensor_var.set("Left & Right")  # Default selection
+        self.sensor_var.set("Left")  # Default selection
 
         # Set the disconnection callback
         self.controller.deviceManager.on_disconnect = self.ActiveTrial_on_device_disconnected
@@ -206,7 +206,7 @@ class ActiveTrial(tk.Frame):
             self,
             textvariable=self.sensor_var,
             state="readonly",
-            values=["Left", "Right", "Left & Right"],
+            values=["Left", "Right"],
         )
         self.sensorChartDropdown.bind("<<ComboboxSelected>>", self.on_sensor_selection)
         self.sensorChartDropdown.grid(row=3, column=5, padx=10, pady=10)
