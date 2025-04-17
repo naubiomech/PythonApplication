@@ -304,7 +304,6 @@ class ActiveTrial(tk.Frame):
                     print(game_path)
         
         print(f"Launching game from {game_path}")
-        self.controller.virtualController.stop()
         # Create a virtual controller
         self.controller.virtualController.create()  # Start the virtual controller
         
@@ -332,6 +331,7 @@ class ActiveTrial(tk.Frame):
         """Stop the running game."""
         if self.game_process:
             self.game_process.kill()
+            self.controller.virtualController.stop()
             self.game_process = None
             self.stopGameButton.config(state="disabled")
             self.launchGameButton.config(state="normal")
