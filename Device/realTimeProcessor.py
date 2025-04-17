@@ -24,6 +24,7 @@ class RealTimeProcessor:
     def getPayloadData(self):
         # Return the controller payload, this is a different payload variable because it does
         # not get reset after each message, if it did the controller would only recieve [] as data
+        print(self.controller_payload)
         return self.controller_payload
 
     def processEvent(self, event):

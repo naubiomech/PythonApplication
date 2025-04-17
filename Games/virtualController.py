@@ -71,13 +71,13 @@ class VirtualController:
         case = self.sensor
         if case == "Left":
             # Use the left foot sensor (Left foot)
-            self.sensor_left = 9
-            self.sensor_right = 9
+            self.sensor_left = 7
+            self.sensor_right = 7
 
         elif case == "Right":
             # Use the right foot sensor (Right foot)
-            self.sensor_left = 8
-            self.sensor_right = 8
+            self.sensor_left = 6
+            self.sensor_right = 6
 
         elif case == "Left & Right":
             # Use the third two sensors (index 10 and 11)
