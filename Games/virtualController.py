@@ -87,7 +87,7 @@ class VirtualController:
         else:
             print("Invalid sensor index. Using default sensors.")
             self.sensor_left = 6
-            self.sensor_right = 7
+            self.sensor_right = 6
             print("No Sensor Changed.")
         print("Sensor set to: " + str(self.sensor))
 
