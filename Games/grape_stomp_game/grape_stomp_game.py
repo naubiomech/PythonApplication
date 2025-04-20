@@ -289,8 +289,6 @@ def game():
                 #update the screen
                 pygame.display.flip()
                 clock.tick(FPS)
-                #loop again if timer not out
-                continue
 
             #check for game paused
             if pause:
@@ -422,7 +420,7 @@ def game():
             exit_button = cont.get_button(2)
 
             #check for any controller input
-            if((prev_left <= 0.1 and l_trig > 0.1) or (prev_right <= 0.1 and r_trig > 0.1)):
+            if((prev_left <= 0 and l_trig > 0) or (prev_right <= 0 and r_trig > 0)):
                 #update steo count for user input
                 total_step_count += 1            
 
