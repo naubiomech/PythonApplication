@@ -336,22 +336,36 @@ def run_game(just_clicked):
                 if new_frame_index > frame_index and inflate_sound and not is_muted:
                     inflate_sound.play()
                 frame_index = new_frame_index
-                if intensity >= 60 and not balloon_full:
-                    balloon_full = True
-                    congrats_display_timer = pygame.time.get_ticks()
-                    if not balloon_fully_inflated and ding_sound:
-                        ding_sound.play()
-                        balloon_fully_inflated = True
-                    for _ in range(50):
-                        confetti_particles.append({
-                            "x": random.randint(0, WIDTH),
-                            "y": random.randint(0, HEIGHT // 2),
-                            "color": random.choice([(255, 0, 0), (0, 255, 0), (0, 0, 255),
-                                                     (255, 255, 0), (255, 165, 0)]),
-                            "speed": random.uniform(1, 3)
-                        })
-                    balloon_count += 1
-            else:
+
+            # Step is strong enough (intensity ≥ 60), mark it as valid
+            if intensity >= 60 and not balloon_full:
+                balloon_full = True
+                balloon_fully_inflated = False  # allow confetti later
+
+            # Step was valid and is now released — trigger balloon
+            if balloon_full and intensity < 5 and not balloon_fully_inflated:
+                congrats_display_timer = pygame.time.get_ticks()
+
+                if ding_sound and not is_muted:
+                    ding_sound.play()
+
+                # Show confetti
+                for _ in range(50):
+                    confetti_particles.append({
+                        "x": random.randint(0, WIDTH),
+                        "y": random.randint(0, HEIGHT // 2),
+                        "color": random.choice([(255, 0, 0), (0, 255, 0), (0, 0, 255),
+                                                (255, 255, 0), (255, 165, 0)]),
+                        "speed": random.uniform(1, 3)
+                    })
+
+                balloon_count += 1  # Add to balloon count
+                frame_index = 0     # Reset balloon sprite
+                intensity = 0       # Reset intensity
+                balloon_fully_inflated = True  # Stop duplicate triggers
+                balloon_full = False           # Ready for next step
+
+            elif current_value is None:
                 intensity = 0
 
         # Draw the current balloon frame if available, centered on screen
