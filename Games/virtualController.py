@@ -96,8 +96,10 @@ class VirtualController:
         """Stop the virtual controller."""
         if self._isOn:
             self._isOn = False
+            self._gamepad.disconnect()
+            print("Virtual controller disconnected.")
             self.update_thread.join()
-            print("Virtual controller stopped.")
+            print("Virtual controller Thread stopped.")
         else:
           print("No existing Virtual controller to stop.")
 

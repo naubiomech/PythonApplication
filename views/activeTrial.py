@@ -221,6 +221,8 @@ class ActiveTrial(tk.Frame):
     def create_game_widgets(self):
         """Create game control buttons."""
         self.controller.virtualController.create()
+        self.controller.virtualController.setSensor("RIGHT")
+        
         game_frame = ttk.Frame(self)
         game_frame.grid(row=4, column=1, columnspan=6, pady=10)
 
