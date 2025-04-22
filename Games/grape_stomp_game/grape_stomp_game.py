@@ -437,7 +437,8 @@ def game():
 
             #set the juice level to the step pressure value
             step = max(l_trig, r_trig)
-            juice_lvl = step
+            juice_lvl = ((step + 1) / 2) * 100
+            #juice_lvl = step
 
             #check for step exceeding the step thresh and no sound played
             if(step >= step_thresh and soundFlag == False):
