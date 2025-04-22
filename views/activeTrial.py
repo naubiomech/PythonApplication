@@ -572,7 +572,6 @@ class ActiveTrial(tk.Frame):
 
     async def ShutdownExo(self):
         # End trial
-        self.controller.virtualController.stop()  # Stop the virtual controller
         await self.controller.deviceManager.motorOff()  # Turn off motors
         await self.controller.deviceManager.stopTrial()  # End trial
         await self.controller.deviceManager.disconnect()
