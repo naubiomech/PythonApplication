@@ -220,6 +220,7 @@ class ActiveTrial(tk.Frame):
 
     def create_game_widgets(self):
         """Create game control buttons."""
+        self.controller.virtualController.create()
         game_frame = ttk.Frame(self)
         game_frame.grid(row=4, column=1, columnspan=6, pady=10)
 
@@ -305,7 +306,7 @@ class ActiveTrial(tk.Frame):
         
         print(f"Launching game from {game_path}")
         # Create a virtual controller
-        self.controller.virtualController.create()  # Start the virtual controller
+        ## self.controller.virtualController.create()  # Start the virtual controller
         
         # try to launch the game
         # check if the game is a python file or an executable
@@ -331,7 +332,7 @@ class ActiveTrial(tk.Frame):
         """Stop the running game."""
         if self.game_process:
             self.game_process.kill()
-            self.controller.virtualController.stop()
+            
             self.game_process = None
             
             # wait for the thread to join
@@ -569,6 +570,7 @@ class ActiveTrial(tk.Frame):
 
     async def ShutdownExo(self):
         # End trial
+        self.controller.virtualController.stop()  # Stop the virtual controller
         await self.controller.deviceManager.motorOff()  # Turn off motors
         await self.controller.deviceManager.stopTrial()  # End trial
         await self.controller.deviceManager.disconnect()
