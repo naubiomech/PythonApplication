@@ -44,7 +44,7 @@ class ActiveTrial(tk.Frame):
 
         # Sensor dropdown variable
         self.sensor_var = tk.StringVar()
-        self.sensor_var.set("Left")  # Default selection
+        self.sensor_var.set("RIGHT")  # Default selection
 
         # Set the disconnection callback
         self.controller.deviceManager.on_disconnect = self.ActiveTrial_on_device_disconnected
