@@ -245,7 +245,8 @@ def game():
             base_surface.blit(barrel, (-55, 300))
             #draw the bottle
             pygame.draw.rect(base_surface, GREY, (juice_x, juice_y, JUICE_WIDTH, JUICE_HEIGHT), 2)
-            fill_height = juice_lvl * JUICE_HEIGHT
+            fill_height = juice_lvl
+            # fill_height = juice_lvl * JUICE_HEIGHT
             fill_y = juice_y + JUICE_HEIGHT - fill_height
             #draw the juice
             pygame.draw.rect(base_surface, PURPLE, (juice_x + 2, fill_y, JUICE_WIDTH - 4, fill_height))
@@ -437,7 +438,7 @@ def game():
 
             #set the juice level to the step pressure value
             step = max(l_trig, r_trig)
-            juice_lvl = ((step + 1) / 2) * 100
+            juice_lvl = ((step + 1) / 2) * JUICE_HEIGHT
             #juice_lvl = step
 
             #check for step exceeding the step thresh and no sound played
