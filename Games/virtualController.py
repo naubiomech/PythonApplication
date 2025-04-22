@@ -81,7 +81,7 @@ class VirtualController:
 
         elif case == "Left & Right":
             # Use the third two sensors (index 10 and 11)
-            self.sensor_left = 7
+            self.sensor_left = 6
             self.sensor_right = 6
             
         else:
