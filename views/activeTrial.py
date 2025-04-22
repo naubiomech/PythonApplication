@@ -333,6 +333,11 @@ class ActiveTrial(tk.Frame):
             self.game_process.kill()
             self.controller.virtualController.stop()
             self.game_process = None
+            
+            # wait for the thread to join
+            time.sleep(2)
+            
+            # Re-enable the buttons
             self.stopGameButton.config(state="disabled")
             self.launchGameButton.config(state="normal")
             self.selectGameButton.config(state="normal")
