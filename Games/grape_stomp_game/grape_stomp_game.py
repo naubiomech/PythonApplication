@@ -252,7 +252,10 @@ def game():
             pygame.draw.rect(base_surface, PURPLE, (juice_x + 2, fill_y, JUICE_WIDTH - 4, fill_height))
 
             #calcualte the threshold for full step
-            threshold_y = juice_y + JUICE_HEIGHT - (step_thresh * JUICE_HEIGHT)
+            threshold_pos = (step_thresh * 2) - 1
+            threshold_height = ((threshold_pos + 1) / 2) * JUICE_HEIGHT
+            threshold_y = juice_y + JUICE_HEIGHT - threshold_height
+            # threshold_y = juice_y + JUICE_HEIGHT - (step_thresh * JUICE_HEIGHT)
             #draw the threshold
             pygame.draw.line(base_surface, BLACK, (juice_x, threshold_y), 
                            (juice_x + JUICE_WIDTH, threshold_y), 8)
@@ -271,7 +274,7 @@ def game():
             #check if full step conditions have been met
             if(passFlag):
                 #check if timer is over
-                if timer > 0 and pygame.time.get_ticks() - timer > 1000:
+                if timer > 0 and pygame.time.get_ticks() - timer > 720:#1000:
                     #reset threshold flags and timer
                     soundFlag = False
                     timer = 0
@@ -421,7 +424,7 @@ def game():
             exit_button = cont.get_button(2)
 
             #check for any controller input
-            if((prev_left <= 0 and l_trig > 0) or (prev_right <= 0 and r_trig > 0)):
+            if((prev_left <= -1 and l_trig > -1) or (prev_right <= -1 and r_trig > -1)):
                 #update steo count for user input
                 total_step_count += 1            
 
@@ -439,10 +442,14 @@ def game():
             #set the juice level to the step pressure value
             step = max(l_trig, r_trig)
             juice_lvl = ((step + 1) / 2) * JUICE_HEIGHT
-            #juice_lvl = step
 
-            #check for step exceeding the step thresh and no sound played
-            if(step >= step_thresh and soundFlag == False):
+            #check for proper zero display
+            if( step == 0 ):
+                #set juice level to 0 as default for zero is 200
+                juice_lvl = 0
+
+            #check for step exceeding the threshold position and no sound played
+            if(step >= threshold_pos and soundFlag == False):
                 #play sound
                 step_sound.play()
                 #set loop flags to delay game and prevent spammed steps
