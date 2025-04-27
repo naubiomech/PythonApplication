@@ -302,7 +302,7 @@ def run_game(just_clicked):
     
     # Update game elements only if not paused
     if not is_paused:
-        if joystick and congrats_display_timer == 0:
+        if joystick:  # Removed the congrats_display_timer == 0 check
             lt = joystick.get_axis(LT_AXIS)
             rt = joystick.get_axis(RT_AXIS)
 
@@ -346,17 +346,18 @@ def run_game(just_clicked):
             if balloon_full and intensity < 5 and not balloon_fully_inflated:
                 congrats_display_timer = pygame.time.get_ticks()
 
-                if ding_sound and not is_muted:
+                # Play ding sound without any connection to the timer
+                if ding_sound:
                     ding_sound.play()
 
-                # Show confetti
-                for _ in range(50):
+                # Show confetti - reduced number of particles for faster performance
+                for _ in range(30):  
                     confetti_particles.append({
                         "x": random.randint(0, WIDTH),
                         "y": random.randint(0, HEIGHT // 2),
                         "color": random.choice([(255, 0, 0), (0, 255, 0), (0, 0, 255),
                                                 (255, 255, 0), (255, 165, 0)]),
-                        "speed": random.uniform(1, 3)
+                        "speed": random.uniform(2, 4)  # Increased speed to make confetti fall faster
                     })
 
                 balloon_count += 1  # Add to balloon count
@@ -367,6 +368,12 @@ def run_game(just_clicked):
 
             elif current_value is None:
                 intensity = 0
+
+        # Process the congratulations timer separately
+        # This only affects the visual display, not the sound
+        if congrats_display_timer > 0 and pygame.time.get_ticks() - congrats_display_timer > 500:
+            congrats_display_timer = 0
+            confetti_particles.clear()
 
         # Draw the current balloon frame if available, centered on screen
         if frames and frame_index < len(frames):
@@ -424,17 +431,10 @@ def run_game(just_clicked):
                                int(5 * (HEIGHT / DEFAULT_HEIGHT)))
             confetti["y"] += confetti["speed"] * (HEIGHT / DEFAULT_HEIGHT)
         
-        # Display congrats message if a balloon is blown, then reset after a short delay
+        # Display congrats message if a balloon is blown
         if congrats_display_timer > 0:
             congrats_text = current_font.render("Congrats! Balloon Blown!", True, GREEN)
             screen.blit(congrats_text, (WIDTH // 2 - congrats_text.get_width() // 2, HEIGHT // 2))
-            if pygame.time.get_ticks() - congrats_display_timer > 1000:
-                congrats_display_timer = 0
-                balloon_full = False
-                balloon_fully_inflated = False
-                frame_index = 0
-                intensity = 0
-                confetti_particles.clear()
     
     # Draw game screen buttons 
     mouse_pos = pygame.mouse.get_pos()
