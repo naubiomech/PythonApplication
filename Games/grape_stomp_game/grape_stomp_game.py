@@ -424,7 +424,7 @@ def game():
             exit_button = cont.get_button(2)
 
             #check for any controller input
-            if((prev_left <= -1 and l_trig > -1) or (prev_right <= -1 and r_trig > -1)):
+            if((prev_left <= 0 and l_trig > 0) or (prev_right <= 0 and r_trig > 0)):
                 #update steo count for user input
                 total_step_count += 1            
 
